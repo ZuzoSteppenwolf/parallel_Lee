@@ -1,3 +1,3 @@
 # parallel_Lee
 
-Diese Software wurde im Rahmen der Veranstaltung Prakt. Rechnergestützter Entwurf digitaler Systeme der Fachhochschule Wedel entwickelt.
+Diese Software wurde für die Veranstaltung "Prakt. Rechnergestützter Entwurf digitaler Systeme" der Fachhochschule Wedel entwickelt.
