@@ -15,7 +15,7 @@ struct Matrix[type: DType, rows: Int, cols: Int]:
         memset_zero(self.data, rows * cols)
 
     fn __getitem__(borrowed self, row: Int, col: Int) -> Scalar[type]:
-        return self.data.load(row * cols + col)
+        return self.data.load((row * cols) + col)
 
     fn __setitem__[width: Int = 1](mut self, row: Int, col: Int, val: SIMD[type, width]):
         self.data.store(row * cols + col, val)
