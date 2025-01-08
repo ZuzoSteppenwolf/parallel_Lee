@@ -17,16 +17,9 @@ Main-Methode der Applikation
 """
 def main():
     args = argv()
-    #if len(args) < 4 or args[1] == "-h" or args[1] == "--help":
-    #    print_help()
-    #    return
-
-    var mat = Matrix[DType.int8, 5, 5]()
-    mat[0, 0] = 1
-    num = mat[0, 0]
-    mat[0, 1] = num
-    print(mat.__str__())
-    return
+    if len(args) < 4 or args[1] == "-h" or args[1] == "--help":
+        print_help()
+        return
 
 """
 Hilfsmethode um die Hilfe auszugeben
