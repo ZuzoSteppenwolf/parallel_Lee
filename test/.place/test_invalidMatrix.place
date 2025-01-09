@@ -1,0 +1,9 @@
+Netlist file: test/test.net   Architecture file: test/test.arch
+Array size: A x 2 logic blocks
+
+#block name	x	y	subblk	block number
+#----------	--	--	------	------------
+A		0	0	0	#0
+B		0	1	0	#1
+C		1	0	0	#2
+D		1	1	0	#3

@@ -24,20 +24,25 @@ struct Block(Copyable):
     fn __ne__(borrowed self, other: Block) -> Bool:
         return not self.__eq__(other)
 
+    fn __str__(borrowed self) -> String:
+        return self.name + " " + str(self.subblk) + " " + str(self.type)
+
 @value
-struct Place[path: String]:
+struct Place:
     var isValid: Bool
     var net: String
     var arch: String
     var map: Matrix[List[Block]]
     var archiv: Dict[String, Tuple[Int, Int]]
+    var path: String
 
-    fn __init__(out self):
+    fn __init__(out self, path: String):
         self.net = ""
         self.arch = ""
         self.map = Matrix[List[Block]](0, 0)
         self.isValid = False
         self.archiv = Dict[String, Tuple[Int, Int]]()
+        self.path = path
         self.isValid = self.parse(path)
 
 
@@ -45,15 +50,15 @@ struct Place[path: String]:
     fn parse(mut self, path: String) -> Bool:
         try:
             with open(path, "r") as file:
-                var lines = file.read().splitlines()
+                var lines = file.read().split("\n")
                 if len(lines) == 0:
                     return False
                 var hasNet: Bool = False
                 var hasArch: Bool = False
                 var hasSize: Bool = False
                 for line in lines:
-                    if len(line[]) > 0 and line[][0] != "#" and not line[].isspace():
-                        var words = line[].split(" ")
+                    if line[] != "" and line[][0] != "#" and not line[].isspace():
+                        var words = line[].split()
                         var counter: Int = 0
                         var col: Int = 0
                         var row: Int = 0
@@ -93,12 +98,15 @@ struct Place[path: String]:
                                         return False
                                     elif counter == 4:
                                         row = int(word[])
-                                        self.map = Matrix[List[Block]](col, row)
-                                        hasSize = True
+                                        self.map = Matrix[List[Block]](col+2, row+2)
+                                        #hasSize = True
                                     elif counter == 5 and word[] != "logic":
                                         return False
-                                    elif counter == 6 and word[] != "blocks":
-                                        return False
+                                    elif counter == 6:
+                                        if word[] != "blocks":
+                                            return False
+                                        else:
+                                            hasSize = True
                                     counter += 1
 
                                 # Restliche Zeilen beinhalten die Platzierungen
