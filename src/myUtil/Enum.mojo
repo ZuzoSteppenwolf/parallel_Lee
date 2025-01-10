@@ -47,3 +47,174 @@ struct Blocktype:
             return "CHANY"
         else:
             return "UNKNOWN"
+
+@register_passable("trivial")
+struct ChanType:
+    var value: Int8
+
+    alias NONE = ChanType(0)
+    alias GAUSSIAN = ChanType(1)
+    alias UNIFORM = ChanType(2)
+    alias PULSE = ChanType(3)
+    alias DELTA = ChanType(4)
+
+    fn __init__(out self, value: Int8):
+        self.value = value
+
+    fn __eq__(borrowed self, other: ChanType) -> Bool:
+        return self.value == other.value
+
+    fn __ne__(borrowed self, other: ChanType) -> Bool:
+        return not self.__eq__(other)
+
+    fn __lt__(borrowed self, other: ChanType) -> Bool:
+        return self.value < other.value
+
+    fn __gt__(borrowed self, other: ChanType) -> Bool:
+        return self.value > other.value
+
+    fn __le__(borrowed self, other: ChanType) -> Bool:
+        return self.value <= other.value
+
+    fn __ge__(borrowed self, other: ChanType) -> Bool:
+        return self.value >= other.value
+
+    fn __str__(borrowed self) -> String:
+        if self.value == 0:
+            return "NONE"
+        elif self.value == 1:
+            return "GAUSSIAN"
+        elif self.value == 2:
+            return "UNIFORM"
+        elif self.value == 3:
+            return "PULSE"
+        elif self.value == 4:
+            return "DELTA"
+        else:
+            return "UNKNOWN"
+
+@register_passable("trivial")
+struct Faceside:
+    var value: Int8
+
+    alias NONE = Faceside(0)
+    alias TOP = Faceside(1)
+    alias BOTTOM = Faceside(2)
+    alias LEFT = Faceside(3)
+    alias RIGHT = Faceside(4)
+
+    fn __init__(out self, value: Int8):
+        self.value = value
+
+    fn __eq__(borrowed self, other: Faceside) -> Bool:
+        return self.value == other.value
+
+    fn __ne__(borrowed self, other: Faceside) -> Bool:
+        return not self.__eq__(other)
+
+    fn __lt__(borrowed self, other: Faceside) -> Bool:
+        return self.value < other.value
+
+    fn __gt__(borrowed self, other: Faceside) -> Bool:
+        return self.value > other.value
+
+    fn __le__(borrowed self, other: Faceside) -> Bool:
+        return self.value <= other.value
+
+    fn __ge__(borrowed self, other: Faceside) -> Bool:
+        return self.value >= other.value
+
+    fn __str__(borrowed self) -> String:
+        if self.value == 0:
+            return "NONE"
+        elif self.value == 1:
+            return "TOP"
+        elif self.value == 2:
+            return "BOTTOM"
+        elif self.value == 3:
+            return "LEFT"
+        elif self.value == 4:
+            return "RIGHT"
+        else:
+            return "UNKNOWN"
+
+@register_passable("trivial")
+struct SwitchType:
+    var value: Int8
+
+    alias NONE = SwitchType(0)
+    alias SUBSET = SwitchType(1)
+    alias WILTON = SwitchType(2)
+    alias UNIVERSAL = SwitchType(3)
+
+    fn __init__(out self, value: Int8):
+        self.value = value
+
+    fn __eq__(borrowed self, other: SwitchType) -> Bool:
+        return self.value == other.value
+    
+    fn __ne__(borrowed self, other: SwitchType) -> Bool:
+        return not self.__eq__(other)
+
+    fn __lt__(borrowed self, other: SwitchType) -> Bool:
+        return self.value < other.value
+
+    fn __gt__(borrowed self, other: SwitchType) -> Bool:
+        return self.value > other.value
+
+    fn __le__(borrowed self, other: SwitchType) -> Bool:
+        return self.value <= other.value
+
+    fn __ge__(borrowed self, other: SwitchType) -> Bool:
+        return self.value >= other.value
+
+    fn __str__(borrowed self) -> String:
+        if self.value == 0:
+            return "NONE"
+        elif self.value == 1:
+            return "SUBSET"
+        elif self.value == 2:
+            return "WILTON"
+        elif self.value == 3:
+            return "UNIVERSAL"
+        else:
+            return "UNKNOWN"
+
+@register_passable("trivial")
+struct FcType:
+    var value: Int8
+
+    alias NONE = FcType(0)
+    alias ABSOLUTE = FcType(1)
+    alias FRACTIONAL = FcType(2)
+
+    fn __init__(out self, value: Int8):
+        self.value = value
+
+    fn __eq__(borrowed self, other: FcType) -> Bool:
+        return self.value == other.value
+
+    fn __ne__(borrowed self, other: FcType) -> Bool:
+        return not self.__eq__(other)
+
+    fn __lt__(borrowed self, other: FcType) -> Bool:
+        return self.value < other.value
+
+    fn __gt__(borrowed self, other: FcType) -> Bool:
+        return self.value > other.value
+
+    fn __le__(borrowed self, other: FcType) -> Bool:
+        return self.value <= other.value
+
+    fn __ge__(borrowed self, other: FcType) -> Bool:
+        return self.value >= other.value
+
+    fn __str__(borrowed self) -> String:
+        if self.value == 0:
+            return "NONE"
+        elif self.value == 1:
+            return "ABSOLUTE"
+        elif self.value == 2:
+            return "FRACTIONAL"
+        else:
+            return "UNKNOWN"
