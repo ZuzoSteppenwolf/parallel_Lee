@@ -57,7 +57,7 @@ struct Place:
                 var hasArch: Bool = False
                 var hasSize: Bool = False
                 for line in lines:
-                    if line[] != "" and line[][0] != "#" and not line[].isspace():
+                    if line[] != "" and not line[].startswith("#") and not line[].isspace():                      
                         var words = line[].split()
                         var counter: Int = 0
                         var col: Int = 0
@@ -111,7 +111,7 @@ struct Place:
 
                                 # Restliche Zeilen beinhalten die Platzierungen
                                 else:
-                                    if word[][0] == "#":
+                                    if word[].startswith("#"):
                                         isComment = True
                                     elif counter == 0:
                                         name = word[]

@@ -8,3 +8,4 @@ magic run mojo package src/myFormats -o test/myFormats.mojopkg
 
 #magic run mojo test test/test_Matrix.mojo
 #magic run mojo test test/test_PlaceFormat.mojo 
+#magic run mojo test test/test_ArchFormat.mojo 

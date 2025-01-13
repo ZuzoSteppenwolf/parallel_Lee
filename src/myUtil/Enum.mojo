@@ -61,6 +61,18 @@ struct ChanType:
     fn __init__(out self, value: Int8):
         self.value = value
 
+    fn __init__(out self, value: String):
+        if value == "gaussian":
+            self.value = 1
+        elif value == "uniform":
+            self.value = 2
+        elif value == "pulse":
+            self.value = 3
+        elif value == "delta":
+            self.value = 4
+        else:
+            self.value = 0
+
     fn __eq__(borrowed self, other: ChanType) -> Bool:
         return self.value == other.value
 
@@ -106,6 +118,18 @@ struct Faceside:
     fn __init__(out self, value: Int8):
         self.value = value
 
+    fn __init__(out self, value: String):
+        if value == "top":
+            self.value = 1
+        elif value == "bottom":
+            self.value = 2
+        elif value == "left":
+            self.value = 3
+        elif value == "right":
+            self.value = 4
+        else:
+            self.value = 0
+
     fn __eq__(borrowed self, other: Faceside) -> Bool:
         return self.value == other.value
 
@@ -150,6 +174,16 @@ struct SwitchType:
     fn __init__(out self, value: Int8):
         self.value = value
 
+    fn __init__(out self, value: String):
+        if value == "subset":
+            self.value = 1
+        elif value == "wilton":
+            self.value = 2
+        elif value == "universal":
+            self.value = 3
+        else:
+            self.value = 0
+
     fn __eq__(borrowed self, other: SwitchType) -> Bool:
         return self.value == other.value
     
@@ -190,6 +224,14 @@ struct FcType:
 
     fn __init__(out self, value: Int8):
         self.value = value
+
+    fn __init__(out self, value: String):
+        if value == "absolute":
+            self.value = 1
+        elif value == "fractional":
+            self.value = 2
+        else:
+            self.value = 0
 
     fn __eq__(borrowed self, other: FcType) -> Bool:
         return self.value == other.value
