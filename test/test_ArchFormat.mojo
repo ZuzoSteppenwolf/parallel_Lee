@@ -56,8 +56,8 @@ def test_ArchFormat_2():
     assert_equal(arch.R_minW_nmos, 1967)
     assert_equal(arch.R_minW_pmos, 3738)
 
-    assert_equal(arch.c_inpin_cblock, 7.512e-15)
-    assert_equal(arch.t_inpin_cblock, 1.5e-9)
+    assert_equal(arch.c_ipin_cblock, 7.512e-15)
+    assert_equal(arch.t_ipin_cblock, 1.5e-9)
 
     assert_equal(arch.t_ipad, 478e-12)
     assert_equal(arch.t_opad, 295e-12)

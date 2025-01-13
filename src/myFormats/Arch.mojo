@@ -133,8 +133,8 @@ struct Arch:
     var R_minW_nmos: Float64
     var R_minW_pmos: Float64
     # Timing
-    var c_inpin_cblock: Float64
-    var t_inpin_cblock: Float64
+    var c_ipin_cblock: Float64
+    var t_ipin_cblock: Float64
     var t_ipad: Float64
     var t_opad: Float64
     var t_clb_ipin_to_sblk_ipin: Float64
@@ -159,8 +159,8 @@ struct Arch:
         self.switches = List[Switch]()
         self.R_minW_nmos = -1
         self.R_minW_pmos = -1
-        self.c_inpin_cblock = -1
-        self.t_inpin_cblock = -1
+        self.c_ipin_cblock = -1
+        self.t_ipin_cblock = -1
         self.t_ipad = -1
         self.t_opad = -1
         self.t_clb_ipin_to_sblk_ipin = -1
@@ -230,13 +230,13 @@ struct Arch:
                         self.subblock_lut_size = int(words[1])
                     elif words[0] == "switch_block_type":
                         self.switch_block_type = SwitchType(words[1])
-                    elif words[0] == "fc_type":
+                    elif words[0] == "Fc_type":
                         self.fc_type = FcType(words[1])
-                    elif words[0] == "fc_input":
+                    elif words[0] == "Fc_input":
                         self.fc_input = float(words[1])
-                    elif words[0] == "fc_output":
+                    elif words[0] == "Fc_output":
                         self.fc_output = float(words[1])
-                    elif words[0] == "fc_pad":
+                    elif words[0] == "Fc_pad":
                         self.fc_pad = float(words[1])
                     elif words[0] == "segment":
                         var freq = -1.
@@ -299,10 +299,10 @@ struct Arch:
                         self.R_minW_nmos = float(words[1])
                     elif words[0] == "R_minW_pmos":
                         self.R_minW_pmos = float(words[1])
-                    elif words[0] == "C_inpin_cblock":
-                        self.c_inpin_cblock = float(words[1])
-                    elif words[0] == "T_inpin_cblock":
-                        self.t_inpin_cblock = float(words[1])
+                    elif words[0] == "C_ipin_cblock":
+                        self.c_ipin_cblock = float(words[1])
+                    elif words[0] == "T_ipin_cblock":
+                        self.t_ipin_cblock = float(words[1])
                     elif words[0] == "T_ipad":
                         self.t_ipad = float(words[1])
                     elif words[0] == "T_opad":
