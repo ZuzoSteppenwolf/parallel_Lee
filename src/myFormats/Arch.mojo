@@ -313,16 +313,16 @@ struct Arch:
                         self.t_sblk_opin_to_clb_opin = float(words[1])
                     elif words[0] == "T_sblk_opin_to_sblk_ipin":
                         self.t_sblk_opin_to_sblk_ipin = float(words[1])
-                    elif words[0] == "subblock":
+                    elif words[0] == "T_subblock":
                         var t_comb = -1.
                         var t_seq_in = -1.
                         var t_seq_out = -1.
                         for i in range(1, len(words), 2):
-                            if words[i] == "t_comb:":
+                            if words[i] == "T_comb:":
                                 t_comb = float(words[i+1])
-                            elif words[i] == "t_seq_in:":
+                            elif words[i] == "T_seq_in:":
                                 t_seq_in = float(words[i+1])
-                            elif words[i] == "t_seq_out:":
+                            elif words[i] == "T_seq_out:":
                                 t_seq_out = float(words[i+1])
                             else:
                                 return False
