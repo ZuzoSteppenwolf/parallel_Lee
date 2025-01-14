@@ -1,6 +1,7 @@
 from collections import Dict, List
 from myUtil.Enum import Blocktype
 from myUtil.Matrix import Matrix
+from myUtil.Util import clearUpLines
 """
 @file Place.mojo
 Parser für das Placement File Format vom VPR Tool
@@ -51,6 +52,7 @@ struct Place:
         try:
             with open(path, "r") as file:
                 var lines = file.read().split("\n")
+                lines = clearUpLines(lines)
                 if len(lines) == 0:
                     return False
                 var hasNet: Bool = False
