@@ -33,14 +33,14 @@ struct Place:
     var isValid: Bool
     var net: String
     var arch: String
-    var map: Matrix[List[Block]]
+    var map: Matrix[Dict[String, List[Block]]]
     var archiv: Dict[String, Tuple[Int, Int]]
     var path: String
 
     fn __init__(out self, path: String):
         self.net = ""
         self.arch = ""
-        self.map = Matrix[List[Block]](0, 0)
+        self.map = Matrix[Dict[String, List[Block]]](0, 0)
         self.isValid = False
         self.archiv = Dict[String, Tuple[Int, Int]]()
         self.path = path
@@ -100,7 +100,7 @@ struct Place:
                                         return False
                                     elif counter == 4:
                                         row = int(word[])
-                                        self.map = Matrix[List[Block]](col+2, row+2)
+                                        self.map = Matrix[Dict[String, List[Block]]](col+2, row+2)
                                         #hasSize = True
                                     elif counter == 5 and word[] != "logic":
                                         return False
@@ -124,10 +124,20 @@ struct Place:
                                     elif counter == 3:
                                         block = Block(name)
                                         block.subblk = int(word[])
-                                        self.map[col, row].append(block)
+                                        self.addToMap(block, col, row)
                                         self.archiv[name] = Tuple[Int, Int](col, row)
                                     counter += 1
         except IOError:
             return False
         return True
         
+    fn addToMap(mut self, block: Block, col: Int, row: Int):
+        if block.name in self.map[col, row]:
+            try:
+                self.map[col, row][block.name].append(block)
+            except:
+                print("Error: " + block.name + " " + str(col) + " " + str(row))
+        else:
+            self.map[col, row][block.name] = List[Block](block)
+        self.archiv[block.name] = Tuple[Int, Int](col, row)
+
