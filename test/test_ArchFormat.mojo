@@ -3,28 +3,7 @@ from myFormats.Arch import *
 from myUtil.Enum import *
 
 
-
 def test_ArchFormat_1():
-
-    var lines = List[String]() 
-    lines.append("#Kommentar")
-    lines.append("Zeile")
-    lines.append("Zeile #mit Kommentar")
-    lines.append("Zeile \\")
-    lines.append("mit Zeilenumbruch")
-    lines.append("Zeile \\")
-    lines.append("#Kommentar")
-    lines.append("mit Kommentar")
-
-    newlines = clearUpLines(lines)
-
-    assert_equal(newlines[0], "Zeile")
-    assert_equal(newlines[1], "Zeile")
-    assert_equal(newlines[2], "Zeile mit Zeilenumbruch")
-    assert_equal(newlines[3], "Zeile mit Kommentar")
-    return
-
-def test_ArchFormat_2():
     
     var path = "test/.arch/4lut_sanitized.arch"
     var arch = Arch(path)

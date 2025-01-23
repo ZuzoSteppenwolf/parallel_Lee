@@ -3,7 +3,7 @@ from myUtil.Util import *
 
 
 
-def test_ArchFormat_1():
+def test_Util_1():
 
     var lines = List[String]() 
     lines.append("#Kommentar")
