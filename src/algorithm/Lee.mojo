@@ -3,6 +3,7 @@ from myUtil.Matrix import *
 from myUtil.Enum import *
 from myUtil.Util import *
 from collections import Dict, List
+from os import Atomic
 
 """
 @file Lee.mojo
@@ -13,36 +14,45 @@ Die Netze werden in echtzeit parallel verarbeitet.
 """
 alias STANDARD_CHANEL_WIDTH = 12
 
+var NetKeys = List[String]()
+
 """
 Lässt nur ein Thread auf die Mutex-Struktur zugreifen.
 """
-struct Mutex:
+struct Channels:
     var map: Matrix[Dict[String, List[Block]]]
-    var semaphore: Bool
-    var visitor: Int
+    var owner: Atomic[DType.int64]
+    var visitor: Atomic[DType.int64]
+
+    alias FREE = -1
 
 
     fn __init__(out self, owned map: Matrix[Dict[String, List[Block]]]):
         self.map = map
-        self.semaphore = False
-        self.visitor = -1
+        self.owner = Atomic[DType.int64](self.FREE)
+        self.visitor = Atomic[DType.int64](0)
 
-    fn lock(mut self, visitor: Int):
-        while self.semaphore:
+    fn lock(mut self, id: Int):
+        var owner: SIMD[DType.int64, 1] = self.FREE
+        while not self.owner.compare_exchange_weak(owner, id):
+            owner = self.FREE
+        while self.visitor.load() != 0:
             pass
-        self.semaphore = True
-        self.visitor = visitor
+    
+    fn unlock(mut self, id: Int):
+        var owner: SIMD[DType.int64, 1] = id
+        _ = self.owner.compare_exchange_weak(owner, self.FREE)
 
-    fn unlock(mut self, visitor: Int):
-        if self.visitor == visitor:
-            self.semaphore = False
-            self.visitor = -1
+    fn askChannel(mut self, id: Int, row: Int, col: Int, mut count: Int) -> Bool:
+        while not self.owner.load() == self.FREE:
+            pass
+        _ = self.visitor.fetch_add(1)
 
-    fn isLocked(borrowed self) -> Bool:
-        return self.semaphore
+        count = len(self.map[row, col])
+        var hasChannel = NetKeys[id] in self.map[row, col]
 
-    fn addBlock(mut self, x: Int, y: Int, net: String, block: Block, visitor: Int):
-        pass
+        _ = self.visitor.fetch_sub(1)
+        return hasChannel
         
     
 
