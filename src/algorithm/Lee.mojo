@@ -4,6 +4,7 @@ from myUtil.Enum import *
 from myUtil.Util import *
 from collections import Dict, List
 from os import Atomic
+from time import sleep
 
 """
 @file Lee.mojo
@@ -36,8 +37,9 @@ struct Channels:
         var owner: SIMD[DType.int64, 1] = self.FREE
         while not self.owner.compare_exchange_weak(owner, id):
             owner = self.FREE
+            sleep(0.1)
         while self.visitor.load() != 0:
-            pass
+            sleep(0.1)
     
     fn unlock(mut self, id: Int):
         var owner: SIMD[DType.int64, 1] = id
@@ -45,7 +47,7 @@ struct Channels:
 
     fn askChannel(mut self, id: Int, row: Int, col: Int, mut count: Int) -> Bool:
         while not self.owner.load() == self.FREE:
-            pass
+            sleep(0.1)
         _ = self.visitor.fetch_add(1)
 
         count = len(self.map[row, col])
