@@ -21,6 +21,8 @@ struct Matrix[type: Copyable]:
         memset_zero(self.data, rows * cols)
 
     fn __getitem__(borrowed self, row: Int, col: Int) -> type:
+        if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
+            return None
         return self.data[(row * self.cols) + col]
 
     fn __setitem__[width: Int = 1](mut self, row: Int, col: Int, val: type):
@@ -64,6 +66,8 @@ struct DictMatrix[type: CollectionElement]:
         self.data = Dict[Key, type]()
 
     fn __getitem__(borrowed self, row: Int, col: Int) -> type:
+        if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
+            return None
         try:
             return self.data[Key(row, col)]
         except:
