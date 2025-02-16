@@ -65,7 +65,7 @@ struct DictMatrix[type: CollectionElement]:
         self.size = rows * cols
         self.data = Dict[Key, type]()
 
-    fn __getitem__(borrowed self, row: Int, col: Int) -> type:
+    fn __getitem__(borrowed self, row: Int, col: Int) -> Optional(type):
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
             return None
         try:
