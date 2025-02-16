@@ -1,4 +1,5 @@
 from memory import UnsafePointer, memset_zero
+from collections import Dict
 """
 @file Matrix.mojo
 
@@ -30,3 +31,49 @@ struct Matrix[type: Copyable]:
 
     fn __del__(owned self):
         self.data.free()
+
+@value
+struct Key(KeyElement):
+    var row: Int
+    var col: Int
+
+    fn __init__(out self, row: Int, col: Int):
+        self.row = row
+        self.col = col
+
+    fn __eq__(borrowed self, other: Key) -> Bool:
+        return self.row == other.row and self.col == other.col
+
+    fn __ne__(borrowed self, other: Key) -> Bool:
+        return not self.__eq__(other)
+
+    fn __hash__(borrowed self) -> Int:
+        return self.row * 31 + self.col
+
+@value
+struct DictMatrix[type: CollectionElement]:
+    var data: Dict[Key, type]
+    var cols: Int
+    var rows: Int
+    var size: Int
+
+    fn __init__(out self, cols: Int, rows: Int):
+        self.cols = cols
+        self.rows = rows
+        self.size = rows * cols
+        self.data = Dict[Key, type]()
+
+    fn __getitem__(borrowed self, row: Int, col: Int) -> type:
+        try:
+            return self.data[Key(row, col)]
+        except:
+            return None
+
+    fn __setitem__[width: Int = 1](mut self, row: Int, col: Int, val: type):
+        self.data[Key(row, col)] = val
+
+    fn __len__(borrowed self) -> Int:
+        return self.size
+
+    fn __del__(owned self):
+        self.data.clear()
