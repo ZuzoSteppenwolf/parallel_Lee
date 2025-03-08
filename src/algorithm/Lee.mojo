@@ -49,9 +49,13 @@ struct Channels:
         while not self.owner.load() == self.FREE:
             sleep(0.1)
         _ = self.visitor.fetch_add(1)
-
-        count = len(self.map[row, col])
-        var hasChannel = NetKeys[id] in self.map[row, col]
+        var hasChannel: Bool = False
+        try:
+            count = len(self.map[row, col])
+            hasChannel = NetKeys[id] in self.map[row, col]
+        except:
+            hasChannel = False
+            print("Error: Out of Bounds at row: " + str(row) + " col: " + str(col))
 
         _ = self.visitor.fetch_sub(1)
         return hasChannel

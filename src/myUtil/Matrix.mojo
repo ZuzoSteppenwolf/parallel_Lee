@@ -20,9 +20,9 @@ struct Matrix[type: Copyable]:
         self.data = UnsafePointer[type].alloc(rows * cols)
         memset_zero(self.data, rows * cols)
 
-    fn __getitem__(borrowed self, row: Int, col: Int) -> type:
+    fn __getitem__(borrowed self, row: Int, col: Int) raises -> type:
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
-            return None
+            raise ("Index out of bounds")
         return self.data[(row * self.cols) + col]
 
     fn __setitem__[width: Int = 1](mut self, row: Int, col: Int, val: type):
@@ -33,7 +33,7 @@ struct Matrix[type: Copyable]:
 
     fn __del__(owned self):
         self.data.free()
-
+"""
 @value
 struct Key(KeyElement):
     var row: Int
@@ -81,3 +81,4 @@ struct DictMatrix[type: CollectionElement]:
 
     fn __del__(owned self):
         self.data.clear()
+"""
