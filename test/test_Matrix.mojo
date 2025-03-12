@@ -1,4 +1,5 @@
 from testing import assert_equal
+from collections import Dict, List
 from myUtil.Matrix import Matrix
 
 # Test: Matrix
@@ -28,4 +29,26 @@ def test_Matrix_2():
     assert_equal(mat[0, 0], List[Int](1, 2, 3))
     mat[0, 0].append(4)
     assert_equal(mat[0, 0], List[Int](1, 2, 3, 4))
+    return
+
+def test_Matrix_3():
+
+    var mat = Matrix[Dict[String, Int]](1, 1)
+    mat[0, 0] = Dict[String, Int]()
+    mat[0, 0]["test"] = 1
+    assert_equal(mat[0, 0]["test"], 1)
+    mat[0, 0]["test"] = 2
+    assert_equal(mat[0, 0]["test"], 2)
+    assert_equal("test" in mat[0, 0], True)
+    return
+
+def test_Matrix_4():
+
+    var mat = Matrix[Dict[String, List[Int]]](1, 1)
+    mat[0, 0] = Dict[String, List[Int]]()
+    mat[0, 0]["test"] = List[Int](1, 2, 3)
+    assert_equal(mat[0, 0]["test"], List[Int](1, 2, 3))
+    mat[0, 0]["test"].append(4)
+    assert_equal(mat[0, 0]["test"], List[Int](1, 2, 3, 4))
+    assert_equal("test" in mat[0, 0], True)
     return

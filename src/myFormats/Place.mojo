@@ -26,7 +26,7 @@ struct Block:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return self.name + " " + str(self.subblk) + " " + str(self.type)
+        return self.name.join(" ").join(self.subblk).join(" ") + self.type.__str__()
 
 struct Place:
     var isValid: Bool
@@ -100,8 +100,8 @@ struct Place:
                                     return False
                                 elif counter == 4:
                                     row = atol(word[])
-                                    self.map = Matrix[Dict[String, List[Block]]](col+2, row+2)
-                                    #hasSize = True
+                                    self.initMatrix(col+2, row+2)
+                                    #self.map = Matrix[Dict[String, List[Block]]](col+2, row+2)
                                 elif counter == 5 and word[] != "logic":
                                     return False
                                 elif counter == 6:
@@ -127,7 +127,7 @@ struct Place:
                                     self.addToMap(block, col, row)
                                     self.archiv[name] = Tuple[Int, Int](col, row)
                                 counter += 1
-        except e:
+        except:
             return False
         return True
         
@@ -140,4 +140,10 @@ struct Place:
             self.archiv[block.name] = Tuple[Int, Int](col, row)
         except:
                 print("Error: " + block.name + " ", col ," ", row)
+
+    fn initMatrix(mut self, col: Int, row: Int):
+        self.map = Matrix[Dict[String, List[Block]]](col, row)
+        for i in range(col):
+            for j in range(row):
+                self.map[i, j] = Dict[String, List[Block]]()
 

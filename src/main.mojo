@@ -22,7 +22,12 @@ def main():
     args = argv()
     if len(args) < 4 or args[1] == "-h" or args[1] == "--help":
         print_help()
-    
+
+    #TODO
+    print(len(args))
+    #placements = Place(String(args[1]))
+    placements = Place("test/.place/test_PlaceFormat.place")
+    print(placements.isValid)
     
     return
 

@@ -5,7 +5,6 @@ from myUtil.Enum import Blocktype
 
 def test_PlaceFormat_1():
 
-
     var place = Place("test/.place/test_PlaceFormat.place")
     assert_equal(place.isValid, True, "Place ist nicht valide")
     assert_equal(place.net, "test/test.net", "Net ist nicht valide")
