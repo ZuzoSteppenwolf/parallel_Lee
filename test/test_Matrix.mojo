@@ -52,3 +52,16 @@ def test_Matrix_4():
     assert_equal(mat[0, 0]["test"], List[Int](1, 2, 3, 4))
     assert_equal("test" in mat[0, 0], True)
     return
+
+def test_Matrix_5():
+
+    var mat = Matrix[Dict[String, Int]](1, 1)
+    mat[0, 0] = Dict[String, Int]()
+    mat[0, 0]["test"] = 1
+    assert_equal(mat[0, 0]["test"], 1)
+    var mat2 = Matrix[Dict[String, Int]](1, 1)
+    mat2[0, 0] =  mat[0, 0]
+    mat[0, 0]["test"] = 2
+    assert_equal(mat[0, 0]["test"], 2)
+    assert_equal(mat2[0, 0]["test"], 1)
+    return
