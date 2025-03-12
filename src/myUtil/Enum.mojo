@@ -14,25 +14,25 @@ struct Blocktype:
     fn __init__(out self, value: Int8):
         self.value = value
 
-    fn __eq__(borrowed self, other: Blocktype) -> Bool:
+    fn __eq__(self, other: Blocktype) -> Bool:
         return self.value == other.value
 
-    fn __ne__(borrowed self, other: Blocktype) -> Bool:
+    fn __ne__(self, other: Blocktype) -> Bool:
         return not self.__eq__(other)
 
-    fn __lt__(borrowed self, other: Blocktype) -> Bool:
+    fn __lt__(self, other: Blocktype) -> Bool:
         return self.value < other.value
 
-    fn __gt__(borrowed self, other: Blocktype) -> Bool:
+    fn __gt__(self, other: Blocktype) -> Bool:
         return self.value > other.value
 
-    fn __le__(borrowed self, other: Blocktype) -> Bool:
+    fn __le__(self, other: Blocktype) -> Bool:
         return self.value <= other.value
 
-    fn __ge__(borrowed self, other: Blocktype) -> Bool:
+    fn __ge__(self, other: Blocktype) -> Bool:
         return self.value >= other.value
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         if self.value == 0:
             return "NONE"
         elif self.value == 1:
@@ -73,25 +73,25 @@ struct ChanType:
         else:
             self.value = 0
 
-    fn __eq__(borrowed self, other: ChanType) -> Bool:
+    fn __eq__(self, other: ChanType) -> Bool:
         return self.value == other.value
 
-    fn __ne__(borrowed self, other: ChanType) -> Bool:
+    fn __ne__(self, other: ChanType) -> Bool:
         return not self.__eq__(other)
 
-    fn __lt__(borrowed self, other: ChanType) -> Bool:
+    fn __lt__(self, other: ChanType) -> Bool:
         return self.value < other.value
 
-    fn __gt__(borrowed self, other: ChanType) -> Bool:
+    fn __gt__(self, other: ChanType) -> Bool:
         return self.value > other.value
 
-    fn __le__(borrowed self, other: ChanType) -> Bool:
+    fn __le__(self, other: ChanType) -> Bool:
         return self.value <= other.value
 
-    fn __ge__(borrowed self, other: ChanType) -> Bool:
+    fn __ge__(self, other: ChanType) -> Bool:
         return self.value >= other.value
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         if self.value == 0:
             return "NONE"
         elif self.value == 1:
@@ -130,25 +130,25 @@ struct Faceside:
         else:
             self.value = 0
 
-    fn __eq__(borrowed self, other: Faceside) -> Bool:
+    fn __eq__(self, other: Faceside) -> Bool:
         return self.value == other.value
 
-    fn __ne__(borrowed self, other: Faceside) -> Bool:
+    fn __ne__(self, other: Faceside) -> Bool:
         return not self.__eq__(other)
 
-    fn __lt__(borrowed self, other: Faceside) -> Bool:
+    fn __lt__(self, other: Faceside) -> Bool:
         return self.value < other.value
 
-    fn __gt__(borrowed self, other: Faceside) -> Bool:
+    fn __gt__(self, other: Faceside) -> Bool:
         return self.value > other.value
 
-    fn __le__(borrowed self, other: Faceside) -> Bool:
+    fn __le__(self, other: Faceside) -> Bool:
         return self.value <= other.value
 
-    fn __ge__(borrowed self, other: Faceside) -> Bool:
+    fn __ge__(self, other: Faceside) -> Bool:
         return self.value >= other.value
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         if self.value == 0:
             return "NONE"
         elif self.value == 1:
@@ -184,25 +184,25 @@ struct SwitchType:
         else:
             self.value = 0
 
-    fn __eq__(borrowed self, other: SwitchType) -> Bool:
+    fn __eq__(self, other: SwitchType) -> Bool:
         return self.value == other.value
     
-    fn __ne__(borrowed self, other: SwitchType) -> Bool:
+    fn __ne__(self, other: SwitchType) -> Bool:
         return not self.__eq__(other)
 
-    fn __lt__(borrowed self, other: SwitchType) -> Bool:
+    fn __lt__(self, other: SwitchType) -> Bool:
         return self.value < other.value
 
-    fn __gt__(borrowed self, other: SwitchType) -> Bool:
+    fn __gt__(self, other: SwitchType) -> Bool:
         return self.value > other.value
 
-    fn __le__(borrowed self, other: SwitchType) -> Bool:
+    fn __le__(self, other: SwitchType) -> Bool:
         return self.value <= other.value
 
-    fn __ge__(borrowed self, other: SwitchType) -> Bool:
+    fn __ge__(self, other: SwitchType) -> Bool:
         return self.value >= other.value
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         if self.value == 0:
             return "NONE"
         elif self.value == 1:
@@ -233,25 +233,25 @@ struct FcType:
         else:
             self.value = 0
 
-    fn __eq__(borrowed self, other: FcType) -> Bool:
+    fn __eq__(self, other: FcType) -> Bool:
         return self.value == other.value
 
-    fn __ne__(borrowed self, other: FcType) -> Bool:
+    fn __ne__(self, other: FcType) -> Bool:
         return not self.__eq__(other)
 
-    fn __lt__(borrowed self, other: FcType) -> Bool:
+    fn __lt__(self, other: FcType) -> Bool:
         return self.value < other.value
 
-    fn __gt__(borrowed self, other: FcType) -> Bool:
+    fn __gt__(self, other: FcType) -> Bool:
         return self.value > other.value
 
-    fn __le__(borrowed self, other: FcType) -> Bool:
+    fn __le__(self, other: FcType) -> Bool:
         return self.value <= other.value
 
-    fn __ge__(borrowed self, other: FcType) -> Bool:
+    fn __ge__(self, other: FcType) -> Bool:
         return self.value >= other.value
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         if self.value == 0:
             return "NONE"
         elif self.value == 1:

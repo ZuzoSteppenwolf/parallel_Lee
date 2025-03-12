@@ -24,53 +24,54 @@ struct Net:
 
     fn parse(mut self, path: String, sbblknum: Int8, pins: List[Pin]) -> Bool:
         try:
+            var lines: List[String]
             with open(path, "r") as file:
-                var lines = file.read().split("\n")
-                lines = clearUpLines(lines)
-                if len(lines) == 0:
-                    return False
-                while len(lines) > 0:
-                    var line = lines.pop(0)
-                    var words = line.split()
-                    if words[0] == ".input":
-                        var name = words[1]
-                        line = lines.pop(0)
-                        words = line.split()
-                        if words[0] != "pinlist:":
-                            return False
-                        var net = words[1]
-                        self.addToNets(net, name)
-                    elif words[0] == ".output":
-                        var name = words[1]
-                        line = lines.pop(0)
-                        words = line.split()
-                        if words[0] != "pinlist:":
-                            return True
-                        var net = words[1]
-                        self.addToNets(net, name)
-                    elif words[0] == ".global":
-                        var name = words[1]
-                        self.addToGlobalNets(name, name)
-                    elif words[0] == ".clb":
-                        var name = words[1]
-                        line = lines.pop(0)
-                        words = line.split()
-                        if words[0] != "pinlist:":
-                            return False
-                        for i in range(1, len(pins)):
-                            var net = words[i]
-                            if net != "open":
-                                if pins[i].isGlobal:
-                                    self.addToGlobalNets(net, name, pins[i].isInpin)
-                                else:
-                                    self.addToNets(net, name, pins[i].isInpin)
-                        for i in range(sbblknum):
-                            line = lines.pop(0)
-                            words = line.split()
-                            if words[0] != "subblock:":
-                                return False
-                    else:
+                lines = file.read().split("\n")
+            lines = clearUpLines(lines)
+            if len(lines) == 0:
+                return False
+            while len(lines) > 0:
+                var line = lines.pop(0)
+                var words = line.split()
+                if words[0] == ".input":
+                    var name = words[1]
+                    line = lines.pop(0)
+                    words = line.split()
+                    if words[0] != "pinlist:":
                         return False
+                    var net = words[1]
+                    self.addToNets(net, name)
+                elif words[0] == ".output":
+                    var name = words[1]
+                    line = lines.pop(0)
+                    words = line.split()
+                    if words[0] != "pinlist:":
+                        return True
+                    var net = words[1]
+                    self.addToNets(net, name)
+                elif words[0] == ".global":
+                    var name = words[1]
+                    self.addToGlobalNets(name, name)
+                elif words[0] == ".clb":
+                    var name = words[1]
+                    line = lines.pop(0)
+                    words = line.split()
+                    if words[0] != "pinlist:":
+                        return False
+                    for i in range(1, len(pins)):
+                        var net = words[i]
+                        if net != "open":
+                            if pins[i].isGlobal:
+                                self.addToGlobalNets(net, name, pins[i].isInpin)
+                            else:
+                                self.addToNets(net, name, pins[i].isInpin)
+                    for i in range(sbblknum):
+                        line = lines.pop(0)
+                        words = line.split()
+                        if words[0] != "subblock:":
+                            return False
+                else:
+                    return False
         except:
             return False
         return True

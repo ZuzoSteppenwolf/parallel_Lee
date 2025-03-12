@@ -10,3 +10,4 @@ magic run mojo package src/algorithm -o test/algorithm.mojopkg
 #magic run mojo test test/test_Matrix.mojo
 #magic run mojo test test/test_PlaceFormat.mojo 
 #magic run mojo test test/test_ArchFormat.mojo 
+#magic run mojo test test/test_Util.mojo

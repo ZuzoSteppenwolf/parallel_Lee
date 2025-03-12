@@ -24,13 +24,13 @@ struct ChanWidth:
         self.xpeak = xpeak
         self.dc = dc
 
-    fn __eq__(borrowed self, other: ChanWidth) -> Bool:
+    fn __eq__(self, other: ChanWidth) -> Bool:
         return self.type == other.type and self.peak == other.peak and self.width == other.width and self.xpeak == other.xpeak and self.dc == other.dc
 
-    fn __ne__(borrowed self, other: ChanWidth) -> Bool:
+    fn __ne__(self, other: ChanWidth) -> Bool:
         return not self.__eq__(other)
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         return "Type: " + str(self.type) + ", Peak: " + str(self.peak) + ", Width: " + str(self.width) + ", Xpeak: " + str(self.xpeak) + ", DC: " + str(self.dc)
 
 @value
@@ -46,13 +46,13 @@ struct Pin:
         self.isGlobal = isGlobal
         self.sides = sides
 
-    fn __eq__(borrowed self, other: Pin) -> Bool:
+    fn __eq__(self, other: Pin) -> Bool:
         return self.isInpin == other.isInpin and self.pinClass == other.pinClass and self.isGlobal == other.isGlobal and self.sides == other.sides
 
-    fn __ne__(borrowed self, other: Pin) -> Bool:
+    fn __ne__(self, other: Pin) -> Bool:
         return not self.__eq__(other)
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         var sides = String("")
         for side in self.sides:
             sides += str(side) + String(", ")
@@ -71,13 +71,13 @@ struct Segmentline:
     var rmetal: Float64
     var cmetal: Float64
 
-    fn __eq__(borrowed self, other: Segmentline) -> Bool:
+    fn __eq__(self, other: Segmentline) -> Bool:
         return self.frequency == other.frequency and self.length == other.length and self.isLongline == other.isLongline and self.wire_switch == other.wire_switch and self.opin_switch == other.opin_switch and self.frac_cb == other.frac_cb and self.frac_sb == other.frac_sb and self.rmetal == other.rmetal and self.cmetal == other.cmetal
 
-    fn __ne__(borrowed self, other: Segmentline) -> Bool:
+    fn __ne__(self, other: Segmentline) -> Bool:
         return not self.__eq__(other)
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         return "Frequency: " + str(self.frequency) + ", Length: " + str(self.length) + ", IsLongline: " + str(self.isLongline) + ", WireSwitch: " + str(self.wire_switch) + ", OpinSwitch: " + str(self.opin_switch) + ", FracCB: " + str(self.frac_cb) + ", FracSB: " + str(self.frac_sb) + ", Rmetal: " + str(self.rmetal) + ", Cmetal: " + str(self.cmetal)
 
 @value
@@ -89,13 +89,13 @@ struct Switch:
     var Cout: Float64
     var Tdel: Float64
 
-    fn __eq__(borrowed self, other: Switch) -> Bool:
+    fn __eq__(self, other: Switch) -> Bool:
         return self.switch == other.switch and self.isBufferes == other.isBufferes and self.R == other.R and self.Cin == other.Cin and self.Cout == other.Cout and self.Tdel == other.Tdel
 
-    fn __ne__(borrowed self, other: Switch) -> Bool:
+    fn __ne__(self, other: Switch) -> Bool:
         return not self.__eq__(other)
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         return "Switch: " + str(self.switch) + ", IsBuffered: " + str(self.isBufferes) + ", R: " + str(self.R) + ", Cin: " + str(self.Cin) + ", Cout: " + str(self.Cout) + ", Tdel: " + str(self.Tdel)
 
 @value
@@ -104,13 +104,13 @@ struct Subblock:
     var t_seq_in: Float64
     var t_seq_out: Float64
 
-    fn __eq__(borrowed self, other: Subblock) -> Bool:
+    fn __eq__(self, other: Subblock) -> Bool:
         return self.t_comb == other.t_comb and self.t_seq_in == other.t_seq_in and self.t_seq_out == other.t_seq_out
 
-    fn __ne__(borrowed self, other: Subblock) -> Bool:
+    fn __ne__(self, other: Subblock) -> Bool:
         return not self.__eq__(other)
 
-    fn __str__(borrowed self) -> String:
+    fn __str__(self) -> String:
         return "T_Comb: " + str(self.t_comb) + ", T_Seq_In: " + str(self.t_seq_in) + ", T_Seq_Out: " + str(self.t_seq_out)
 
 @value
@@ -175,163 +175,164 @@ struct Arch:
 
     fn parse(mut self, path: String) -> Bool:
         try:
+            var lines: List[String]
             with open(path, "r") as file:
-                var lines = file.read().split("\n")
-                lines = clearUpLines(lines)
-                if len(lines) == 0:
-                    return False
-                for line in lines:
-                    var words = line[].split()
-                    if len(words) == 0:
-                        continue
-                    if words[0] == "io_rat":
-                        self.io_rat = int(words[1])
-                    elif words[0] == "chan_width_io":
-                        self.chan_width_io = float(words[1])
-                    elif words[0] == "chan_width_x":
-                        var type = ChanType(words[1])
-                        if type == ChanType.NONE:
-                            return False
-                        elif type == ChanType.UNIFORM:
-                            self.chan_width_x = ChanWidth(type, float(words[2]))
-                        else:
-                            self.chan_width_x = ChanWidth(type, float(words[2]), float(words[3]), float(words[4]), float(words[5]))
-                    elif words[0] == "chan_width_y":
-                        var type = ChanType(words[1])
-                        if type == ChanType.NONE:
-                            return False
-                        elif type == ChanType.UNIFORM:
-                            self.chan_width_y = ChanWidth(type, float(words[2]))
-                        else:
-                            self.chan_width_y = ChanWidth(type, float(words[2]), float(words[3]), float(words[4]), float(words[5]))
-                    elif words[0] == "inpin":
-                        if words[1] != "class:":
-                            return False
-                        var isInpin = True
-                        var pinClass = int(words[2])
-                        var sides = List[Faceside]()
-                        if words[3] == "global":
-                            for i in range(4, len(words)):
-                                sides.append(Faceside(words[i]))
-                            self.pins.append(Pin(isInpin, pinClass, sides, True))
-                        else:
-                            for i in range(3, len(words)):
-                                sides.append(Faceside(words[i]))
-                            self.pins.append(Pin(isInpin, pinClass, sides))
-                    elif words[0] == "outpin":
-                        if words[1] != "class:":
-                            return False
-                        var isInpin = False
-                        var pinClass = int(words[2])
-                        var sides = List[Faceside]()
+                lines = file.read().split("\n")
+            lines = clearUpLines(lines)
+            if len(lines) == 0:
+                return False
+            for line in lines:
+                var words = line[].split()
+                if len(words) == 0:
+                    continue
+                if words[0] == "io_rat":
+                    self.io_rat = atol(words[1])
+                elif words[0] == "chan_width_io":
+                    self.chan_width_io = atof(words[1])
+                elif words[0] == "chan_width_x":
+                    var type = ChanType(words[1])
+                    if type == ChanType.NONE:
+                        return False
+                    elif type == ChanType.UNIFORM:
+                        self.chan_width_x = ChanWidth(type, atof(words[2]))
+                    else:
+                        self.chan_width_x = ChanWidth(type, atof(words[2]), atof(words[3]), atof(words[4]), atof(words[5]))
+                elif words[0] == "chan_width_y":
+                    var type = ChanType(words[1])
+                    if type == ChanType.NONE:
+                        return False
+                    elif type == ChanType.UNIFORM:
+                        self.chan_width_y = ChanWidth(type, atof(words[2]))
+                    else:
+                        self.chan_width_y = ChanWidth(type, atof(words[2]), atof(words[3]), atof(words[4]), atof(words[5]))
+                elif words[0] == "inpin":
+                    if words[1] != "class:":
+                        return False
+                    var isInpin = True
+                    var pinClass = atol(words[2])
+                    var sides = List[Faceside]()
+                    if words[3] == "global":
+                        for i in range(4, len(words)):
+                            sides.append(Faceside(words[i]))
+                        self.pins.append(Pin(isInpin, pinClass, sides, True))
+                    else:
                         for i in range(3, len(words)):
                             sides.append(Faceside(words[i]))
                         self.pins.append(Pin(isInpin, pinClass, sides))
-                    elif words[0] == "subblocks_per_clb":
-                        self.subblocks_per_clb = int(words[1])
-                    elif words[0] == "subblock_lut_size":
-                        self.subblock_lut_size = int(words[1])
-                    elif words[0] == "switch_block_type":
-                        self.switch_block_type = SwitchType(words[1])
-                    elif words[0] == "Fc_type":
-                        self.fc_type = FcType(words[1])
-                    elif words[0] == "Fc_input":
-                        self.fc_input = float(words[1])
-                    elif words[0] == "Fc_output":
-                        self.fc_output = float(words[1])
-                    elif words[0] == "Fc_pad":
-                        self.fc_pad = float(words[1])
-                    elif words[0] == "segment":
-                        var freq = -1.
-                        var length = -1.
-                        var isLongline = False
-                        var wire_switch = -1
-                        var opin_switch = -1
-                        var frac_cb = -1.
-                        var frac_sb = -1.
-                        var rmetal = -1.
-                        var cmetal = -1.
-                        for i in range(1, len(words), 2):
-                            if words[i] == "frequency:":
-                                freq = float(words[i+1])
-                            elif words[i] == "length:":
-                                if words[i+1] == "longline":
-                                    isLongline = True
-                                else:
-                                    length = float(words[i+1])
-                            elif words[i] == "wire_switch:":
-                                wire_switch = int(words[i+1])
-                            elif words[i] == "opin_switch:":
-                                opin_switch = int(words[i+1])
-                            elif words[i] == "Frac_cb:":
-                                frac_cb = float(words[i+1])
-                            elif words[i] == "Frac_sb:":
-                                frac_sb = float(words[i+1])
-                            elif words[i] == "Rmetal:":
-                                rmetal = float(words[i+1])
-                            elif words[i] == "Cmetal:":
-                                cmetal = float(words[i+1])
-                            else:
-                                return False
-                        self.segments.append(Segmentline(freq, length, isLongline, wire_switch, opin_switch, frac_cb, frac_sb, rmetal, cmetal))
-                    elif words[0] == "switch":
-                        var switch = int(words[1])
-                        var isBuffered = False
-                        var R = -1.
-                        var Cin = -1.
-                        var Cout = -1.
-                        var Tdel = -1.
-                        for i in range(2, len(words), 2):
-                            if words[i] == "buffered:":
-                                if words[i+1] == "yes":
-                                    isBuffered = True
-                                elif words[i+1] != "no":
-                                    return False
-                            elif words[i] == "R:":
-                                R = float(words[i+1])
-                            elif words[i] == "Cin:":
-                                Cin = float(words[i+1])
-                            elif words[i] == "Cout:":
-                                Cout = float(words[i+1])
-                            elif words[i] == "Tdel:":
-                                Tdel = float(words[i+1])
-                            else:
-                                return False
-                        self.switches.append(Switch(switch, isBuffered, R, Cin, Cout, Tdel))
-                    elif words[0] == "R_minW_nmos":
-                        self.R_minW_nmos = float(words[1])
-                    elif words[0] == "R_minW_pmos":
-                        self.R_minW_pmos = float(words[1])
-                    elif words[0] == "C_ipin_cblock":
-                        self.c_ipin_cblock = float(words[1])
-                    elif words[0] == "T_ipin_cblock":
-                        self.t_ipin_cblock = float(words[1])
-                    elif words[0] == "T_ipad":
-                        self.t_ipad = float(words[1])
-                    elif words[0] == "T_opad":
-                        self.t_opad = float(words[1])
-                    elif words[0] == "T_clb_ipin_to_sblk_ipin":
-                        self.t_clb_ipin_to_sblk_ipin = float(words[1])
-                    elif words[0] == "T_sblk_opin_to_clb_opin":
-                        self.t_sblk_opin_to_clb_opin = float(words[1])
-                    elif words[0] == "T_sblk_opin_to_sblk_ipin":
-                        self.t_sblk_opin_to_sblk_ipin = float(words[1])
-                    elif words[0] == "T_subblock":
-                        var t_comb = -1.
-                        var t_seq_in = -1.
-                        var t_seq_out = -1.
-                        for i in range(1, len(words), 2):
-                            if words[i] == "T_comb:":
-                                t_comb = float(words[i+1])
-                            elif words[i] == "T_seq_in:":
-                                t_seq_in = float(words[i+1])
-                            elif words[i] == "T_seq_out:":
-                                t_seq_out = float(words[i+1])
-                            else:
-                                return False
-                        self.subblocks.append(Subblock(t_comb, t_seq_in, t_seq_out))
-                    else:
+                elif words[0] == "outpin":
+                    if words[1] != "class:":
                         return False
+                    var isInpin = False
+                    var pinClass = atol(words[2])
+                    var sides = List[Faceside]()
+                    for i in range(3, len(words)):
+                        sides.append(Faceside(words[i]))
+                    self.pins.append(Pin(isInpin, pinClass, sides))
+                elif words[0] == "subblocks_per_clb":
+                    self.subblocks_per_clb = atol(words[1])
+                elif words[0] == "subblock_lut_size":
+                    self.subblock_lut_size = atol(words[1])
+                elif words[0] == "switch_block_type":
+                    self.switch_block_type = SwitchType(words[1])
+                elif words[0] == "Fc_type":
+                    self.fc_type = FcType(words[1])
+                elif words[0] == "Fc_input":
+                    self.fc_input = atof(words[1])
+                elif words[0] == "Fc_output":
+                    self.fc_output = atof(words[1])
+                elif words[0] == "Fc_pad":
+                    self.fc_pad = atof(words[1])
+                elif words[0] == "segment":
+                    var freq = -1.
+                    var length = -1.
+                    var isLongline = False
+                    var wire_switch = -1
+                    var opin_switch = -1
+                    var frac_cb = -1.
+                    var frac_sb = -1.
+                    var rmetal = -1.
+                    var cmetal = -1.
+                    for i in range(1, len(words), 2):
+                        if words[i] == "frequency:":
+                            freq = atof(words[i+1])
+                        elif words[i] == "length:":
+                            if words[i+1] == "longline":
+                                isLongline = True
+                            else:
+                                length = atof(words[i+1])
+                        elif words[i] == "wire_switch:":
+                            wire_switch = atol(words[i+1])
+                        elif words[i] == "opin_switch:":
+                            opin_switch = atol(words[i+1])
+                        elif words[i] == "Frac_cb:":
+                            frac_cb = atof(words[i+1])
+                        elif words[i] == "Frac_sb:":
+                            frac_sb = atof(words[i+1])
+                        elif words[i] == "Rmetal:":
+                            rmetal = atof(words[i+1])
+                        elif words[i] == "Cmetal:":
+                            cmetal = atof(words[i+1])
+                        else:
+                            return False
+                    self.segments.append(Segmentline(freq, length, isLongline, wire_switch, opin_switch, frac_cb, frac_sb, rmetal, cmetal))
+                elif words[0] == "switch":
+                    var switch = atol(words[1])
+                    var isBuffered = False
+                    var R = -1.
+                    var Cin = -1.
+                    var Cout = -1.
+                    var Tdel = -1.
+                    for i in range(2, len(words), 2):
+                        if words[i] == "buffered:":
+                            if words[i+1] == "yes":
+                                isBuffered = True
+                            elif words[i+1] != "no":
+                                return False
+                        elif words[i] == "R:":
+                            R = atof(words[i+1])
+                        elif words[i] == "Cin:":
+                            Cin = atof(words[i+1])
+                        elif words[i] == "Cout:":
+                            Cout = atof(words[i+1])
+                        elif words[i] == "Tdel:":
+                            Tdel = atof(words[i+1])
+                        else:
+                            return False
+                    self.switches.append(Switch(switch, isBuffered, R, Cin, Cout, Tdel))
+                elif words[0] == "R_minW_nmos":
+                    self.R_minW_nmos = atof(words[1])
+                elif words[0] == "R_minW_pmos":
+                    self.R_minW_pmos = atof(words[1])
+                elif words[0] == "C_ipin_cblock":
+                    self.c_ipin_cblock = atof(words[1])
+                elif words[0] == "T_ipin_cblock":
+                    self.t_ipin_cblock = atof(words[1])
+                elif words[0] == "T_ipad":
+                    self.t_ipad = atof(words[1])
+                elif words[0] == "T_opad":
+                    self.t_opad = atof(words[1])
+                elif words[0] == "T_clb_ipin_to_sblk_ipin":
+                    self.t_clb_ipin_to_sblk_ipin = atof(words[1])
+                elif words[0] == "T_sblk_opin_to_clb_opin":
+                    self.t_sblk_opin_to_clb_opin = atof(words[1])
+                elif words[0] == "T_sblk_opin_to_sblk_ipin":
+                    self.t_sblk_opin_to_sblk_ipin = atof(words[1])
+                elif words[0] == "T_subblock":
+                    var t_comb = -1.
+                    var t_seq_in = -1.
+                    var t_seq_out = -1.
+                    for i in range(1, len(words), 2):
+                        if words[i] == "T_comb:":
+                            t_comb = atof(words[i+1])
+                        elif words[i] == "T_seq_in:":
+                            t_seq_in = atof(words[i+1])
+                        elif words[i] == "T_seq_out:":
+                            t_seq_out = atof(words[i+1])
+                        else:
+                            return False
+                    self.subblocks.append(Subblock(t_comb, t_seq_in, t_seq_out))
+                else:
+                    return False
         except:
             return False
         return True

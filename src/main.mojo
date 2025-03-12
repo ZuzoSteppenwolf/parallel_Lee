@@ -1,5 +1,8 @@
 from sys import argv
 from myUtil.Matrix import Matrix
+from myFormats.Net import Net
+from myFormats.Place import Place
+from myFormats.Arch import Arch
 """
 @file Main.mojo
 Die Applikation implementiert den Labyrinth/Lee-Algorithmus
@@ -19,7 +22,9 @@ def main():
     args = argv()
     if len(args) < 4 or args[1] == "-h" or args[1] == "--help":
         print_help()
-        return
+    
+    
+    return
 
 """
 Hilfsmethode um die Hilfe auszugeben
@@ -34,4 +39,3 @@ def print_help():
     print("Options:")
     print("  -h, --help: Print this help message")
     print("  ")
-
