@@ -3,6 +3,7 @@ from myUtil.Matrix import Matrix
 from myFormats.Net import Net
 from myFormats.Place import Place
 from myFormats.Arch import Arch
+
 """
 @file Main.mojo
 Die Applikation implementiert den Labyrinth/Lee-Algorithmus

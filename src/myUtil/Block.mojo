@@ -1,5 +1,5 @@
 from myUtil.Enum import Blocktype
-from memory import ArcPointer
+from memory import UnsafePointer, Pointer, ArcPointer
 """
 @file Block.mojo
 Repräsentiert einen Block in der Architektur.
@@ -8,18 +8,21 @@ Repräsentiert einen Block in der Architektur.
 """
 @value
 struct Block:
+
+    alias SharedBlock = ArcPointer[Block]
+
     var name: String
     var subblk: Int8
     var type: Blocktype
     var delay: Float64
-    var preconnections: List[ArcPointer[Block]]
+    var preconnections: List[Self.SharedBlock]
 
     fn __init__(out self, name: String, subblk: Int8 = 0,  type: Blocktype = Blocktype.NONE):
         self.name = name
         self.subblk = subblk
         self.type = type
         self.delay = 0.0
-        self.preconnections = List[ArcPointer[Block]]()
+        self.preconnections = List[Self.SharedBlock]()
 
     fn __eq__(self, other: Block) -> Bool:
         return self.name == other.name and self.subblk == other.subblk and self.type == other.type
@@ -39,7 +42,7 @@ struct Block:
         else:
             var delays: List[Float64] = List[Float64]()
             for preconnection in self.preconnections:
-                var preDelays = preconnection[][].getDelay()
-                for i in range(len(preDelays)):
-                    delays.append(preDelays[i] + self.delay)
+                var preDelays: List[Float64] = preconnection[][].getDelay()
+                for d in preDelays:
+                    delays.append(d[] + self.delay)
             return delays
