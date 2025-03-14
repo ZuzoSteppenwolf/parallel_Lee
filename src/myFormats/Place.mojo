@@ -2,31 +2,13 @@ from collections import Dict, List
 from myUtil.Enum import Blocktype
 from myUtil.Matrix import Matrix
 from myUtil.Util import clearUpLines
+from myUtil.Block import Block
 """
 @file Place.mojo
 Parser für das Placement File Format vom VPR Tool
 
 @author Marvin Wollbrück
 """
-@value
-struct Block:
-    var name: String
-    var subblk: Int8
-    var type: Blocktype
-
-    fn __init__(out self, name: String, subblk: Int8 = 0,  type: Blocktype = Blocktype.NONE):
-        self.name = name
-        self.subblk = subblk
-        self.type = type
-
-    fn __eq__(self, other: Block) -> Bool:
-        return self.name == other.name and self.subblk == other.subblk and self.type == other.type
-
-    fn __ne__(self, other: Block) -> Bool:
-        return not self.__eq__(other)
-
-    fn __str__(self) -> String:
-        return self.name.join(" ").join(self.subblk).join(" ") + self.type.__str__()
 
 struct Place:
     var isValid: Bool

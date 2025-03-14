@@ -2,6 +2,7 @@ from myFormats.Place import *
 from myUtil.Matrix import *
 from myUtil.Enum import *
 from myUtil.Util import *
+from myUtil.Block import *
 from collections import Dict, List
 from os import Atomic
 from time import sleep
