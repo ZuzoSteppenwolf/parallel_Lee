@@ -16,19 +16,49 @@ erweitert um die Laufzeit zu optimieren.
 @author Marvin Wollbrück
 """
 
+alias STANDARD_CHANEL_WIDTH = 12
+var CHANNEL_WIDTH = STANDARD_CHANEL_WIDTH
+var hasFixedChannelWidth = False
+
 """
 Main-Methode der Applikation
 """
 def main():
-    args = argv()
-    if len(args) < 4 or args[1] == "-h" or args[1] == "--help":
+    args = List[String]()
+    for arg in argv():
+        args.append(String(arg))
+
+    if len(args) < 4 or "-h" in args or "--help" in args:
         print_help()
 
-    #TODO
-    print(len(args))
-    #placements = Place(String(args[1]))
-    placements = Place("test/.place/test_PlaceFormat.place")
-    print(placements.isValid)
+    print("Read file ", args[1])
+    placement = Place(args[1])
+    if not placement.isValid:
+        print("Invalid placement file")
+        return
+
+    print("Read file ", args[3])
+    arch = Arch(args[3])
+    if not arch.isValid:
+        print("Invalid architecture file")
+        return
+
+    print("Read file ", args[2])
+    netlist = Net(args[2], len(arch.subblocks), arch.pins)
+    if not netlist.isValid:
+        print("Invalid netlist file")
+        return
+    
+    if "--route_chan_width" in args:
+        idx = args.index("--route_chan_width")
+        hasFixedChannelWidth = True
+        try:
+            CHANNEL_WIDTH = atol(args[idx + 1])
+        except:
+            print("Invalid channel width: ", args[idx + 1])
+            return
+    
+    
     
     return
 
@@ -44,4 +74,5 @@ def print_help():
     print()
     print("Options:")
     print("  -h, --help: Print this help message")
-    print("  ")
+    print("  --route_chan_width <int>: Set the channel width for routing")
+    print("    disabled binary search")

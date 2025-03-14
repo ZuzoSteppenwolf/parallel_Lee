@@ -14,23 +14,23 @@ Die Netze werden in echtzeit parallel verarbeitet.
 
 @author Marvin Wollbrück
 """
-alias STANDARD_CHANEL_WIDTH = 12
 
 var NetKeys = List[String]()
+var map: Matrix[Dict[String, List[Block]]] = Matrix[Dict[String, List[Block]]](0, 0)
+var mutex: Mutex = Mutex()
 
 """
-Lässt nur ein Thread auf die Mutex-Struktur zugreifen.
+Mutex-Struktur
 """
-struct Channels:
-    var map: Matrix[Dict[String, List[Block]]]
+struct Mutex:
+    
     var owner: Atomic[DType.int64]
     var visitor: Atomic[DType.int64]
 
     alias FREE = -1
 
 
-    fn __init__(out self, owned map: Matrix[Dict[String, List[Block]]]):
-        self.map = map
+    fn __init__(out self):
         self.owner = Atomic[DType.int64](self.FREE)
         self.visitor = Atomic[DType.int64](0)
 
@@ -46,20 +46,13 @@ struct Channels:
         var owner: SIMD[DType.int64, 1] = id
         _ = self.owner.compare_exchange_weak(owner, self.FREE)
 
-    fn askChannel(mut self, id: Int, row: Int, col: Int, mut count: Int) -> Bool:
-        while not self.owner.load() == self.FREE:
+    fn visit(mut self):
+        while self.owner.load() != self.FREE:
             sleep(0.1)
         _ = self.visitor.fetch_add(1)
-        var hasChannel: Bool = False
-        try:
-            count = len(self.map[row, col])
-            hasChannel = NetKeys[id] in self.map[row, col]
-        except:
-            hasChannel = False
-            print("Error: Out of Bounds at row: " + str(row) + " col: " + str(col))
 
+    fn unvisit(mut self):
         _ = self.visitor.fetch_sub(1)
-        return hasChannel
         
     
 
