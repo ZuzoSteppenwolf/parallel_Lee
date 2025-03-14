@@ -1,4 +1,4 @@
-from collections import Dict, List
+from collections import Dict, List, Set
 from myUtil.Util import clearUpLines
 from myFormats.Arch import Pin
 """
@@ -14,12 +14,27 @@ struct Net:
     var isValid: Bool
     var nets: Dict[String, List[String]]
     var globalNets: Dict[String, List[String]]
+    var inpads: Set[String]
+    var outpads: Set[String]
+    var clbs: Set[String]
 
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
         self.nets = Dict[String, List[String]]()
         self.globalNets = Dict[String, List[String]]()
         self.isValid = False
+        self.inpads = Set[String]()
+        self.outpads = Set[String]()
+        self.clbs = Set[String]()
         self.isValid = self.parse(path, sbblknum, pins)
+        
+
+    fn __copyinit__(out self, other: Net):
+        self.nets = other.nets
+        self.globalNets = other.globalNets
+        self.isValid = other.isValid
+        self.inpads = Set[String](other.inpads)
+        self.outpads = Set[String](other.outpads)
+        self.clbs = Set[String](other.clbs)
 
 
     fn parse(mut self, path: String, sbblknum: Int8, pins: List[Pin]) -> Bool:
@@ -35,25 +50,31 @@ struct Net:
                 var words = line.split()
                 if words[0] == ".input":
                     var name = words[1]
+                    self.inpads.add(name)
                     line = lines.pop(0)
                     words = line.split()
                     if words[0] != "pinlist:":
                         return False
                     var net = words[1]
                     self.addToNets(net, name)
+                    
                 elif words[0] == ".output":
                     var name = words[1]
+                    self.outpads.add(name)
                     line = lines.pop(0)
                     words = line.split()
                     if words[0] != "pinlist:":
-                        return True
+                        return False
                     var net = words[1]
-                    self.addToNets(net, name)
+                    self.addToNets(net, name, True)
+                    
                 elif words[0] == ".global":
                     var name = words[1]
                     self.addToGlobalNets(name, name)
+
                 elif words[0] == ".clb":
                     var name = words[1]
+                    self.clbs.add(name)
                     line = lines.pop(0)
                     words = line.split()
                     if words[0] != "pinlist:":
