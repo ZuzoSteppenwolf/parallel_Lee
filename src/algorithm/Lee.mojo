@@ -3,6 +3,7 @@ from myUtil.Matrix import *
 from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
+from myFormats.Arch import *
 from collections import Dict, List
 from os import Atomic
 from time import sleep
@@ -14,10 +15,6 @@ Die Netze werden in echtzeit parallel verarbeitet.
 
 @author Marvin Wollbrück
 """
-
-var NetKeys = List[String]()
-var map: Matrix[Dict[String, List[Block]]] = Matrix[Dict[String, List[Block]]](0, 0)
-var mutex: Mutex = Mutex()
 
 """
 Mutex-Struktur
@@ -34,7 +31,7 @@ struct Mutex:
         self.owner = Atomic[DType.int64](self.FREE)
         self.visitor = Atomic[DType.int64](0)
 
-    fn lock(mut self, id: Int):
+    async fn lock(mut self, id: Int):
         var owner: SIMD[DType.int64, 1] = self.FREE
         while not self.owner.compare_exchange_weak(owner, id):
             owner = self.FREE
@@ -42,18 +39,44 @@ struct Mutex:
         while self.visitor.load() != 0:
             sleep(0.1)
     
-    fn unlock(mut self, id: Int):
+    async fn unlock(mut self, id: Int):
         var owner: SIMD[DType.int64, 1] = id
         _ = self.owner.compare_exchange_weak(owner, self.FREE)
 
-    fn visit(mut self):
+    async fn visit(mut self):
         while self.owner.load() != self.FREE:
             sleep(0.1)
         _ = self.visitor.fetch_add(1)
 
-    fn unvisit(mut self):
+    async fn unvisit(mut self):
         _ = self.visitor.fetch_sub(1)
         
     
+struct Route:
+    var routeLists: List[List[Block.SharedBlock]]
+    var chanMap: Matrix[Dict[String, List[Block.SharedBlock]]]
+    var clbMap: Matrix[Dict[String, List[Block.SharedBlock]]]
+    var netKeys: List[String]
+    var nets: Dict[String, List[String]]
+    var mutex: Mutex
+    var chanWidth: Int
+    var chanDelay: Float64
+    var pins: List[Pin]
 
-fn algo():
+    fn __init__(out self, nets: Dict[String, List[String]], clbMap: Matrix[Dict[String, List[Block.SharedBlock]]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
+        self.routeLists = List[List[Block.SharedBlock]]()
+        self.chanMap = Matrix[Dict[String, List[Block.SharedBlock]]](clbMap.cols, clbMap.rows)
+        initMap(self.chanMap)
+        self.clbMap = clbMap
+        self.netKeys = List[String]()
+        self.nets = nets
+        self.mutex = Mutex()
+        self.chanWidth = chanWidth
+        self.chanDelay = chanDelay
+        self.pins = pins
+        for net in nets:
+            self.netKeys.append(net[])
+    
+        @parameter
+        fn algo(id: Int):
+            

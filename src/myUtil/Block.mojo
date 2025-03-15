@@ -17,12 +17,13 @@ struct Block:
     var delay: Float64
     var preconnections: List[Self.SharedBlock]
 
-    fn __init__(out self, name: String, subblk: Int8 = 0,  type: Blocktype = Blocktype.NONE):
+    fn __init__(out self, name: String,  type: Blocktype = Blocktype.NONE, delay: Float64 = 0.0, subblk: Int8 = 0):
         self.name = name
         self.subblk = subblk
         self.type = type
-        self.delay = 0.0
+        self.delay = delay
         self.preconnections = List[Self.SharedBlock]()
+
 
     fn __eq__(self, other: Block) -> Bool:
         return self.name == other.name and self.subblk == other.subblk and self.type == other.type
@@ -32,6 +33,12 @@ struct Block:
 
     fn __str__(self) -> String:
         return self.name.join(" ").join(self.subblk).join(" ") + self.type.__str__()
+
+    # Fügt eine Verbindung zu einem anderen Block hinzu
+    #
+    # @param block Der Blockzeiger, zu dem die Verbindung hinzugefügt werden soll
+    fn addPreconnection(mut self, block: Self.SharedBlock):
+        self.preconnections.append(block)
 
     # Gibt die Verzögerung des Blocks zurück
     #

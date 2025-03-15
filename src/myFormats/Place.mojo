@@ -17,6 +17,8 @@ struct Place:
     var map: Matrix[Dict[String, List[Block]]]
     var archiv: Dict[String, Tuple[Int, Int]]
     var path: String
+    var rows: Int
+    var cols: Int
 
     fn __init__(out self, path: String):
         self.net = ""
@@ -25,6 +27,8 @@ struct Place:
         self.isValid = False
         self.archiv = Dict[String, Tuple[Int, Int]]()
         self.path = path
+        self.rows = 0
+        self.cols = 0
         self.isValid = self.parse(path)
 
 
@@ -83,7 +87,8 @@ struct Place:
                                 elif counter == 4:
                                     row = atol(word[])
                                     self.initMatrix(col+2, row+2)
-                                    #self.map = Matrix[Dict[String, List[Block]]](col+2, row+2)
+                                    self.cols = col
+                                    self.rows = row
                                 elif counter == 5 and word[] != "logic":
                                     return False
                                 elif counter == 6:

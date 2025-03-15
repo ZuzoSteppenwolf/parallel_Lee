@@ -5,7 +5,9 @@ Utility Funktionen für Mojo
 
 @author Marvin Wollbrück
 """
-
+from collections import Dict, List
+from myUtil.Block import Block
+from myUtil.Matrix import Matrix
 
 """
 Bereinigt die übergebenen Zeilen von Kommentaren und Zeilenumbrüchen
@@ -42,3 +44,9 @@ fn clearUpLines(owned lines: List[String]) -> List[String]:
             newLines.append(newLine)
         
     return newLines
+
+
+fn initMap(mut map: Matrix[Dict[String, List[Block.SharedBlock]]]):
+    for i in range(map.cols):
+            for j in range(map.rows):
+                map[i, j] = Dict[String, List[Block.SharedBlock]]()

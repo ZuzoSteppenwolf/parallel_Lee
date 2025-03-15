@@ -1,8 +1,13 @@
 from sys import argv
 from myUtil.Matrix import Matrix
+from myUtil.Block import Block
+from myUtil.Enum import Blocktype
+from myUtil.Util import initMap
 from myFormats.Net import Net
 from myFormats.Place import Place
 from myFormats.Arch import Arch
+from algorithm.Lee import Route
+from collections import Dict, List
 
 """
 @file Main.mojo
@@ -17,7 +22,7 @@ erweitert um die Laufzeit zu optimieren.
 """
 
 alias STANDARD_CHANEL_WIDTH = 12
-var CHANNEL_WIDTH = STANDARD_CHANEL_WIDTH
+var channalWidth = STANDARD_CHANEL_WIDTH
 var hasFixedChannelWidth = False
 
 """
@@ -53,12 +58,43 @@ def main():
         idx = args.index("--route_chan_width")
         hasFixedChannelWidth = True
         try:
-            CHANNEL_WIDTH = atol(args[idx + 1])
+            channalWidth = atol(args[idx + 1])
         except:
             print("Invalid channel width: ", args[idx + 1])
             return
+
+    @parameter
+    def compute(chanWidth: Int) -> Route:
+        print("Compute")
+        clbMap = Matrix[Dict[String, List[Block.SharedBlock]]](placement.cols+2, placement.rows+2)
+        initMap(clbMap)
+        for clb in placement.archiv.keys():
+            if clb[] in netlist.inpads:
+                block = Block.SharedBlock(clb[], Blocktype.INPAD, arch.t_ipad)
+                clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
+            elif clb[] in netlist.outpads:
+                block = Block.SharedBlock(clb[], Blocktype.OUTPAD, arch.t_opad)
+                clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
+            else:
+                hasGlobalNet = False
+                for net in netlist.globalNets.keys():
+                    hasGlobalNet = clb[] in netlist.globalNets[net[]]
+                    if hasGlobalNet:
+                        break
+                delay = 0.0
+                if hasGlobalNet:
+                    delay = arch.t_ipin_cblock + arch.subblocks[0].t_seq_in + arch.subblocks[0].t_seq_out
+                else:
+                    delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
+                block = Block.SharedBlock(clb[], Blocktype.CLB, delay, len(arch.subblocks))
+                clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
+        return Route(netlist.nets, clbMap, chanWidth, arch.switches[0].Tdel, arch.pins)
+        
     
-    
+    if hasFixedChannelWidth:
+        pass
+    else:
+        pass
     
     return
 
