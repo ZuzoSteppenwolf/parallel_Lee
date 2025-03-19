@@ -4,9 +4,10 @@ from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
 from myFormats.Arch import *
-from collections import Dict, List
+from collections import Dict, List, Set
 from os import Atomic
 from time import sleep
+from algorithm import parallelize
 
 """
 @file Lee.mojo
@@ -53,6 +54,7 @@ struct Mutex:
         
     
 struct Route:
+    var isValid: Bool
     var routeLists: List[List[Block.SharedBlock]]
     var chanMap: Matrix[Dict[String, List[Block.SharedBlock]]]
     var clbMap: Matrix[List[Block.SharedBlock]]
@@ -74,9 +76,59 @@ struct Route:
         self.chanWidth = chanWidth
         self.chanDelay = chanDelay
         self.pins = pins
+        self.isValid = True
+
         for net in nets:
             self.netKeys.append(net[])
-    
+        
         @parameter
         fn algo(id: Int):
+            alias EMPTY = 0
+            alias CONNECTED = 1
+            alias START = 2
+            var maze = Matrix[UInt](self.clbMap.cols, self.clbMap.rows)
+            var routeList = List[Block.SharedBlock]()
+            var net = self.netKeys[id]
+            var routedClbs = Set[String]()
+            try:
+                routedClbs.add(self.nets[net][0])
+            except e:
+                print("Error: ", e)
+                self.isValid = False
+                return
+
+            # Initialisiere das Labyrinth
+            # 1 = verdrahteter Block/Kanal, 0 = Frei
+            @parameter
+            fn initMaze():
+                for i in range(self.clbMap.cols):
+                    for j in range(self.clbMap.rows):
+                        await self.mutex.visit()
+                        try:
+                            if net in self.chanMap[i, j]:
+                                maze[i, j] = CONNECTED
+                            else:
+                                if len(self.clbMap[i, j]) > 0:
+                                    for block in self.clbMap[i, j]:
+                                        if block[][].name in routedClbs:
+                                            maze[i, j] = CONNECTED
+                                            break
+                            if maze[i, j] != CONNECTED:
+                                maze[i, j] = EMPTY
+                        except e:
+                            print("Error: ", e)
+                            self.isValid = False
+                            return
+                        finally:
+                            await self.mutex.unvisit()
+
+            initMaze()
+
+            var isFinished = False
+            while not isFinished:
+                pass
+            pass
+            self.routeLists.append(routeList)
+
+        parallelize[algo](len(self.netKeys), len(self.netKeys))
             
