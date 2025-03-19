@@ -55,7 +55,7 @@ struct Mutex:
 struct Route:
     var routeLists: List[List[Block.SharedBlock]]
     var chanMap: Matrix[Dict[String, List[Block.SharedBlock]]]
-    var clbMap: Matrix[Dict[String, List[Block.SharedBlock]]]
+    var clbMap: Matrix[List[Block.SharedBlock]]
     var netKeys: List[String]
     var nets: Dict[String, List[String]]
     var mutex: Mutex
@@ -63,7 +63,7 @@ struct Route:
     var chanDelay: Float64
     var pins: List[Pin]
 
-    fn __init__(out self, nets: Dict[String, List[String]], clbMap: Matrix[Dict[String, List[Block.SharedBlock]]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
+    fn __init__(out self, nets: Dict[String, List[String]], clbMap: Matrix[List[Block.SharedBlock]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
         self.routeLists = List[List[Block.SharedBlock]]()
         self.chanMap = Matrix[Dict[String, List[Block.SharedBlock]]](clbMap.cols, clbMap.rows)
         initMap(self.chanMap)

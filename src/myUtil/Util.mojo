@@ -50,3 +50,8 @@ fn initMap(mut map: Matrix[Dict[String, List[Block.SharedBlock]]]):
     for i in range(map.cols):
             for j in range(map.rows):
                 map[i, j] = Dict[String, List[Block.SharedBlock]]()
+
+fn initMap(mut map: Matrix[List[Block.SharedBlock]]):
+    for i in range(map.cols):
+            for j in range(map.rows):
+                map[i, j] = List[Block.SharedBlock]()

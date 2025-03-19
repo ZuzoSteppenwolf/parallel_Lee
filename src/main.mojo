@@ -76,14 +76,14 @@ def main():
     @parameter
     def compute(chanWidth: Int) -> Route:
         print("Compute")
-        clbMap = Matrix[Dict[String, List[Block.SharedBlock]]](placement.cols+2, placement.rows+2)
+        clbMap = Matrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2)
         initMap(clbMap)
         for clb in placement.archiv.keys():
             if clb[] in netlist.inpads:
-                block = Block.SharedBlock(clb[], Blocktype.INPAD, arch.t_ipad)
+                var block = Block.SharedBlock(Block(clb[], Blocktype.INPAD, arch.t_ipad))
                 clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
             elif clb[] in netlist.outpads:
-                block = Block.SharedBlock(clb[], Blocktype.OUTPAD, arch.t_opad)
+                var block = Block.SharedBlock(Block(clb[], Blocktype.OUTPAD, arch.t_opad))
                 clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
             else:
                 hasGlobalNet = False
@@ -96,7 +96,7 @@ def main():
                     delay = arch.t_ipin_cblock + arch.subblocks[0].t_seq_in + arch.subblocks[0].t_seq_out
                 else:
                     delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
-                block = Block.SharedBlock(clb[], Blocktype.CLB, delay, len(arch.subblocks))
+                var block = Block.SharedBlock(Block(clb[], Blocktype.CLB, delay, len(arch.subblocks)))
                 clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
         return Route(netlist.nets, clbMap, chanWidth, arch.switches[0].Tdel, arch.pins)
         
