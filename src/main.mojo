@@ -6,8 +6,8 @@ from myUtil.Util import initMap
 from myFormats.Net import Net
 from myFormats.Place import Place
 from myFormats.Arch import Arch
-from algorithm.Lee import Route
-from collections import Dict, List
+from collections import Dict, List, Set
+from myAlgorithm.Lee import Route
 
 """
 @file Main.mojo
@@ -22,6 +22,8 @@ erweitert um die Laufzeit zu optimieren.
 """
 
 alias STANDARD_CHANEL_WIDTH = 12
+alias DEFAULT_MAX_ITERATIONS = 30
+var maxIterations = DEFAULT_MAX_ITERATIONS
 var channalWidth = STANDARD_CHANEL_WIDTH
 var hasFixedChannelWidth = False
 
@@ -61,6 +63,14 @@ def main():
             channalWidth = atol(args[idx + 1])
         except:
             print("Invalid channel width: ", args[idx + 1])
+            return
+
+    if "--max_iterations" in args:
+        idx = args.index("--max_iterations")
+        try:
+            maxIterations = atol(args[idx + 1])
+        except:
+            print("Invalid max iterations: ", args[idx + 1])
             return
 
     @parameter
@@ -112,3 +122,4 @@ def print_help():
     print("  -h, --help: Print this help message")
     print("  --route_chan_width <int>: Set the channel width for routing")
     print("    disabled binary search")
+    print("  --max_iterations <int>: Set the maximum iterations for the routing")
