@@ -98,7 +98,7 @@ def main():
                     delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
                 var block = Block.SharedBlock(Block(clb[], Blocktype.CLB, delay, len(arch.subblocks)))
                 clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
-        return Route(netlist.nets, clbMap, chanWidth, arch.switches[0].Tdel, arch.pins)
+        return Route(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins)
         
     
     if hasFixedChannelWidth:

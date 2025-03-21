@@ -12,14 +12,14 @@ Parser für das Net File Format vom VPR Tool
 @value
 struct Net:
     var isValid: Bool
-    var nets: Dict[String, List[String]]
+    var nets: Dict[String, List[Tuple[String, Int]]]
     var globalNets: Dict[String, List[String]]
     var inpads: Set[String]
     var outpads: Set[String]
     var clbs: Set[String]
 
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
-        self.nets = Dict[String, List[String]]()
+        self.nets = Dict[String, List[Tuple[String, Int]]]()
         self.globalNets = Dict[String, List[String]]()
         self.isValid = False
         self.inpads = Set[String]()
@@ -56,7 +56,7 @@ struct Net:
                     if words[0] != "pinlist:":
                         return False
                     var net = words[1]
-                    self.addToNets(net, name)
+                    self.addToNets(net, name, -1)
                     
                 elif words[0] == ".output":
                     var name = words[1]
@@ -85,7 +85,7 @@ struct Net:
                             if pins[i].isGlobal:
                                 self.addToGlobalNets(net, name, pins[i].isInpin)
                             else:
-                                self.addToNets(net, name, pins[i].isInpin)
+                                self.addToNets(net, name, i, pins[i].isInpin)
                     for i in range(sbblknum):
                         line = lines.pop(0)
                         words = line.split()
@@ -97,18 +97,18 @@ struct Net:
             return False
         return True
 
-    fn addToNets(mut self, net: String, block: String, isInpin: Bool = False):
+    fn addToNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
         if net in self.nets:
             try:
                 if isInpin:
-                    self.nets[net].append(block)
+                    self.nets[net].append(Tuple[String, Int](block, pin))
                 else:
-                    self.nets[net].insert(0, block)
+                    self.nets[net].insert(0, Tuple[String, Int](block, pin))
             except:
                 # Darf niemals ausgelöst werden
                 print("NetError: ", net, " nicht gefunden") 
         else:
-            self.nets[net] = List[String](block)
+            self.nets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
         
     fn addToGlobalNets(mut self, net: String, block: String, isInpin: Bool = False):
         if net in self.globalNets:

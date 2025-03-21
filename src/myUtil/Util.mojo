@@ -55,3 +55,8 @@ fn initMap(mut map: Matrix[List[Block.SharedBlock]]):
     for i in range(map.cols):
             for j in range(map.rows):
                 map[i, j] = List[Block.SharedBlock]()
+
+fn initMap(mut map: Matrix[Int], value: Int):
+    for i in range(map.cols):
+            for j in range(map.rows):
+                map[i, j] = value
