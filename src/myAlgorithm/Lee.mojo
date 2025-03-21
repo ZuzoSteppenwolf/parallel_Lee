@@ -95,6 +95,7 @@ struct Pair:
 Route-Struktur
 """       
 struct Route:
+    alias SWITCH = -3
     alias BLOCKED = -2
     alias EMPTY = -1
     var isValid: Bool
@@ -117,6 +118,12 @@ struct Route:
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
             initMap(self.chanMap[i], Route.EMPTY)
+            for col in range(1, self.chanMap[i].cols, 2):
+                for row in range(1, self.chanMap[i].rows, 2):
+                    self.chanMap[i][col, row] = Route.BLOCKED
+            for col in range(0, self.chanMap[i].cols, 2):
+                for row in range(0, self.chanMap[i].rows, 2):
+                    self.chanMap[i][col, row] = Route.SWITCH
         self.clbMap = clbMap
         self.netKeys = List[String]()
         self.nets = nets
@@ -135,7 +142,8 @@ struct Route:
         
         @parameter
         fn algo(id: Int):
-            alias SINK = -3
+            alias SINK = -4
+            alias SWITCH = Route.SWITCH
             alias BLOCKED = Route.BLOCKED
             alias EMPTY = Route.EMPTY
             alias CONNECTED = 0
@@ -156,7 +164,6 @@ struct Route:
             var track = 0
             var currentTrack = (id+track) % self.chanWidth
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
-            initMap(maze, Route.EMPTY)
             try:
                 routedClbs.add(self.nets[net][0][0])
             except e:
@@ -168,18 +175,58 @@ struct Route:
             # 1 = verdrahteter Block/Kanal, 0 = Frei
             @parameter
             fn initMaze():
-                for col in range(self.clbMap.cols):
-                    for row in range(self.clbMap.rows):
+                initMap(maze, Route.EMPTY)
+                for col in range(maze.cols):
+                    for row in range(maze.rows):
                         await self.mutex[currentTrack].visit()
                         try:
-                            maze[col*2-1, row*2-1] = BLOCKED
+                            if self.chanMap[currentTrack][col, row] == Route.EMPTY 
+                                or self.chanMap[currentTrack][col, row] == Route.BLOCKED:
+                                maze[col, row] = self.chanMap[currentTrack][col, row]
+
+                            elif self.chanMap[currentTrack][col, row] == id:
+                                maze[col, row] = CONNECTED
+
+                            elif self.chanMap[currentTrack][col, row] == Route.SWITCH:
+                                maze[col, row] = EMPTY
+
+                            else:
+                                maze[col, row] = BLOCKED
                         except e:
                             print("Error: ", e)
                             self.isValid = False
                             return
                         finally:
                             await self.mutex[currentTrack].unvisit()
-                
+                try:
+                    for i in range(len(self.nets[net])):
+                        var coord: Tuple[Int, Int] = (0, 0)
+                        if i == 0:
+                            coord = archiv[self.nets[net][i][0]]
+                            if coord[0] == 0:
+                                maze[1, coord[1]*2-1] = CONNECTED
+                            elif coord[0] == self.clbMap.cols-1:
+                                maze[maze.cols-1, coord[1]*2-1] = CONNECTED
+                            elif coord[1] == 0:
+                                maze[coord[0]*2-1, 1] = CONNECTED
+                            elif coord[1] == self.clbMap.rows-1:
+                                maze[coord[0]*2-1, maze.rows-1] = CONNECTED
+                        else:
+                            if not self.nets[net][i][0] in routedClbs:
+                                coord = archiv[self.nets[net][i][0]]
+                                var pinSide = self.pins[self.nets[net][i][1]].sides[0]
+                                if pinSide == Faceside.TOP:
+                                    maze[coord[0]*2-1, coord[1]*2] = SINK
+                                elif pinSide == Faceside.RIGHT:
+                                    maze[coord[0]*2, coord[1]*2-1] = SINK
+                                elif pinSide == Faceside.BOTTOM:
+                                    maze[coord[0]*2-1, coord[1]*2-2] = SINK
+                                elif pinSide == Faceside.LEFT:
+                                    maze[coord[0]*2-2, coord[1]*2-1] = SINK
+                except e:
+                    print("Error: ", e)
+                    self.isValid = False
+                    return
 
             initMaze()
 
