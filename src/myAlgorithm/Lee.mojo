@@ -60,36 +60,6 @@ struct Mutex:
     async fn unvisit(mut self):
         _ = self.visitor.fetch_sub(1)
 
-"""
-Pair-Struktur
-"""
-struct Pair:
-    var id: String
-    var value: Int
-
-    fn __init__(out self, id: String, value: Int):
-        self.id = id
-        self.value = value
-
-    fn __copyinit__(out self, other: Pair):
-        self.id = other.id
-        self.value = other.value
-
-    fn __moveinit__(out self, owned other: Pair):
-        self.id = other.id
-        self.value = other.value
-
-    fn __eq__(self, other: Pair) -> Bool:
-        return self.id == other.id and self.value == other.value
-
-    fn __eq__(self, other: String) -> Bool:
-        return self.id == other
-
-    fn __ne__(self, other: Pair) -> Bool:
-        return not self.__eq__(other)
-
-    fn __str__(self) -> String:
-        return self.id.join(" : ").join(self.value)
 
 """
 Route-Struktur
@@ -164,6 +134,10 @@ struct Route:
             var track = 0
             var currentTrack = (id+track) % self.chanWidth
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
+
+            #var routeChanMap = Matrix[Dict[Int, List[Block.SharedBlock]]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
+            #initMap(routeChanMap)
+
             try:
                 routedClbs.add(self.nets[net][0][0])
             except e:
@@ -171,11 +145,49 @@ struct Route:
                 self.isValid = False
                 return
 
+            var refMapClbs = Matrix[List[Block.SharedBlock]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
+            initMap(refMapClbs)
             # Initialisiere das Labyrinth
-            # 1 = verdrahteter Block/Kanal, 0 = Frei
             @parameter
             fn initMaze():
-                initMap(maze, Route.EMPTY)
+                try:
+                    for i in range(len(self.nets[net])):
+                        var coord: Tuple[Int, Int] = (0, 0)
+                        if i == 0:
+                            coord = archiv[self.nets[net][i][0]]
+                            if coord[0] == 0:
+                                maze[1, coord[1]*2-1] = CONNECTED
+                                refMapClbs[1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                            elif coord[0] == self.clbMap.cols-1:
+                                maze[maze.cols-1, coord[1]*2-1] = CONNECTED
+                                refMapClbs[maze.cols-1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                            elif coord[1] == 0:
+                                maze[coord[0]*2-1, 1] = CONNECTED
+                                refMapClbs[coord[0]*2-1, 1].append(self.clbMap[coord[0], coord[1]][0])
+                            elif coord[1] == self.clbMap.rows-1:
+                                maze[coord[0]*2-1, maze.rows-1] = CONNECTED
+                                refMapClbs[coord[0]*2-1, maze.rows-1].append(self.clbMap[coord[0], coord[1]][0])
+                        else:
+                            if not self.nets[net][i][0] in routedClbs:
+                                coord = archiv[self.nets[net][i][0]]
+                                var pinSide = self.pins[self.nets[net][i][1]].sides[0]
+                                if pinSide == Faceside.TOP:
+                                    maze[coord[0]*2-1, coord[1]*2] = SINK
+                                    refMapClbs[coord[0]*2-1, coord[1]*2].append(self.clbMap[coord[0], coord[1]][0])
+                                elif pinSide == Faceside.RIGHT:
+                                    maze[coord[0]*2, coord[1]*2-1] = SINK
+                                    refMapClbs[coord[0]*2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                                elif pinSide == Faceside.BOTTOM:
+                                    maze[coord[0]*2-1, coord[1]*2-2] = SINK
+                                    refMapClbs[coord[0]*2-1, coord[1]*2-2].append(self.clbMap[coord[0], coord[1]][0])
+                                elif pinSide == Faceside.LEFT:
+                                    maze[coord[0]*2-2, coord[1]*2-1] = SINK
+                                    refMapClbs[coord[0]*2-2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                except e:
+                    print("Error: ", e)
+                    self.isValid = False
+                    return
+                    
                 for col in range(maze.cols):
                     for row in range(maze.rows):
                         await self.mutex[currentTrack].visit()
@@ -198,35 +210,6 @@ struct Route:
                             return
                         finally:
                             await self.mutex[currentTrack].unvisit()
-                try:
-                    for i in range(len(self.nets[net])):
-                        var coord: Tuple[Int, Int] = (0, 0)
-                        if i == 0:
-                            coord = archiv[self.nets[net][i][0]]
-                            if coord[0] == 0:
-                                maze[1, coord[1]*2-1] = CONNECTED
-                            elif coord[0] == self.clbMap.cols-1:
-                                maze[maze.cols-1, coord[1]*2-1] = CONNECTED
-                            elif coord[1] == 0:
-                                maze[coord[0]*2-1, 1] = CONNECTED
-                            elif coord[1] == self.clbMap.rows-1:
-                                maze[coord[0]*2-1, maze.rows-1] = CONNECTED
-                        else:
-                            if not self.nets[net][i][0] in routedClbs:
-                                coord = archiv[self.nets[net][i][0]]
-                                var pinSide = self.pins[self.nets[net][i][1]].sides[0]
-                                if pinSide == Faceside.TOP:
-                                    maze[coord[0]*2-1, coord[1]*2] = SINK
-                                elif pinSide == Faceside.RIGHT:
-                                    maze[coord[0]*2, coord[1]*2-1] = SINK
-                                elif pinSide == Faceside.BOTTOM:
-                                    maze[coord[0]*2-1, coord[1]*2-2] = SINK
-                                elif pinSide == Faceside.LEFT:
-                                    maze[coord[0]*2-2, coord[1]*2-1] = SINK
-                except e:
-                    print("Error: ", e)
-                    self.isValid = False
-                    return
 
             initMaze()
 
@@ -240,34 +223,29 @@ struct Route:
                 pathcount = 0
                 for col in range(self.clbMap.cols):
                     for row in range(self.clbMap.rows):
-                        await self.mutex[currentTrack].visit()
                         try:
                             if maze[col, row] == EMPTY:
-                                if len(self.chanMap[col, row]) == self.chanWidth and not(net in self.chanMap[col, row]):
-                                    maze[col, row] = BLOCKED
-                                elif col > 0 and maze[col-1, row] == pathfinder - 1:
+                                if col > 0 and maze[col-1, row] == pathfinder - 1:
                                     maze[col, row] = pathfinder
+                                    pathcount += 1
                                 elif col < self.clbMap.cols - 1 and maze[col+1, row] == pathfinder - 1:
                                     maze[col, row] = pathfinder
+                                    pathcount += 1
                                 elif row > 0 and maze[col, row-1] == pathfinder - 1:
                                     maze[col, row] = pathfinder
+                                    pathcount += 1
                                 elif row < self.clbMap.rows - 1 and maze[col, row+1] == pathfinder - 1:
                                     maze[col, row] = pathfinder
-
-                                if maze[col, row] != BLOCKED:
-                                    for clb in self.clbMap[col, row]:
-                                        if clb[][].name in self.nets[net]:
-                                            foundSink = True
-                                            maze[col, row] = pathfinder
-                                            sinkCoord = (col, row)
-                                            sink = clb[][]
-                                            break
+                                    pathcount += 1
+                                elif maze[col, row] == SINK:
+                                    maze[col, row] = pathfinder
+                                    sinkCoord = (col, row)
+                                    sink = refMapClbs[col, row][0]
+                                    foundSink = True
                         except e:
                             print("Error: ", e)
                             self.isValid = False
                             return
-                        finally:
-                            await self.mutex[currentTrack].unvisit()
                         
                         if foundSink:
                             break
@@ -336,6 +314,7 @@ struct Route:
                     finally:
                         await self.mutex[currentTrack].unlock(id)
                     pathfinder = START
+                    initMap(maze, Route.EMPTY)
                     initMaze()
                 else:
                     try:
@@ -351,6 +330,7 @@ struct Route:
                                 
                         else:
                             pathfinder += 1
+                            initMap(refMapClbs)
                     except e:
                         print("Error: ", e)
                         self.isValid = False
