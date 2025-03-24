@@ -360,62 +360,16 @@ struct Route:
                         var isFree = True
                         var coord = sinkCoord
                         pathfinder = maze[sinkCoord[0], sinkCoord[1]]
-                        var lastChanDir: Blocktype = Blocktype.NONE 
                         var pathCoords = List[Tuple[Int, Int]]()
-                        @parameter
-                        fn chooseDirection(col: Int, row: Int):
-                            if col % 2 == 0 and row % 2 == 1:
-                                lastChanDir = Blocktype.CHANY
-                            elif col % 2 == 1 and row % 2 == 0:
-                                lastChanDir = Blocktype.CHANX
 
 
-                        # Verfolge den Pfad zurück und prüft ob der Weg frei ist
-                        while not isEnd:
-                            var col = coord[0]
-                            var row = coord[1]   
-                            chooseDirection(col, row)    
-                            if self.chanMap[currentTrack][col, row] != EMPTY 
-                                and self.chanMap[currentTrack][col, row] != SWITCH
-                                and self.chanMap[currentTrack][col, row] != id:
-                                    isFree = False
-                                    isEnd = True                   
-                            if pathfinder == CONNECTED and not isEnd:
-                                isEnd = True
-                                pathCoords.append(coord)
-                            elif not isEnd:
-                                var hasChanged = True
-                                var changedCount = 0
-                                while hasChanged and changedCount < 2:
-                                    if lastChanDir == Blocktype.CHANX:
-                                        if col > 0 and maze[col-1, row] == pathfinder - 1:
-                                            coord = (col-1, row)
-                                            pathCoords.append(coord)
-                                            hasChanged = False
-                                        elif col < maze.cols - 1 and maze[col+1, row] == pathfinder - 1:
-                                            coord = (col+1, row)
-                                            pathCoords.append(coord)
-                                            hasChanged = False
-                                        else:
-                                            lastChanDir = Blocktype.CHANY
-                                            hasChanged = True
-                                    elif lastChanDir == Blocktype.CHANY:
-                                        if row > 0 and maze[col, row-1] == pathfinder - 1:
-                                            coord = (col, row-1)
-                                            pathCoords.append(coord)
-                                            hasChanged = False
-                                        elif row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                            coord = (col, row+1)
-                                            pathCoords.append(coord)
-                                            hasChanged = False
-                                        else:
-                                            lastChanDir = Blocktype.CHANX
-                                            hasChanged = True
+                        var tree = PathTree(id, coord, UnsafePointer.address_of(maze), UnsafePointer.address_of(self.chanMap[currentTrack]), coord, 0, pathfinder)
+                        tree.computePath()
+                        isFree = not tree.isDeadEnd
+                        if isFree:
+                            pathCoords = tree.getPath()
 
-                                if changedCount == 2:
-                                    isFree = False
-                                    isEnd = True
-                                pathfinder -= 1
+
 
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
                         if isFree:
