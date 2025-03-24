@@ -4,7 +4,7 @@ from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
 from myFormats.Arch import *
-from collections import Dict, List, Set
+from collections import Dict, List, Set, InlineArray
 from os import Atomic
 from time import sleep
 from algorithm import parallelize
@@ -18,10 +18,109 @@ Die Netze werden in echtzeit parallel verarbeitet.
 """
 
 """
+PathTree-Struktur
+"""
+@value
+struct PathTree:
+    var isDeadEnd: Bool
+    var isLeaf: Bool
+    var lastCoord: Tuple[Int, Int]
+    var coord: Tuple[Int, Int]
+    var children: List[PathTree]
+    var maze: UnsafePointer[Matrix[Int]]
+    var chanMap: UnsafePointer[Matrix[Int]]
+    var turns: Int
+    var pathfinder: Int
+    var id: Int
+
+    fn __init__(out self, id: Int, coord: Tuple[Int, Int], maze: UnsafePointer[Matrix[Int]], chanMap: UnsafePointer[Matrix[Int]], lastCoord: Tuple[Int, Int], turns: Int, pathfinder: Int):
+        self.id = id
+        self.pathfinder = pathfinder
+        self.isDeadEnd = False
+        self.lastCoord = lastCoord
+        self.coord = coord
+        self.children = List[PathTree]()
+        self.maze = maze
+        self.chanMap = chanMap
+        self.turns = turns
+        self.isLeaf = False
+
+    # Berechnet den/die Pfad/e
+    # @raises Exception
+    fn computePath(mut self) raises:
+        var col = self.coord[0]
+        var row = self.coord[1]
+        if self.chanMap[][col, row] != Route.EMPTY 
+            and self.chanMap[][col, row] != Route.SWITCH
+            and self.chanMap[][col, row] != self.id:
+            self.isDeadEnd = True
+        elif self.pathfinder == Route.CONNECTED:
+            self.isLeaf = True
+        else:
+            if col > 0 and self.maze[][col-1, row] == self.pathfinder - 1:
+                var turns = self.turns
+                if self.lastCoord[1] != row:
+                    turns += 1
+                var child = PathTree(self.id, (col-1, row), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                child.computePath()
+                if not child.isDeadEnd:
+                    self.children.append(child)
+            elif col < self.maze[].cols - 1 and self.maze[][col+1, row] == self.pathfinder - 1:
+                var turns = self.turns
+                if self.lastCoord[1] != row:
+                    turns += 1
+                var child = PathTree(self.id, (col+1, row), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                child.computePath()
+                if not child.isDeadEnd:
+                    self.children.append(child)
+            elif row > 0 and self.maze[][col, row-1] == self.pathfinder - 1:
+                var turns = self.turns
+                if self.lastCoord[0] != col:
+                    turns += 1
+                var child = PathTree(self.id, (col, row-1), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                child.computePath()
+                if not child.isDeadEnd:
+                    self.children.append(child)
+            elif row < self.maze[].rows - 1 and self.maze[][col, row+1] == self.pathfinder - 1:
+                var turns = self.turns
+                if self.lastCoord[0] != col:
+                    turns += 1
+                var child = PathTree(self.id, (col, row+1), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                child.computePath()
+                if not child.isDeadEnd:
+                    self.children.append(child)
+            else:
+                self.isDeadEnd = True
+
+            self.isDeadEnd = len(self.children) == 0
+            if not self.isDeadEnd:
+                self.turns = self.children[0].turns
+                for child in self.children:
+                    if child[].turns < self.turns:
+                        self.turns = child[].turns
+
+    # Gibt den günstigsten Pfad zurück
+    # @returns den günstigsten Pfad
+    # @raises Exception
+    fn getPath(self) raises -> List[Tuple[Int, Int]]:
+        var path = List[Tuple[Int, Int]]()
+        if self.isLeaf:
+            path.append(self.coord)
+        elif not self.isDeadEnd:
+            for child in self.children:
+                if child[].turns == self.turns:
+                    path.append(self.coord)
+                    path.extend(child[].getPath())
+                    break
+
+
+        return path
+
+
+"""
 Mutex-Struktur
 """
 struct Mutex:
-    
     var owner: Atomic[DType.int64]
     var visitor: Atomic[DType.int64]
 
@@ -65,9 +164,11 @@ struct Mutex:
 Route-Struktur
 """       
 struct Route:
+    alias SINK = -4
     alias SWITCH = -3
     alias BLOCKED = -2
     alias EMPTY = -1
+    alias CONNECTED = 0
     var isValid: Bool
     var routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]]
     var chanMap: List[Matrix[Int]]#Matrix[Dict[String, List[Block.SharedBlock]]]
@@ -112,12 +213,12 @@ struct Route:
         
         @parameter
         fn algo(id: Int):
-            alias SINK = -4
+            alias SINK = Route.SINK
             alias SWITCH = Route.SWITCH
             alias BLOCKED = Route.BLOCKED
             alias EMPTY = Route.EMPTY
-            alias CONNECTED = 0
-            alias START = 1
+            alias CONNECTED = Route.CONNECTED
+            alias START = CONNECTED + 1
             
             var routeList = Dict[Int, List[Block.SharedBlock]]()
             for i in range(self.chanWidth):
@@ -259,24 +360,61 @@ struct Route:
                         var isFree = True
                         var coord = sinkCoord
                         pathfinder = maze[sinkCoord[0], sinkCoord[1]]
+                        var lastChanDir: Blocktype = Blocktype.NONE 
+                        var pathCoords = List[Tuple[Int, Int]]()
+                        @parameter
+                        fn chooseDirection(col: Int, row: Int):
+                            if col % 2 == 0 and row % 2 == 1:
+                                lastChanDir = Blocktype.CHANY
+                            elif col % 2 == 1 and row % 2 == 0:
+                                lastChanDir = Blocktype.CHANX
+
+
                         # Verfolge den Pfad zurück und prüft ob der Weg frei ist
                         while not isEnd:
                             var col = coord[0]
-                            var row = coord[1]                          
-                            if pathfinder == CONNECTED:
+                            var row = coord[1]   
+                            chooseDirection(col, row)    
+                            if self.chanMap[currentTrack][col, row] != EMPTY 
+                                and self.chanMap[currentTrack][col, row] != SWITCH
+                                and self.chanMap[currentTrack][col, row] != id:
+                                    isFree = False
+                                    isEnd = True                   
+                            if pathfinder == CONNECTED and not isEnd:
                                 isEnd = True
-                            else:
-                                if len(self.chanMap[col, row]) == self.chanWidth and not(net in self.chanMap[col, row]):
+                                pathCoords.append(coord)
+                            elif not isEnd:
+                                var hasChanged = True
+                                var changedCount = 0
+                                while hasChanged and changedCount < 2:
+                                    if lastChanDir == Blocktype.CHANX:
+                                        if col > 0 and maze[col-1, row] == pathfinder - 1:
+                                            coord = (col-1, row)
+                                            pathCoords.append(coord)
+                                            hasChanged = False
+                                        elif col < maze.cols - 1 and maze[col+1, row] == pathfinder - 1:
+                                            coord = (col+1, row)
+                                            pathCoords.append(coord)
+                                            hasChanged = False
+                                        else:
+                                            lastChanDir = Blocktype.CHANY
+                                            hasChanged = True
+                                    elif lastChanDir == Blocktype.CHANY:
+                                        if row > 0 and maze[col, row-1] == pathfinder - 1:
+                                            coord = (col, row-1)
+                                            pathCoords.append(coord)
+                                            hasChanged = False
+                                        elif row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
+                                            coord = (col, row+1)
+                                            pathCoords.append(coord)
+                                            hasChanged = False
+                                        else:
+                                            lastChanDir = Blocktype.CHANX
+                                            hasChanged = True
+
+                                if changedCount == 2:
                                     isFree = False
                                     isEnd = True
-                                elif col > 0 and maze[col-1, row] == pathfinder - 1:
-                                    coord = (col-1, row)
-                                elif col < self.clbMap.cols - 1 and maze[col+1, row] == pathfinder - 1:
-                                    coord = (col+1, row)
-                                elif row > 0 and maze[col, row-1] == pathfinder - 1:
-                                    coord = (col, row-1)
-                                elif row < self.clbMap.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                    coord = (col, row+1)
                                 pathfinder -= 1
 
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
