@@ -26,8 +26,8 @@ struct Block:
 
 
     fn __eq__(self, other: Block) -> Bool:
-        return self.name == other.name and self.subblk == other.subblk and self.type == other.type
-
+        return self.name == other.name and self.subblk == other.subblk and self.type == other.type and self.delay == other.delay
+        
     fn __ne__(self, other: Block) -> Bool:
         return not self.__eq__(other)
 

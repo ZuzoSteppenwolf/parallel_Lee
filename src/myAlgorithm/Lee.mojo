@@ -52,7 +52,8 @@ struct PathTree:
         var row = self.coord[1]
         if self.chanMap[][col, row] != Route.EMPTY 
             and self.chanMap[][col, row] != Route.SWITCH
-            and self.chanMap[][col, row] != self.id:
+            and self.chanMap[][col, row] != self.id
+            and self.chanMap[][col, row] != Route.CONNECTED:
             self.isDeadEnd = True
         elif self.pathfinder == Route.CONNECTED:
             self.isLeaf = True
@@ -108,9 +109,9 @@ struct PathTree:
             path.append(self.coord)
         elif not self.isDeadEnd:
             for child in self.children:
-                if child[].turns == self.turns:
-                    path.append(self.coord)
+                if child[].turns == self.turns:                  
                     path.extend(child[].getPath())
+                    path.append(self.coord)
                     break
 
 
@@ -248,6 +249,13 @@ struct Route:
 
             var refMapClbs = Matrix[List[Block.SharedBlock]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
             initMap(refMapClbs)
+            var sourceCoord: Tuple[Int, Int] = (0, 0)
+            try:
+                sourceCoord = archiv[self.nets[net][0][0]]
+            except e:
+                print("Error: ", e)
+                self.isValid = False
+                return
             # Initialisiere das Labyrinth
             @parameter
             fn initMaze():
@@ -258,32 +266,48 @@ struct Route:
                             coord = archiv[self.nets[net][i][0]]
                             if coord[0] == 0:
                                 maze[1, coord[1]*2-1] = CONNECTED
-                                refMapClbs[1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                                if len(refMapClbs[1, coord[1]*2-1]) == 0:
+                                    refMapClbs[1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+
                             elif coord[0] == self.clbMap.cols-1:
                                 maze[maze.cols-1, coord[1]*2-1] = CONNECTED
-                                refMapClbs[maze.cols-1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                                if len(refMapClbs[maze.cols-1, coord[1]*2-1]) == 0:
+                                    refMapClbs[maze.cols-1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+
                             elif coord[1] == 0:
                                 maze[coord[0]*2-1, 1] = CONNECTED
-                                refMapClbs[coord[0]*2-1, 1].append(self.clbMap[coord[0], coord[1]][0])
+                                if len(refMapClbs[coord[0]*2-1, 1]) == 0:
+                                    refMapClbs[coord[0]*2-1, 1].append(self.clbMap[coord[0], coord[1]][0])
+
                             elif coord[1] == self.clbMap.rows-1:
                                 maze[coord[0]*2-1, maze.rows-1] = CONNECTED
-                                refMapClbs[coord[0]*2-1, maze.rows-1].append(self.clbMap[coord[0], coord[1]][0])
+                                if len(refMapClbs[coord[0]*2-1, maze.rows-1]) == 0:
+                                    refMapClbs[coord[0]*2-1, maze.rows-1].append(self.clbMap[coord[0], coord[1]][0])
+
                         else:
                             if not self.nets[net][i][0] in routedClbs:
                                 coord = archiv[self.nets[net][i][0]]
                                 var pinSide = self.pins[self.nets[net][i][1]].sides[0]
                                 if pinSide == Faceside.TOP:
                                     maze[coord[0]*2-1, coord[1]*2] = SINK
-                                    refMapClbs[coord[0]*2-1, coord[1]*2].append(self.clbMap[coord[0], coord[1]][0])
+                                    if len(refMapClbs[coord[0]*2-1, coord[1]*2]) == 0:
+                                        refMapClbs[coord[0]*2-1, coord[1]*2].append(self.clbMap[coord[0], coord[1]][0])
+
                                 elif pinSide == Faceside.RIGHT:
                                     maze[coord[0]*2, coord[1]*2-1] = SINK
-                                    refMapClbs[coord[0]*2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                                    if len(refMapClbs[coord[0]*2, coord[1]*2-1]) == 0:
+                                        refMapClbs[coord[0]*2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+
                                 elif pinSide == Faceside.BOTTOM:
                                     maze[coord[0]*2-1, coord[1]*2-2] = SINK
-                                    refMapClbs[coord[0]*2-1, coord[1]*2-2].append(self.clbMap[coord[0], coord[1]][0])
+                                    if len(refMapClbs[coord[0]*2-1, coord[1]*2-2]) == 0:
+                                        refMapClbs[coord[0]*2-1, coord[1]*2-2].append(self.clbMap[coord[0], coord[1]][0])
+
                                 elif pinSide == Faceside.LEFT:
                                     maze[coord[0]*2-2, coord[1]*2-1] = SINK
-                                    refMapClbs[coord[0]*2-2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                                    if len(refMapClbs[coord[0]*2-2, coord[1]*2-1]) == 0:
+                                        refMapClbs[coord[0]*2-2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+
                 except e:
                     print("Error: ", e)
                     self.isValid = False
@@ -322,41 +346,52 @@ struct Route:
             while not isFinished:
                 var foundSink = False
                 pathcount = 0
-                for col in range(self.clbMap.cols):
-                    for row in range(self.clbMap.rows):
-                        try:
-                            if maze[col, row] == EMPTY:
-                                if col > 0 and maze[col-1, row] == pathfinder - 1:
-                                    maze[col, row] = pathfinder
-                                    pathcount += 1
-                                elif col < self.clbMap.cols - 1 and maze[col+1, row] == pathfinder - 1:
-                                    maze[col, row] = pathfinder
-                                    pathcount += 1
-                                elif row > 0 and maze[col, row-1] == pathfinder - 1:
-                                    maze[col, row] = pathfinder
-                                    pathcount += 1
-                                elif row < self.clbMap.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                    maze[col, row] = pathfinder
-                                    pathcount += 1
-                                elif maze[col, row] == SINK:
-                                    maze[col, row] = pathfinder
-                                    sinkCoord = (col, row)
-                                    sink = refMapClbs[col, row][0]
-                                    foundSink = True
-                        except e:
-                            print("Error: ", e)
-                            self.isValid = False
-                            return
-                        
-                        if foundSink:
-                            break
-                    if foundSink:
-                        break
+                # Suche nach dem nächsten Pfad
+                try:
+                    if maze[sourceCoord[0], sourceCoord[1]] == SINK:
+                        sinkCoord = sourceCoord
+                        foundSink = True
+                        maze[sourceCoord[0], sourceCoord[1]] = CONNECTED
+                        pathfinder = CONNECTED
+                    else:
+                        for col in range(self.clbMap.cols):
+                            for row in range(self.clbMap.rows):
+                                try:
+                                    if maze[col, row] == EMPTY:
+                                        if col > 0 and maze[col-1, row] == pathfinder - 1:
+                                            maze[col, row] = pathfinder
+                                            pathcount += 1
+                                        elif col < self.clbMap.cols - 1 and maze[col+1, row] == pathfinder - 1:
+                                            maze[col, row] = pathfinder
+                                            pathcount += 1
+                                        elif row > 0 and maze[col, row-1] == pathfinder - 1:
+                                            maze[col, row] = pathfinder
+                                            pathcount += 1
+                                        elif row < self.clbMap.rows - 1 and maze[col, row+1] == pathfinder - 1:
+                                            maze[col, row] = pathfinder
+                                            pathcount += 1
+                                        elif maze[col, row] == SINK:
+                                            maze[col, row] = pathfinder
+                                            sinkCoord = (col, row)
+                                            sink = refMapClbs[col, row][0]
+                                            foundSink = True
+                                except e:
+                                    print("Error: ", e)
+                                    self.isValid = False
+                                    return
+                                
+                                if foundSink:
+                                    break
+                            if foundSink:
+                                break
+                except e:
+                    print("Error: ", e)
+                    self.isValid = False
+                    return
 
                 if foundSink:
                     await self.mutex[currentTrack].lock(id)
                     try:
-                        var isEnd = False
                         var isFree = True
                         var coord = sinkCoord
                         pathfinder = maze[sinkCoord[0], sinkCoord[1]]
@@ -373,29 +408,37 @@ struct Route:
 
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
                         if isFree:
-                            isEnd = False
-                            coord = sinkCoord
-                            pathfinder = maze[sinkCoord[0], sinkCoord[1]]
-                            while not isEnd:
-                                var col = coord[0]
-                                var row = coord[1]
-                                if coord[0] == sinkCoord[0] and coord[1] == sinkCoord[1]:
-                                    routeList.append(sink)
-                                    routedClbs.add(sink[].name)
-                                    
-                                elif pathfinder == CONNECTED:
-                                    isEnd = True
+                            if len(pathCoords) == 1:
+                                var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+                                if pathCoords[0][0] % 2 == 0 and pathCoords[0][1] % 2 == 1:
+                                    var name = "CHANY".join(pathCoords[0][0]).join(pathCoords[0][1])
+                                    chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                elif pathCoords[0][0] % 2 == 1 and pathCoords[0][1] % 2 == 0:
+                                    var name = "CHANX".join(pathCoords[0][0]).join(pathCoords[0][1])
+                                    chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                 else:
-                                    routeList.append(self.clbMap[col, row][0])
-                                    if col > 0 and maze[col-1, row] == pathfinder - 1:
-                                        coord = (col-1, row)
-                                    elif col < self.clbMap.cols - 1 and maze[col+1, row] == pathfinder - 1:
-                                        coord = (col+1, row)
-                                    elif row > 0 and maze[col, row-1] == pathfinder - 1:
-                                        coord = (col, row-1)
-                                    elif row < self.clbMap.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                        coord = (col, row+1)
-                                    pathfinder -= 1
+                                    self.isValid = False
+                                    return
+
+                                for idx in range(len(refMapClbs[pathCoords[0][0], pathCoords[0][1]])):
+                                    if idx == 0:
+                                        chan[].addPreconnection(refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx])
+                                        routeList[currentTrack].append(chan)
+                                    else:
+                                        refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx][].addPreconnection(chan)
+                                        routeList[currentTrack].append(refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx])
+                                        routedClbs.add(refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx][].name)
+                                refMapClbs[pathCoords[0][0], pathCoords[0][1]].append(chan)
+                            else:
+                                for idx in range(len(pathCoords)):
+                                    if idx == 0:
+                                        var col = pathCoords[idx][0]
+                                        var row = pathCoords[idx][1]
+                                        if len(refMapClbs[col, row]) == 1:
+                                            if refMapClbs[col, row][0][].type == Blocktype.CHANX or refMapClbs[col, row][0][].type == Blocktype.CHANY:
+                                                pass 
+                                            else:
+                                                pass
 
 
 
@@ -419,10 +462,12 @@ struct Route:
                             if currentTrack == id % self.chanWidth:
                                 isFinished = True
                                 self.isValid = False
-                                
+                            else:
+                                initMap(refMapClbs)  
+                                initMaze()    
                         else:
                             pathfinder += 1
-                            initMap(refMapClbs)
+                        initMaze()    
                     except e:
                         print("Error: ", e)
                         self.isValid = False
