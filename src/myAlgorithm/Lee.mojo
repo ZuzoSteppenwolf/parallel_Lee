@@ -343,6 +343,7 @@ struct Route:
             var pathcount = 0
             var sinkCoord: Tuple[Int, Int] = (0, 0)
             var sink: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+            var chanArchiv = Dict[String, Tuple[Int, Int]]()
             while not isFinished:
                 var foundSink = False
                 pathcount = 0
@@ -409,37 +410,109 @@ struct Route:
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
                         if isFree:
                             if len(pathCoords) == 1:
+                                var col = pathCoords[0][0]
+                                var row = pathCoords[0][1]
                                 var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
-                                if pathCoords[0][0] % 2 == 0 and pathCoords[0][1] % 2 == 1:
-                                    var name = "CHANY".join(pathCoords[0][0]).join(pathCoords[0][1])
+                                if col % 2 == 0 and row % 2 == 1:
+                                    var name = "CHANY".join(col).join(row)
                                     chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
-                                elif pathCoords[0][0] % 2 == 1 and pathCoords[0][1] % 2 == 0:
-                                    var name = "CHANX".join(pathCoords[0][0]).join(pathCoords[0][1])
+                                elif col % 2 == 1 and row % 2 == 0:
+                                    var name = "CHANX".join(col).join(row)
                                     chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                 else:
                                     self.isValid = False
                                     return
 
-                                for idx in range(len(refMapClbs[pathCoords[0][0], pathCoords[0][1]])):
+                                for idx in range(len(refMapClbs[col, row])):
                                     if idx == 0:
-                                        chan[].addPreconnection(refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx])
+                                        chan[].addPreconnection(refMapClbs[col, row][idx])
                                         routeList[currentTrack].append(chan)
                                     else:
-                                        refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx][].addPreconnection(chan)
-                                        routeList[currentTrack].append(refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx])
-                                        routedClbs.add(refMapClbs[pathCoords[0][0], pathCoords[0][1]][idx][].name)
-                                refMapClbs[pathCoords[0][0], pathCoords[0][1]].append(chan)
+                                        refMapClbs[col, row][idx][].addPreconnection(chan)
+                                        routeList[currentTrack].append(refMapClbs[col, row][idx])
+                                        routedClbs.add(refMapClbs[col, row][idx][].name)
+                                refMapClbs[col, row].append(chan)
+                                chanArchiv[chan[].name] = (col, row)
                             else:
-                                for idx in range(len(pathCoords)):
+                                var preChan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+                                for idx in range(len(pathCoords)):                                   
+                                    var col = pathCoords[idx][0]
+                                    var row = pathCoords[idx][1]
                                     if idx == 0:
-                                        var col = pathCoords[idx][0]
-                                        var row = pathCoords[idx][1]
                                         if len(refMapClbs[col, row]) == 1:
                                             if refMapClbs[col, row][0][].type == Blocktype.CHANX or refMapClbs[col, row][0][].type == Blocktype.CHANY:
-                                                pass 
+                                                preChan = refMapClbs[col, row][0] 
                                             else:
-                                                pass
+                                                if col % 2 == 0 and row % 2 == 1:
+                                                    var name = "CHANY".join(col).join(row)
+                                                    preChan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                                elif col % 2 == 1 and row % 2 == 0:
+                                                    var name = "CHANX".join(col).join(row)
+                                                    preChan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
+                                                else:
+                                                    self.isValid = False
+                                                    return
+                                                preChan[].addPreconnection(refMapClbs[col, row][idx])
+                                                routeList[currentTrack].append(preChan)
+                                                chanArchiv[preChan[].name] = (col, row)
+                                                refMapClbs[col, row].append(preChan)
+                                        else:
+                                            for clb in refMapClbs[col, row]:
+                                                if clb[][].type == Blocktype.CHANX or clb[][].type == Blocktype.CHANY:
+                                                    preChan = clb[]
+                                                    break    
+                                            var chan = preChan[].preconnections[0]
+                                            if chan[].type == Blocktype.CHANX or chan[].type == Blocktype.CHANY:
+                                                var chanCol = chanArchiv[chan[].name][0]
+                                                var chanRow = chanArchiv[chan[].name][1]
+                                                var nextCol = pathCoords[idx+1][0]
+                                                var nextRow = pathCoords[idx+1][1]
+                                                if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
+                                                    preChan = chan
+                                            
+                                            routeList[currentTrack].append(preChan)
 
+                                    elif idx == len(pathCoords)-1:
+                                        var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+                                        if col % 2 == 0 and row % 2 == 1:
+                                            var name = "CHANY".join(col).join(row)
+                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                        elif col % 2 == 1 and row % 2 == 0:
+                                            var name = "CHANX".join(col).join(row)
+                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
+                                        else:
+                                            self.isValid = False
+                                            return
+                                        chan[].addPreconnection(preChan)
+                                        routeList[currentTrack].append(chan)
+                                        chanArchiv[chan[].name] = (col, row)
+                                        for clb in refMapClbs[col, row]:
+                                            clb[][].addPreconnection(chan)
+                                            routeList[currentTrack].append(clb[])
+                                            routedClbs.add(clb[][].name)
+
+                                        refMapClbs[col, row].append(chan)
+                                        preChan = chan
+                                        
+                                    else:
+                                        var isChan = False
+                                        var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+                                        if col % 2 == 0 and row % 2 == 1:
+                                            var name = "CHANY".join(col).join(row)
+                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                            isChan = True
+                                        elif col % 2 == 1 and row % 2 == 0:
+                                            var name = "CHANX".join(col).join(row)
+                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
+                                            isChan = True
+                                        else:
+                                            isChan = False
+                                        if isChan:
+                                            chan[].addPreconnection(preChan)
+                                            routeList[currentTrack].append(chan)
+                                            chanArchiv[chan[].name] = (col, row)
+                                            refMapClbs[col, row].append(chan)
+                                            preChan = chan
 
 
                     except e:
@@ -465,6 +538,7 @@ struct Route:
                             else:
                                 initMap(refMapClbs)  
                                 initMaze()    
+                                chanArchiv = Dict[String, Tuple[Int, Int]]()
                         else:
                             pathfinder += 1
                         initMaze()    
