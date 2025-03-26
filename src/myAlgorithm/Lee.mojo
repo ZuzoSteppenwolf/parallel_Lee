@@ -181,6 +181,19 @@ struct Route:
     var chanDelay: Float64
     var pins: List[Pin]
     var archiv: Dict[String, Tuple[Int, Int]]
+    
+    fn __init__(out self):
+        self.isValid = False
+        self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
+        self.chanMap = List[Matrix[Int]]()
+        self.clbMap = Matrix[List[Block.SharedBlock]](0, 0)
+        self.netKeys = List[String]()
+        self.nets = Dict[String, List[Tuple[String, Int]]]()
+        self.mutex = List[Mutex]()
+        self.chanWidth = 0
+        self.chanDelay = 0.0
+        self.pins = List[Pin]()
+        self.archiv = Dict[String, Tuple[Int, Int]]()
 
     fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: Matrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
@@ -551,4 +564,22 @@ struct Route:
             return
 
         parallelize[algo](len(self.netKeys), len(self.netKeys))
+
+    fn getCriticalPath(self, outpads: Set[String]) -> Float64:
+        var criticalPath: Float64 = 0.0
+        try:
+            for padname in outpads:
+                var coord = self.archiv[padname[]]
+                var clb = self.clbMap[coord[0], coord[1]][0]
+                var delays = clb[].getDelay()
+                for delay in delays:
+                    if delay[] > criticalPath:
+                        criticalPath = delay[]
+        except e:
+            criticalPath = 0.0
+            print("Error: Critical Path could not be calculated")
+        return criticalPath
+
+    fn writeFile(self, filename: String):
+        pass#TODO
             
