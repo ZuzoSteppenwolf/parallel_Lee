@@ -163,7 +163,8 @@ struct Mutex:
 
 """
 Route-Struktur
-"""       
+"""     
+@value  
 struct Route:
     alias SINK = -4
     alias SWITCH = -3

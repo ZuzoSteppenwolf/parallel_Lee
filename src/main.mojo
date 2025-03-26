@@ -9,6 +9,7 @@ from myFormats.Place import Place
 from myFormats.Arch import Arch
 from collections import Dict, List, Set
 from myAlgorithm.Lee import Route
+from memory import ArcPointer
 
 """
 @file Main.mojo
@@ -25,7 +26,7 @@ erweitert um die Laufzeit zu optimieren.
 alias STANDARD_CHANEL_WIDTH = 12
 alias DEFAULT_MAX_ITERATIONS = 30
 var maxIterations = DEFAULT_MAX_ITERATIONS
-var channalWidth = STANDARD_CHANEL_WIDTH
+var channelWidth = STANDARD_CHANEL_WIDTH
 var hasFixedChannelWidth = False
 
 """
@@ -61,7 +62,7 @@ def main():
         idx = args.index("--route_chan_width")
         hasFixedChannelWidth = True
         try:
-            channalWidth = atol(args[idx + 1])
+            channelWidth = atol(args[idx + 1])
         except:
             print("Invalid channel width: ", args[idx + 1])
             return
@@ -105,31 +106,63 @@ def main():
                 return Route()
         return Route(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins)
         
-    print()
-    print("Start routing")
-    print("----------------")
+    
+    var critPath: Float64 = 0.0
+    var route: ArcPointer[Route] = ArcPointer[Route](Route())
+    @parameter
+    fn calc():          
+        for _ in range(maxIterations):
+            route = ArcPointer[Route](compute(channelWidth))
+            if route[].isValid:
+                print("Success")
+                critPath = route[].getCriticalPath(netlist.outpads)
+                break
+            else:
+                print("Failure")
     if hasFixedChannelWidth:
-        var critPath: Float64 = 0.0
-        var route: Route
-        @parameter
-        fn fixedCalc():          
-            for _ in range(maxIterations):
-                route = compute(channalWidth)
-                if route.isValid:
-                    print("Success")
-                    critPath = route.getCriticalPath(netlist.outpads)
-                    break
-                else:
-                    print("Failure")
-        var report = benchmark.run[fixedCalc]()
+        print()
+        print("Start routing")
+        print("Channel width: ", channelWidth)
+        print("----------------")
+        var report = benchmark.run[calc]()
         print("----------------")
         print("Critical path: ", critPath)
         print()
-        report.print("ms")
+        report.print("ns")
         
     else:
-        pass
-    
+        # binäre Suche für die minimalste Kanal-Breite
+        var lowWidth = 0
+        var highWidth = channelWidth
+        var hasEnd = False
+        var report: benchmark.Report
+        var bestRoute: ArcPointer[Route]
+        var bestWidth = channelWidth
+        var bestCritPath = critPath
+        while not hasEnd:
+            print()
+            print("Start routing")
+            print("Channel width: ", channelWidth)
+            print("----------------")
+            report = benchmark.run[calc]()
+            print("----------------")
+            print("Critical path: ", critPath)
+            print()
+            report.print("ns")
+            if route[].isValid:
+                highWidth = channelWidth
+                bestWidth = channelWidth
+                bestRoute = route
+                bestCritPath = critPath
+                channelWidth = (lowWidth + highWidth) // 2
+            else:
+                lowWidth = channelWidth                
+                if lowWidth == highWidth:
+                    channelWidth = lowWidth + (highWidth // 2)
+                else:
+                    channelWidth = (lowWidth + highWidth) // 2
+            if highWidth - lowWidth < 2:
+                hasEnd = True
     return
 
 """
