@@ -13,14 +13,14 @@ Parser für das Net File Format vom VPR Tool
 struct Net:
     var isValid: Bool
     var nets: Dict[String, List[Tuple[String, Int]]]
-    var globalNets: Dict[String, List[String]]
+    var globalNets: Dict[String, List[Tuple[String, Int]]]
     var inpads: Set[String]
     var outpads: Set[String]
     var clbs: Set[String]
 
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
         self.nets = Dict[String, List[Tuple[String, Int]]]()
-        self.globalNets = Dict[String, List[String]]()
+        self.globalNets = Dict[String, List[Tuple[String, Int]]]()
         self.isValid = False
         self.inpads = Set[String]()
         self.outpads = Set[String]()
@@ -110,15 +110,15 @@ struct Net:
         else:
             self.nets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
         
-    fn addToGlobalNets(mut self, net: String, block: String, isInpin: Bool = False):
+    fn addToGlobalNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
         if net in self.globalNets:
             try:
                 if isInpin:
-                    self.globalNets[net].append(block)
+                    self.globalNets[net].append(Tuple[String, Int](block, pin))
                 else:
-                    self.globalNets[net].insert(0, block)
+                    self.globalNets[net].insert(0, Tuple[String, Int](block, pin))
             except:
                 # Darf niemals ausgelöst werden
                 print("NetError: ", net, " nicht gefunden")
         else:
-            self.globalNets[net] = List[String](block)
+            self.globalNets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))

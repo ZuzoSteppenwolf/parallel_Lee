@@ -248,8 +248,6 @@ struct Route:
             var currentTrack = (id+track) % self.chanWidth
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
-            #var routeChanMap = Matrix[Dict[Int, List[Block.SharedBlock]]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
-            #initMap(routeChanMap)
 
             try:
                 routedClbs.add(self.nets[net][0][0])
@@ -458,10 +456,12 @@ struct Route:
                                                     var name = "CHANY".join(col).join(row)
                                                     preChan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                                     preChan[].coord = ((col+1)//2, (row+1)//2)
+                                                    preChan[].subblk = currentTrack
                                                 elif col % 2 == 1 and row % 2 == 0:
                                                     var name = "CHANX".join(col).join(row)
                                                     preChan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                                     preChan[].coord = ((col+1)//2, (row+1)//2)
+                                                    preChan[].subblk = currentTrack
                                                 else:
                                                     self.isValid = False
                                                     return
@@ -491,10 +491,12 @@ struct Route:
                                             var name = "CHANY".join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                             chan[].coord = ((col+1)//2, (row+1)//2)
+                                            chan[].subblk = currentTrack
                                         elif col % 2 == 1 and row % 2 == 0:
                                             var name = "CHANX".join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                             chan[].coord = ((col+1)//2, (row+1)//2)
+                                            chan[].subblk = currentTrack
                                         else:
                                             self.isValid = False
                                             return
@@ -515,10 +517,14 @@ struct Route:
                                         if col % 2 == 0 and row % 2 == 1:
                                             var name = "CHANY".join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                            chan[].coord = ((col+1)//2, (row+1)//2)
+                                            chan[].subblk = currentTrack
                                             isChan = True
                                         elif col % 2 == 1 and row % 2 == 0:
                                             var name = "CHANX".join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
+                                            chan[].coord = ((col+1)//2, (row+1)//2)
+                                            chan[].subblk = currentTrack
                                             isChan = True
                                         else:
                                             isChan = False
@@ -581,4 +587,3 @@ struct Route:
             criticalPath = 0.0
             print("Error: Critical Path could not be calculated")
         return criticalPath
-        
