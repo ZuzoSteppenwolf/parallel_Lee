@@ -16,6 +16,7 @@ struct Block:
     var type: Blocktype
     var delay: Float64
     var preconnections: List[Self.SharedBlock]
+    var coord: Tuple[Int, Int]
 
     fn __init__(out self, name: String,  type: Blocktype = Blocktype.NONE, delay: Float64 = 0.0, subblk: Int8 = 0):
         self.name = name
@@ -23,6 +24,7 @@ struct Block:
         self.type = type
         self.delay = delay
         self.preconnections = List[Self.SharedBlock]()
+        self.coord = (0, 0)
 
 
     fn __eq__(self, other: Block) -> Bool:

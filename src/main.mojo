@@ -84,9 +84,11 @@ def main():
             try:
                 if clb[] in netlist.inpads:
                     var block = Block.SharedBlock(Block(clb[], Blocktype.INPAD, arch.t_ipad))
+                    block[].coord = (placement.archiv[clb[]][0], placement.archiv[clb[]][1])
                     clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
                 elif clb[] in netlist.outpads:
                     var block = Block.SharedBlock(Block(clb[], Blocktype.OUTPAD, arch.t_opad))
+                    block[].coord = (placement.archiv[clb[]][0], placement.archiv[clb[]][1])
                     clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
                 else:
                     hasGlobalNet = False
@@ -100,6 +102,7 @@ def main():
                     else:
                         delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
                     var block = Block.SharedBlock(Block(clb[], Blocktype.CLB, delay, len(arch.subblocks)))
+                    block[].coord = (placement.archiv[clb[]][0], placement.archiv[clb[]][1])
                     clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
             except e:
                 print("Error: ", e)
@@ -169,7 +172,7 @@ def main():
 Hilfsmethode um die Hilfe auszugeben
 """
 def print_help():
-    print("Usage: mojo main.mojo <placments> <netlist> <architecture> [OPTIONS]")
+    print("Usage: ./PLee <placments> <netlist> <architecture> [OPTIONS]")
     print()    
     print("placments: Path to the placments file")
     print("netlist: Path to the netlist file")

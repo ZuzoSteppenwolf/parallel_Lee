@@ -173,7 +173,7 @@ struct Route:
     alias CONNECTED = 0
     var isValid: Bool
     var routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]]
-    var chanMap: List[Matrix[Int]]#Matrix[Dict[String, List[Block.SharedBlock]]]
+    var chanMap: List[Matrix[Int]]
     var clbMap: Matrix[List[Block.SharedBlock]]
     var netKeys: List[String]
     var nets: Dict[String, List[Tuple[String, Int]]]
@@ -198,8 +198,6 @@ struct Route:
 
     fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: Matrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
-        #self.chanMap = Matrix[Dict[String, List[Block.SharedBlock]]](clbMap.cols, clbMap.rows)
-        #initMap(self.chanMap)
         self.chanMap = List[Matrix[Int]]()
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
@@ -214,7 +212,6 @@ struct Route:
         self.netKeys = List[String]()
         self.nets = nets
         self.archiv = archiv
-        #self.mutex = Mutex()
         self.mutex = List[Mutex]()
         for _ in range(len(self.netKeys)):
             self.mutex.append(Mutex())
@@ -460,9 +457,11 @@ struct Route:
                                                 if col % 2 == 0 and row % 2 == 1:
                                                     var name = "CHANY".join(col).join(row)
                                                     preChan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                                    preChan[].coord = ((col+1)//2, (row+1)//2)
                                                 elif col % 2 == 1 and row % 2 == 0:
                                                     var name = "CHANX".join(col).join(row)
                                                     preChan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
+                                                    preChan[].coord = ((col+1)//2, (row+1)//2)
                                                 else:
                                                     self.isValid = False
                                                     return
@@ -491,9 +490,11 @@ struct Route:
                                         if col % 2 == 0 and row % 2 == 1:
                                             var name = "CHANY".join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                            chan[].coord = ((col+1)//2, (row+1)//2)
                                         elif col % 2 == 1 and row % 2 == 0:
                                             var name = "CHANX".join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
+                                            chan[].coord = ((col+1)//2, (row+1)//2)
                                         else:
                                             self.isValid = False
                                             return
@@ -580,7 +581,4 @@ struct Route:
             criticalPath = 0.0
             print("Error: Critical Path could not be calculated")
         return criticalPath
-
-    fn writeFile(self, filename: String):
-        pass#TODO
-            
+        

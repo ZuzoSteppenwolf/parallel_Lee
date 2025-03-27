@@ -19,6 +19,7 @@ struct Place:
     var path: String
     var rows: Int
     var cols: Int
+    var clbNums: Dict[String, Int]
 
     fn __init__(out self, path: String):
         self.net = ""
@@ -29,6 +30,7 @@ struct Place:
         self.path = path
         self.rows = 0
         self.cols = 0
+        self.clbNums = Dict[String, Int]()
         self.isValid = self.parse(path)
 
 
@@ -44,6 +46,7 @@ struct Place:
             var hasNet: Bool = False
             var hasArch: Bool = False
             var hasSize: Bool = False
+            var blockNum: Int = 0
             for line in lines:
                 if line[] != "" and not line[].startswith("#") and not line[].isspace():                      
                     var words = line[].split()
@@ -113,6 +116,8 @@ struct Place:
                                     block.subblk = atol(word[])
                                     self.addToMap(block, col, row)
                                     self.archiv[name] = Tuple[Int, Int](col, row)
+                                    self.clbNums[name] = blockNum
+                                    blockNum += 1
                                 counter += 1
         except:
             return False
