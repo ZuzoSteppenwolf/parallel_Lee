@@ -56,7 +56,10 @@ struct Net:
                     if words[0] != "pinlist:":
                         return False
                     var net = words[1]
-                    self.addToNets(net, name, -1)
+                    if net in self.globalNets:
+                        self.addToGlobalNets(net, name, -1)
+                    else:
+                        self.addToNets(net, name, -1)
                     
                 elif words[0] == ".output":
                     var name = words[1]
@@ -66,11 +69,14 @@ struct Net:
                     if words[0] != "pinlist:":
                         return False
                     var net = words[1]
-                    self.addToNets(net, name, True)
+                    if net in self.globalNets:
+                        self.addToGlobalNets(net, name, -1, True)
+                    else:
+                        self.addToNets(net, name, -1, True)
                     
                 elif words[0] == ".global":
                     var name = words[1]
-                    self.addToGlobalNets(name, name)
+                    self.addToGlobalNets(name)
 
                 elif words[0] == ".clb":
                     var name = words[1]
@@ -83,7 +89,7 @@ struct Net:
                         var net = words[i]
                         if net != "open":
                             if pins[i].isGlobal:
-                                self.addToGlobalNets(net, name, pins[i].isInpin)
+                                self.addToGlobalNets(net, name, i, pins[i].isInpin)
                             else:
                                 self.addToNets(net, name, i, pins[i].isInpin)
                     for i in range(sbblknum):
@@ -122,3 +128,6 @@ struct Net:
                 print("NetError: ", net, " nicht gefunden")
         else:
             self.globalNets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
+
+    fn addToGlobalNets(mut self, net: String):
+            self.globalNets[net] = List[Tuple[String, Int]]()
