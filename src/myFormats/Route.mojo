@@ -104,7 +104,8 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                     for clb in globalNets[net]:
                         var clbName = clb[][0]
                         var line: String = "Block ".join(clbName).join(" (#").join(clbNums[clbName]).join(") at (").join(archiv[clbName][0]).join(", ").
-                           join(archiv[clbName][1]).join("), Pin Class ")
+                           join(archiv[clbName][1]).join("), Pin Class ").join(clb[][1]).join(")\n")
+                        """
                         var block: Block.SharedBlock = Block.SharedBlock(Block("Error"))
                         for otherClb in clbMap[archiv[clbName][0], archiv[clbName][1]]:
                             if otherClb[][].name == clbName:
@@ -120,6 +121,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                             print("Error Write Net: ", net)
                             return False
                         line = line.join(".\n")
+                        """
                         file.write(line)
                 writeNL()
 

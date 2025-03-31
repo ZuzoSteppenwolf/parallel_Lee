@@ -10,6 +10,7 @@ from myFormats.Arch import Arch
 from collections import Dict, List, Set
 from myAlgorithm.Lee import Route
 from memory import ArcPointer
+from myFormats.Route import *
 
 """
 @file Main.mojo
@@ -37,7 +38,7 @@ def main():
     for arg in argv():
         args.append(String(arg))
 
-    if len(args) < 4 or "-h" in args or "--help" in args:
+    if len(args) < 5 or "-h" in args or "--help" in args:
         print_help()
 
     print("Read file ", args[1])
@@ -93,7 +94,10 @@ def main():
                 else:
                     hasGlobalNet = False
                     for net in netlist.globalNets.keys():
-                        hasGlobalNet = clb[] in netlist.globalNets[net[]]
+                        for block in netlist.globalNets[net[]]:
+                            if block[][0] == clb[]:
+                                hasGlobalNet = True
+                                break
                         if hasGlobalNet:
                             break
                     delay = 0.0
@@ -139,7 +143,7 @@ def main():
         var highWidth = channelWidth
         var hasEnd = False
         var report: benchmark.Report
-        var bestRoute: ArcPointer[Route]
+        var bestRoute: ArcPointer[Route] = ArcPointer[Route](Route())
         var bestWidth = channelWidth
         var bestCritPath = critPath
         while not hasEnd:
@@ -166,13 +170,42 @@ def main():
                     channelWidth = (lowWidth + highWidth) // 2
             if highWidth - lowWidth < 2:
                 hasEnd = True
+        
+        route = bestRoute
+        critPath = bestCritPath
+        channelWidth = bestWidth
+
+    print()
+    if route[].isValid:
+        print("Routing successful")
+        print("Critical path: ", critPath)
+        print("Channel width: ", channelWidth)
+        print()
+        var netPins: Dict[String, Dict[String, Int]] = Dict[String, Dict[String, Int]]()
+        for net in netlist.nets:
+            netPins[net[]] = Dict[String, Int]()
+            for pin in netlist.nets[net[]]:
+                netPins[net[]][pin[][0]] = pin[][1]
+        if writeRouteFile(args[4], route[].routeLists, netlist.netList, arch.pins,
+            route[].clbMap, placement.clbNums, netPins, netlist.globalNets, placement.archiv):
+            print("Routing result written to file")
+        else:
+            print("Routing result not written to file")
+        print()
+    else:
+        print("Routing failed")
+        print()
+   
+    print()
+    print("Routing finished")
+    print()
     return
 
 """
 Hilfsmethode um die Hilfe auszugeben
 """
 def print_help():
-    print("Usage: ./PLee <placments> <netlist> <architecture> [OPTIONS]")
+    print("Usage: ./PLee <placments> <netlist> <architecture> <route> [OPTIONS]")
     print()    
     print("placments: Path to the placments file")
     print("netlist: Path to the netlist file")

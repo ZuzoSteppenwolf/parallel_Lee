@@ -17,6 +17,7 @@ struct Net:
     var inpads: Set[String]
     var outpads: Set[String]
     var clbs: Set[String]
+    var netList: List[String]
 
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
         self.nets = Dict[String, List[Tuple[String, Int]]]()
@@ -25,6 +26,7 @@ struct Net:
         self.inpads = Set[String]()
         self.outpads = Set[String]()
         self.clbs = Set[String]()
+        self.netList = List[String]()
         self.isValid = self.parse(path, sbblknum, pins)
         
 
@@ -35,6 +37,7 @@ struct Net:
         self.inpads = Set[String](other.inpads)
         self.outpads = Set[String](other.outpads)
         self.clbs = Set[String](other.clbs)
+        self.netList = List[String](other.netList)
 
 
     fn parse(mut self, path: String, sbblknum: Int8, pins: List[Pin]) -> Bool:
@@ -106,6 +109,8 @@ struct Net:
     fn addToNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
         if net in self.nets:
             try:
+                if len(self.nets[net]) == 0:
+                    self.netList.append(net)
                 if isInpin:
                     self.nets[net].append(Tuple[String, Int](block, pin))
                 else:
@@ -115,10 +120,13 @@ struct Net:
                 print("NetError: ", net, " nicht gefunden") 
         else:
             self.nets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
+            self.netList.append(net)
         
     fn addToGlobalNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
-        if net in self.globalNets:
+        if net in self.globalNets:           
             try:
+                if len(self.globalNets[net]) == 0:
+                    self.netList.append(net)
                 if isInpin:
                     self.globalNets[net].append(Tuple[String, Int](block, pin))
                 else:
@@ -128,6 +136,7 @@ struct Net:
                 print("NetError: ", net, " nicht gefunden")
         else:
             self.globalNets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
+            self.netList.append(net)
 
     fn addToGlobalNets(mut self, net: String):
             self.globalNets[net] = List[Tuple[String, Int]]()
