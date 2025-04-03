@@ -6,3 +6,5 @@
 .magic
 
 .vscode
+test/output
+log
