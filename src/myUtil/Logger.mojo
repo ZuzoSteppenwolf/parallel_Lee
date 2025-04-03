@@ -1,5 +1,6 @@
 from os import remove
 from memory import ArcPointer
+from utils.write import write_args
 
 """
 @file Logger.mojo
@@ -30,12 +31,19 @@ struct Log:
     fn write[T: Writable](mut self, text: T):
         self.file[].write(text)
 
+    fn write[*Ts: Writable](mut self, *text: *Ts):
+        write_args(self.file[], text)
+
     fn writeln(mut self, text: String):
         self.file[].write(text, "\n")
 
 
     fn writeln[T: Writable](mut self, text: T):
         self.file[].write(text, "\n")
+
+    fn writeln[*Ts: Writable](mut self, *text: *Ts):
+        write_args(self.file[], text)
+        self.file[].write("\n")
 
     fn __del__(owned self):
         if self.file.count() == 1:

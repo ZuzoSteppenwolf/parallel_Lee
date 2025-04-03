@@ -67,3 +67,10 @@ fn test_Logger5() raises:
 
     with open(log.path, "r") as file:
         assert_equal(file.read(), "12")
+
+fn test_Logger6() raises:
+    var log = Log("test/output/test6.log")
+    log.write(1, 2, 3)
+
+    with open(log.path, "r") as file:
+        assert_equal(file.read(), "123")

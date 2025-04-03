@@ -10,5 +10,5 @@ pinlist: o_1_
 pinlist: pclk 
 
 .clb o_1_  # Only LUT used.
-pinlist: o_1_ open open open o_1_ pclk 
+pinlist: i_0_ open open open o_1_ pclk 
 subblock: o_1_ 0 open open open 4 5 

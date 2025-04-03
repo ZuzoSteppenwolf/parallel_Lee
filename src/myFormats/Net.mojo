@@ -1,5 +1,6 @@
-from collections import Dict, List, Set
+from collections import Dict, List, Set, Optional
 from myUtil.Util import clearUpLines
+from myUtil.Logger import Log
 from myFormats.Arch import Pin
 """
 @file Net.mojo
@@ -18,6 +19,7 @@ struct Net:
     var outpads: Set[String]
     var clbs: Set[String]
     var netList: List[String]
+    var log: Optional[Log]
 
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
         self.nets = Dict[String, List[Tuple[String, Int]]]()
@@ -27,6 +29,10 @@ struct Net:
         self.outpads = Set[String]()
         self.clbs = Set[String]()
         self.netList = List[String]()
+        try:
+            self.log = Log("log/net.log")
+        except:
+            self.log = None
         self.isValid = self.parse(path, sbblknum, pins)
         
 
@@ -38,6 +44,7 @@ struct Net:
         self.outpads = Set[String](other.outpads)
         self.clbs = Set[String](other.clbs)
         self.netList = List[String](other.netList)
+        self.log = other.log
 
 
     fn parse(mut self, path: String, sbblknum: Int8, pins: List[Pin]) -> Bool:
@@ -88,14 +95,14 @@ struct Net:
                     words = line.split()
                     if words[0] != "pinlist:":
                         return False
-                    for i in range(1, len(pins)):
+                    for i in range(1, len(pins)+1):
                         var net = words[i]
                         if net != "open":
-                            if pins[i].isGlobal:
-                                self.addToGlobalNets(net, name, i, pins[i].isInpin)
+                            if pins[i-1].isGlobal:
+                                self.addToGlobalNets(net, name, i-1, pins[i-1].isInpin)
                             else:
-                                self.addToNets(net, name, i, pins[i].isInpin)
-                    for i in range(sbblknum):
+                                self.addToNets(net, name, i-1, pins[i-1].isInpin)
+                    for _ in range(sbblknum):
                         line = lines.pop(0)
                         words = line.split()
                         if words[0] != "subblock:":
@@ -117,10 +124,14 @@ struct Net:
                     self.nets[net].insert(0, Tuple[String, Int](block, pin))
             except:
                 # Darf niemals ausgelöst werden
-                print("NetError: ", net, " nicht gefunden") 
+                if self.log != None:
+                    self.log.value().writeln("NetError: ", net, " nicht gefunden")
         else:
             self.nets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
             self.netList.append(net)
+
+        if self.log != None:
+            self.log.value().writeln("Net: ", net, " ", block, " ", pin)
         
     fn addToGlobalNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
         if net in self.globalNets:           
@@ -133,10 +144,16 @@ struct Net:
                     self.globalNets[net].insert(0, Tuple[String, Int](block, pin))
             except:
                 # Darf niemals ausgelöst werden
-                print("NetError: ", net, " nicht gefunden")
+                if self.log != None:
+                    self.log.value().writeln("NetError: ", net, " nicht gefunden")
         else:
             self.globalNets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
             self.netList.append(net)
 
+        if self.log != None:
+            self.log.value().writeln("GlobalNet: ", net, " ", block, " ", pin)
+
     fn addToGlobalNets(mut self, net: String):
             self.globalNets[net] = List[Tuple[String, Int]]()
+            if self.log != None:
+                self.log.value().writeln("GlobalNet: ", net)
