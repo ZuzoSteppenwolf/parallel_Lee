@@ -6,7 +6,7 @@ from testing import assert_equal
 Test für den Logger
 """
 
-fn test_Logger1() raises:
+def test_Logger1():
     var log = Log("test/output/test1.log")
     log.writeln("Test")
     log.writeln("Test2")
@@ -32,7 +32,7 @@ fn test_Logger1() raises:
         assert_equal(lines[8], "Test9")
         assert_equal(lines[9], "Test10")
 
-fn test_Logger2() raises:
+def test_Logger2():
     var log = Log("test/output/test2.log")
     log.write("Test")
     log.write("Test2")
@@ -41,7 +41,7 @@ fn test_Logger2() raises:
     with open(log.path, "r") as file:
         assert_equal(file.read(), "TestTest2Test3")
 
-fn test_Logger3() raises: 
+def test_Logger3(): 
     var log = Log("test/output/test3.log")
     log.write("Test")
     log = Log("test/output/test3.log")
@@ -50,7 +50,7 @@ fn test_Logger3() raises:
     with open(log.path, "r") as file:
         assert_equal(file.read(), "Test2")
 
-fn test_Logger4() raises:
+def test_Logger4():
     var log = Log("test/output/test4.log")
     log.write(1)
     log.write(2)
@@ -59,7 +59,7 @@ fn test_Logger4() raises:
     with open(log.path, "r") as file:
         assert_equal(file.read(), "123")
 
-fn test_Logger5() raises:
+def test_Logger5():
     var log = Log("test/output/test5.log")
     log.write(1)
     var logCopy = log
@@ -68,7 +68,7 @@ fn test_Logger5() raises:
     with open(log.path, "r") as file:
         assert_equal(file.read(), "12")
 
-fn test_Logger6() raises:
+def test_Logger6():
     var log = Log("test/output/test6.log")
     log.write(1, 2, 3)
 
