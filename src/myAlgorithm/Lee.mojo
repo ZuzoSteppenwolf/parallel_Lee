@@ -50,12 +50,12 @@ struct PathTree:
     fn computePath(mut self) raises:
         var col = self.coord[0]
         var row = self.coord[1]
-        if self.chanMap[][col, row] != Route.EMPTY 
-            and self.chanMap[][col, row] != Route.SWITCH
+        if self.chanMap[][col, row] != Lee.EMPTY 
+            and self.chanMap[][col, row] != Lee.SWITCH
             and self.chanMap[][col, row] != self.id
-            and self.chanMap[][col, row] != Route.CONNECTED:
+            and self.chanMap[][col, row] != Lee.CONNECTED:
             self.isDeadEnd = True
-        elif self.pathfinder == Route.CONNECTED:
+        elif self.pathfinder == Lee.CONNECTED:
             self.isLeaf = True
         else:
             if col > 0 and self.maze[][col-1, row] == self.pathfinder - 1:
@@ -162,10 +162,10 @@ struct Mutex:
 
 
 """
-Route-Struktur
+Lee-Struktur
 """     
 @value  
-struct Route:
+struct Lee:
     alias SINK = -4
     alias SWITCH = -3
     alias BLOCKED = -2
@@ -201,13 +201,13 @@ struct Route:
         self.chanMap = List[Matrix[Int]]()
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
-            initMap(self.chanMap[i], Route.EMPTY)
+            initMap(self.chanMap[i], Lee.EMPTY)
             for col in range(1, self.chanMap[i].cols, 2):
                 for row in range(1, self.chanMap[i].rows, 2):
-                    self.chanMap[i][col, row] = Route.BLOCKED
+                    self.chanMap[i][col, row] = Lee.BLOCKED
             for col in range(0, self.chanMap[i].cols, 2):
                 for row in range(0, self.chanMap[i].rows, 2):
-                    self.chanMap[i][col, row] = Route.SWITCH
+                    self.chanMap[i][col, row] = Lee.SWITCH
         self.clbMap = clbMap
         self.netKeys = List[String]()
         self.nets = nets
@@ -225,11 +225,11 @@ struct Route:
         
         @parameter
         fn algo(id: Int):
-            alias SINK = Route.SINK
-            alias SWITCH = Route.SWITCH
-            alias BLOCKED = Route.BLOCKED
-            alias EMPTY = Route.EMPTY
-            alias CONNECTED = Route.CONNECTED
+            alias SINK = Lee.SINK
+            alias SWITCH = Lee.SWITCH
+            alias BLOCKED = Lee.BLOCKED
+            alias EMPTY = Lee.EMPTY
+            alias CONNECTED = Lee.CONNECTED
             alias START = CONNECTED + 1
             
             var routeList = Dict[Int, List[Block.SharedBlock]]()
@@ -326,14 +326,14 @@ struct Route:
                     for row in range(maze.rows):
                         await self.mutex[currentTrack].visit()
                         try:
-                            if self.chanMap[currentTrack][col, row] == Route.EMPTY 
-                                or self.chanMap[currentTrack][col, row] == Route.BLOCKED:
+                            if self.chanMap[currentTrack][col, row] == Lee.EMPTY 
+                                or self.chanMap[currentTrack][col, row] == Lee.BLOCKED:
                                 maze[col, row] = self.chanMap[currentTrack][col, row]
 
                             elif self.chanMap[currentTrack][col, row] == id:
                                 maze[col, row] = CONNECTED
 
-                            elif self.chanMap[currentTrack][col, row] == Route.SWITCH:
+                            elif self.chanMap[currentTrack][col, row] == Lee.SWITCH:
                                 maze[col, row] = EMPTY
 
                             else:
@@ -543,7 +543,7 @@ struct Route:
                     finally:
                         await self.mutex[currentTrack].unlock(id)
                     pathfinder = START
-                    initMap(maze, Route.EMPTY)
+                    initMap(maze, Lee.EMPTY)
                     initMaze()
                 else:
                     try:

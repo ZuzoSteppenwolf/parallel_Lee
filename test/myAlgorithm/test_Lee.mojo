@@ -5,7 +5,7 @@ from myFormats.Net import *
 from myUtil.Enum import *
 from myUtil.Matrix import *
 from myUtil.Block import *
-from myAlgorithm.Lee import Route
+from myAlgorithm.Lee import Lee
 
 
 """
@@ -43,6 +43,6 @@ def test_Lee_1():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Route(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
 
     assert_true(route.isValid)

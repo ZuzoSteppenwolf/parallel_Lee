@@ -8,7 +8,7 @@ from myFormats.Net import Net
 from myFormats.Place import Place
 from myFormats.Arch import Arch
 from collections import Dict, List, Set
-from myAlgorithm.Lee import Route
+from myAlgorithm.Lee import Lee
 from memory import ArcPointer
 from myFormats.Route import *
 
@@ -77,7 +77,7 @@ def main():
             return
 
     @parameter
-    fn compute(chanWidth: Int) -> Route:
+    fn compute(chanWidth: Int) -> Lee:
         print("Compute")
         var clbMap = Matrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2)
         initMap(clbMap)
@@ -110,16 +110,16 @@ def main():
                     clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
             except e:
                 print("Error: ", e)
-                return Route()
-        return Route(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins)
+                return Lee()
+        return Lee(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins)
         
     
     var critPath: Float64 = 0.0
-    var route: ArcPointer[Route] = ArcPointer[Route](Route())
+    var route: ArcPointer[Lee] = ArcPointer[Lee](Lee())
     @parameter
     fn calc():          
         for _ in range(maxIterations):
-            route = ArcPointer[Route](compute(channelWidth))
+            route = ArcPointer[Lee](compute(channelWidth))
             if route[].isValid:
                 print("Success")
                 critPath = route[].getCriticalPath(netlist.outpads)
@@ -143,7 +143,7 @@ def main():
         var highWidth = channelWidth
         var hasEnd = False
         var report: benchmark.Report
-        var bestRoute: ArcPointer[Route] = ArcPointer[Route](Route())
+        var bestRoute: ArcPointer[Lee] = ArcPointer[Lee](Lee())
         var bestWidth = channelWidth
         var bestCritPath = critPath
         while not hasEnd:
