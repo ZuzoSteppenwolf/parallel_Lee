@@ -31,7 +31,7 @@ struct ChanWidth:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return "Type: " + str(self.type) + ", Peak: " + str(self.peak) + ", Width: " + str(self.width) + ", Xpeak: " + str(self.xpeak) + ", DC: " + str(self.dc)
+        return "Type: " + String(self.type) + ", Peak: " + String(self.peak) + ", Width: " + String(self.width) + ", Xpeak: " + String(self.xpeak) + ", DC: " + String(self.dc)
 
 @value
 struct Pin:
@@ -55,9 +55,9 @@ struct Pin:
     fn __str__(self) -> String:
         var sides = String("")
         for side in self.sides:
-            sides += str(side) + String(", ")
+            sides += String(side) + String(", ")
             sides = sides[:-2]
-        return "IsInpin: " + str(self.isInpin) + ", PinClass: " + str(self.pinClass) + ", IsGlobal: " + str(self.isGlobal) + ", Sides: " + str(sides)
+        return "IsInpin: " + String(self.isInpin) + ", PinClass: " + String(self.pinClass) + ", IsGlobal: " + String(self.isGlobal) + ", Sides: " + String(sides)
 
 @value
 struct Segmentline:
@@ -78,7 +78,7 @@ struct Segmentline:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return "Frequency: " + str(self.frequency) + ", Length: " + str(self.length) + ", IsLongline: " + str(self.isLongline) + ", WireSwitch: " + str(self.wire_switch) + ", OpinSwitch: " + str(self.opin_switch) + ", FracCB: " + str(self.frac_cb) + ", FracSB: " + str(self.frac_sb) + ", Rmetal: " + str(self.rmetal) + ", Cmetal: " + str(self.cmetal)
+        return "Frequency: " + String(self.frequency) + ", Length: " + String(self.length) + ", IsLongline: " + String(self.isLongline) + ", WireSwitch: " + String(self.wire_switch) + ", OpinSwitch: " + String(self.opin_switch) + ", FracCB: " + String(self.frac_cb) + ", FracSB: " + String(self.frac_sb) + ", Rmetal: " + String(self.rmetal) + ", Cmetal: " + String(self.cmetal)
 
 @value
 struct Switch:
@@ -96,7 +96,7 @@ struct Switch:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return "Switch: " + str(self.switch) + ", IsBuffered: " + str(self.isBufferes) + ", R: " + str(self.R) + ", Cin: " + str(self.Cin) + ", Cout: " + str(self.Cout) + ", Tdel: " + str(self.Tdel)
+        return "Switch: " + String(self.switch) + ", IsBuffered: " + String(self.isBufferes) + ", R: " + String(self.R) + ", Cin: " + String(self.Cin) + ", Cout: " + String(self.Cout) + ", Tdel: " + String(self.Tdel)
 
 @value
 struct Subblock:
@@ -111,7 +111,7 @@ struct Subblock:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return "T_Comb: " + str(self.t_comb) + ", T_Seq_In: " + str(self.t_seq_in) + ", T_Seq_Out: " + str(self.t_seq_out)
+        return "T_Comb: " + String(self.t_comb) + ", T_Seq_In: " + String(self.t_seq_in) + ", T_Seq_Out: " + String(self.t_seq_out)
 
 @value
 struct Arch:

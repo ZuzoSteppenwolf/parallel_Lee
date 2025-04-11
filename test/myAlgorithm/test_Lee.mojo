@@ -37,7 +37,6 @@ def test_Lee_1():
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
-    nets["1"] = List[Tuple[String, Int]]()
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]] = List[Block.SharedBlock](Block.SharedBlock(clb))
