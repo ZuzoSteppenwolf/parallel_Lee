@@ -40,6 +40,7 @@ def main():
 
     if len(args) < 5 or "-h" in args or "--help" in args:
         print_help()
+        return
 
     print("Read file ", args[1])
     placement = Place(args[1])

@@ -5,7 +5,7 @@ from myFormats.Net import *
 from myUtil.Enum import *
 from myUtil.Matrix import *
 from myUtil.Block import *
-from myUtil.Util import *
+from myUtil.Util import initMap
 from myAlgorithm.Lee import Lee
 
 

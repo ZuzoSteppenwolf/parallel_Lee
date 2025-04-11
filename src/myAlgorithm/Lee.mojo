@@ -4,8 +4,7 @@ from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
 from myFormats.Arch import *
-from collections import Dict, List, Set, InlineArray
-from os import Atomic
+from collections import Dict, List, Set
 from time import sleep
 from algorithm import parallelize
 
