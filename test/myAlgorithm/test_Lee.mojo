@@ -5,6 +5,7 @@ from myFormats.Net import *
 from myUtil.Enum import *
 from myUtil.Matrix import *
 from myUtil.Block import *
+from myUtil.Util import *
 from myAlgorithm.Lee import Lee
 
 
@@ -20,6 +21,7 @@ def test_Lee_1():
     var chanWidth = 1
     var nets = Dict[String, List[Tuple[String, Int]]]()
     var clbMap = Matrix[List[Block.SharedBlock]](4, 4)
+    initMap(clbMap)
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
@@ -33,13 +35,13 @@ def test_Lee_1():
     nets["1"] = List[Tuple[String, Int]]()
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
-    clbMap[clb.coord[0], clb.coord[1]] = List[Block.SharedBlock](Block.SharedBlock(clb))
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
-    clbMap[clb.coord[0], clb.coord[1]] = List[Block.SharedBlock](Block.SharedBlock(clb))
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
