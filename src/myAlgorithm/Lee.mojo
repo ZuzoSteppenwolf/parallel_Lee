@@ -122,43 +122,43 @@ struct PathTree:
 Mutex-Struktur
 """
 struct Mutex:
-    var owner: Atomic[DType.int64]
-    var visitor: Atomic[DType.int64]
+    var owner: ArcPointer[Int]
+    var visitor:  ArcPointer[Int]
 
     alias FREE = -1
 
 
     fn __init__(out self):
-        self.owner = Atomic[DType.int64](self.FREE)
-        self.visitor = Atomic[DType.int64](0)
+        self.owner =  ArcPointer[Int](self.FREE)
+        self.visitor =  ArcPointer[Int](0)
 
     fn __copyinit__(out self, other: Mutex):
-        self.owner = Atomic[DType.int64](other.owner.load())
-        self.visitor = Atomic[DType.int64](other.visitor.load())
+        self.owner =  other.owner
+        self.visitor =  other.visitor
 
     fn __moveinit__(out self, owned other: Mutex):
-        self.owner = Atomic[DType.int64](other.owner.load())
-        self.visitor = Atomic[DType.int64](other.visitor.load())
+        self.owner =  other.owner
+        self.visitor =  other.visitor
 
     async fn lock(mut self, id: Int):
-        var owner: SIMD[DType.int64, 1] = self.FREE
-        while not self.owner.compare_exchange_weak(owner, id):
-            owner = self.FREE
+        while not self.owner[] == self.FREE:
             sleep(0.1)
-        while self.visitor.load() != 0:
+        self.owner[] = id
+        while self.visitor[] != 0:
             sleep(0.1)
     
     async fn unlock(mut self, id: Int):
-        var owner: SIMD[DType.int64, 1] = id
-        _ = self.owner.compare_exchange_weak(owner, self.FREE)
+        if self.owner[] == id:
+            self.owner[] = self.FREE
 
     async fn visit(mut self):
-        while self.owner.load() != self.FREE:
+        while self.owner[] != self.FREE:
             sleep(0.1)
-        _ = self.visitor.fetch_add(1)
+        self.visitor[] += 1
 
     async fn unvisit(mut self):
-        _ = self.visitor.fetch_sub(1)
+        if self.visitor[] > 0:
+            self.visitor[] -= 1
 
 
 """
