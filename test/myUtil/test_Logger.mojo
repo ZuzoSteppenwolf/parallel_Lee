@@ -7,7 +7,7 @@ Test für den Logger
 """
 
 def test_Logger1():
-    var log = Log("test/output/test1.log")
+    var log = Log[False]("test/output/test1.log")
     log.writeln("Test")
     log.writeln("Test2")
     log.writeln("Test3")
@@ -21,56 +21,67 @@ def test_Logger1():
 
     with open(log.path, "r") as file:
         lines = file.read().split("\n")
-        assert_equal(lines[0], "Test")
-        assert_equal(lines[1], "Test2")
-        assert_equal(lines[2], "Test3")
-        assert_equal(lines[3], "Test4")
-        assert_equal(lines[4], "Test5")
-        assert_equal(lines[5], "Test6")
-        assert_equal(lines[6], "Test7")
-        assert_equal(lines[7], "Test8")
-        assert_equal(lines[8], "Test9")
-        assert_equal(lines[9], "Test10")
+        assert_equal(lines[0], "Log created")
+        assert_equal(lines[1], "Test")
+        assert_equal(lines[2], "Test2")
+        assert_equal(lines[3], "Test3")
+        assert_equal(lines[4], "Test4")
+        assert_equal(lines[5], "Test5")
+        assert_equal(lines[6], "Test6")
+        assert_equal(lines[7], "Test7")
+        assert_equal(lines[8], "Test8")
+        assert_equal(lines[9], "Test9")
+        assert_equal(lines[10], "Test10")
 
 def test_Logger2():
-    var log = Log("test/output/test2.log")
+    var log = Log[False]("test/output/test2.log")
     log.write("Test")
     log.write("Test2")
     log.write("Test3")
 
     with open(log.path, "r") as file:
-        assert_equal(file.read(), "TestTest2Test3")
+        lines = file.read().split("\n")
+        assert_equal(lines[0], "Log created")
+        assert_equal(lines[1], "TestTest2Test3")
 
 def test_Logger3(): 
-    var log = Log("test/output/test3.log")
+    var log = Log[False]("test/output/test3.log")
     log.write("Test")
-    log = Log("test/output/test3.log")
+    log = Log[False]("test/output/test3.log")
     log.write("Test2")
 
     with open(log.path, "r") as file:
-        assert_equal(file.read(), "Test2")
+        lines = file.read().split("\n")
+        assert_equal(lines[0], "Log created")
+        assert_equal(lines[1], "Test2")
 
 def test_Logger4():
-    var log = Log("test/output/test4.log")
+    var log = Log[False]("test/output/test4.log")
     log.write(1)
     log.write(2)
     log.write(3)
 
     with open(log.path, "r") as file:
-        assert_equal(file.read(), "123")
+        lines = file.read().split("\n")
+        assert_equal(lines[0], "Log created")
+        assert_equal(lines[1], "123")
 
 def test_Logger5():
-    var log = Log("test/output/test5.log")
+    var log = Log[False]("test/output/test5.log")
     log.write(1)
     var logCopy = log
     logCopy.write(2)
 
     with open(log.path, "r") as file:
-        assert_equal(file.read(), "12")
+        lines = file.read().split("\n")
+        assert_equal(lines[0], "Log created")
+        assert_equal(lines[1], "12")
 
 def test_Logger6():
-    var log = Log("test/output/test6.log")
+    var log = Log[False]("test/output/test6.log")
     log.write(1, 2, 3)
 
     with open(log.path, "r") as file:
-        assert_equal(file.read(), "123")
+        lines = file.read().split("\n")
+        assert_equal(lines[0], "Log created")
+        assert_equal(lines[1], "123")

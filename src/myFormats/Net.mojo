@@ -19,7 +19,7 @@ struct Net:
     var outpads: Set[String]
     var clbs: Set[String]
     var netList: List[String]
-    var log: Optional[Log]
+    var log: Optional[Log[True]]
 
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
         self.nets = Dict[String, List[Tuple[String, Int]]]()
@@ -30,7 +30,7 @@ struct Net:
         self.clbs = Set[String]()
         self.netList = List[String]()
         try:
-            self.log = Log("log/net.log")
+            self.log = Log[True]("log/net.log")
         except:
             self.log = None
         self.isValid = self.parse(path, sbblknum, pins)

@@ -1,15 +1,20 @@
 #!/bin/bash
 
-# Erzeugt Mojo Packages, aus den Quellen, im test Verzeichnis
-# und führt die Tests aus.
+# Führt die Tests aus
 # @author Marvin Wollbrück
 
-magic run mojo test -I src test
-#magic run mojo package src/myUtil -o test/myUtil.mojopkg
-#magic run mojo package src/myFormats -o test/myFormats.mojopkg
-#magic run mojo package src/myAlgorithm -o test/myAlgorithm.mojopkg
+#magic run mojo test -I src test
 
-#magic run mojo test test/test_Matrix.mojo
-#magic run mojo test test/test_PlaceFormat.mojo 
-#magic run mojo test test/test_ArchFormat.mojo 
-#magic run mojo test test/test_Util.mojo
+#magic run mojo test -I src test/myUtil
+#magic run mojo test -I src test/myUtil/test_Logger.mojo 
+#magic run mojo test -I src test/myUtil/test_Block.mojo
+#magic run mojo test -I src test/myUtil/test_Matrix.mojo
+#magic run mojo test -I src test/myUtil/test_Util.mojo
+
+#magic run mojo test -I src test/myFormats
+#magic run mojo test -I src test/myFormats/test_ArchFormat.mojo
+magic run mojo test -I src test/myFormats/test_NetFormat.mojo
+#magic run mojo test -I src test/myFormats/test_PlaceFormat.mojo
+
+#magic run mojo test -I src test/myAlgorithm
+#magic run mojo test -I src test/myAlgorithm/test_Lee.mojo
