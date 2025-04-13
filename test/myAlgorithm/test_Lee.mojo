@@ -18,6 +18,7 @@ Test für den Lee Algorithmus
 """
 
 def test_Lee_1():
+    alias id = 0
     var chanWidth = 1
     var nets = Dict[String, List[Tuple[String, Int]]]()
     var clbMap = Matrix[List[Block.SharedBlock]](4, 4)
@@ -47,4 +48,27 @@ def test_Lee_1():
 
     var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
 
-    assert_true(route.isValid)
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.getCriticalPath(outpads), 6, "Lee Kritischerpfad ist nicht 6")
+    assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
+    assert_equal(route.chanMap[0][2, 1], id, "kein Kanal bei (2, 1)")
+    assert_equal(route.chanMap[0][2, 3], id, "kein Kanal bei (2, 3)")
+    assert_equal(route.chanMap[0][3, 4], id, "kein Kanal bei (3, 4)")
+    assert_equal(route.routeLists["1"][0][0][].name, "A", "Falscher Source Block")
+    assert_equal(route.routeLists["1"][0][1][].type, Blocktype.CHANX, "Kein CHANX Kanal bei (1, 0)")
+    assert_equal(route.routeLists["1"][0][1][].coord[0], 1, "Falsche CHANX Kanal Koordinaten bei (1, 0)")
+    assert_equal(route.routeLists["1"][0][1][].coord[1], 0, "Falsche CHANX Kanal Koordinaten bei (1, 0)")
+    assert_equal(route.routeLists["1"][0][2][].type, Blocktype.CHANY, "Kein CHANY Kanal bei (1, 1)")
+    assert_equal(route.routeLists["1"][0][2][].coord[0], 1, "Falsche CHANY Kanal Koordinaten bei (1, 1)")
+    assert_equal(route.routeLists["1"][0][2][].coord[1], 1, "Falsche CHANY Kanal Koordinaten bei (1, 1)")
+    assert_equal(route.routeLists["1"][0][3][].type, Blocktype.CHANY, "Kein CHANY Kanal bei (1, 2)")
+    assert_equal(route.routeLists["1"][0][3][].coord[0], 1, "Falsche CHANY Kanal Koordinaten bei (1, 2)")
+    assert_equal(route.routeLists["1"][0][3][].coord[1], 2, "Falsche CHANY Kanal Koordinaten bei (1, 2)")
+    assert_equal(route.routeLists["1"][0][4][].type, Blocktype.CHANX, "Kein CHANX Kanal bei (2, 2)")
+    assert_equal(route.routeLists["1"][0][4][].coord[0], 2, "Falsche CHANX Kanal Koordinaten bei (2, 2)")
+    assert_equal(route.routeLists["1"][0][4][].coord[0], 2, "Falsche CHANX Kanal Koordinaten bei (2, 2)")
+    assert_equal(route.routeLists["1"][0][5][].name, "B", "Falscher Sink Block")
+

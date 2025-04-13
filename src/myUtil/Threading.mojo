@@ -36,7 +36,7 @@ struct Mutex:
     # Sperrt den Mutex
     # und wartet bis keine Besucher mehr da sind
     # @param id: ID des Workers
-    async fn lock(mut self, id: Int):
+    fn lock(mut self, id: Int):
         while not self.owner[] == self.FREE:
             sleep(0.1)
         self.owner[] = id
@@ -45,18 +45,18 @@ struct Mutex:
     
     # Entsperrt den Mutex
     # @param id: ID des Workers
-    async fn unlock(mut self, id: Int):
+    fn unlock(mut self, id: Int):
         if self.owner[] == id:
             self.owner[] = self.FREE
 
     # Besucht den Mutex
     # wartet bis der Mutex frei ist
-    async fn visit(mut self):
+    fn visit(mut self):
         while self.owner[] != self.FREE:
             sleep(0.1)
         self.visitor[] += 1
 
     # Verlaesst den Mutex
-    async fn unvisit(mut self):
+    fn unvisit(mut self):
         if self.visitor[] > 0:
             self.visitor[] -= 1
