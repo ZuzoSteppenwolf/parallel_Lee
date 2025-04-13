@@ -3,6 +3,7 @@ from myUtil.Matrix import *
 from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
+from myUtil.Logger import Log
 from myFormats.Arch import *
 from collections import Dict, List, Set
 from time import sleep
@@ -18,6 +19,8 @@ Die Netze werden in echtzeit parallel verarbeitet.
 
 """
 PathTree-Struktur
+
+Die Struktur wird verwendet um den optimalsten Pfad zu finden.
 """
 @value
 struct PathTree:
@@ -32,6 +35,14 @@ struct PathTree:
     var pathfinder: Int
     var id: Int
 
+    # Konstruktor
+    # @param id: ID des Pfades
+    # @param coord: Koordinate des Pfades
+    # @param maze: Zeiger auf das Maze
+    # @param chanMap: Zeiger auf die Kanal-Map
+    # @param lastCoord: Koordinate des letzten Knotens
+    # @param turns: Anzahl der Knoten im Pfad
+    # @param pathfinder: Wert des Pfadfinderscursor
     fn __init__(out self, id: Int, coord: Tuple[Int, Int], maze: UnsafePointer[Matrix[Int]], chanMap: UnsafePointer[Matrix[Int]], lastCoord: Tuple[Int, Int], turns: Int, pathfinder: Int):
         self.id = id
         self.pathfinder = pathfinder
@@ -49,14 +60,21 @@ struct PathTree:
     fn computePath(mut self) raises:
         var col = self.coord[0]
         var row = self.coord[1]
+
+        # Überprüfe ob der Knoten eine Sackgasse ist
         if self.chanMap[][col, row] != Lee.EMPTY 
             and self.chanMap[][col, row] != Lee.SWITCH
             and self.chanMap[][col, row] != self.id
             and self.chanMap[][col, row] != Lee.CONNECTED:
             self.isDeadEnd = True
+
+        # Überprüfen ob der Knoten am Ziel ist, somit Blatt
         elif self.pathfinder == Lee.CONNECTED:
             self.isLeaf = True
+
+        # Gültiger Knoten
         else:
+            # nächste mögliche Knoten
             if col > 0 and self.maze[][col-1, row] == self.pathfinder - 1:
                 var turns = self.turns
                 if self.lastCoord[1] != row:
@@ -65,7 +83,7 @@ struct PathTree:
                 child.computePath()
                 if not child.isDeadEnd:
                     self.children.append(child)
-            elif col < self.maze[].cols - 1 and self.maze[][col+1, row] == self.pathfinder - 1:
+            if col < self.maze[].cols - 1 and self.maze[][col+1, row] == self.pathfinder - 1:
                 var turns = self.turns
                 if self.lastCoord[1] != row:
                     turns += 1
@@ -73,7 +91,7 @@ struct PathTree:
                 child.computePath()
                 if not child.isDeadEnd:
                     self.children.append(child)
-            elif row > 0 and self.maze[][col, row-1] == self.pathfinder - 1:
+            if row > 0 and self.maze[][col, row-1] == self.pathfinder - 1:
                 var turns = self.turns
                 if self.lastCoord[0] != col:
                     turns += 1
@@ -81,7 +99,7 @@ struct PathTree:
                 child.computePath()
                 if not child.isDeadEnd:
                     self.children.append(child)
-            elif row < self.maze[].rows - 1 and self.maze[][col, row+1] == self.pathfinder - 1:
+            if row < self.maze[].rows - 1 and self.maze[][col, row+1] == self.pathfinder - 1:
                 var turns = self.turns
                 if self.lastCoord[0] != col:
                     turns += 1
@@ -89,11 +107,11 @@ struct PathTree:
                 child.computePath()
                 if not child.isDeadEnd:
                     self.children.append(child)
-            else:
-                self.isDeadEnd = True
 
+            # Überprüfe ob der Knoten eine Sackgasse ist
             self.isDeadEnd = len(self.children) == 0
             if not self.isDeadEnd:
+                # nach den wenigsten Knicken suchen
                 self.turns = self.children[0].turns
                 for child in self.children:
                     if child[].turns < self.turns:
@@ -126,19 +144,24 @@ struct Mutex:
 
     alias FREE = -1
 
-
+    # Konstruktor
     fn __init__(out self):
         self.owner =  ArcPointer[Int](self.FREE)
         self.visitor =  ArcPointer[Int](0)
 
+    # Copy-Konstruktor
     fn __copyinit__(out self, other: Mutex):
         self.owner =  other.owner
         self.visitor =  other.visitor
 
+    # Move-Konstruktor
     fn __moveinit__(out self, owned other: Mutex):
         self.owner =  other.owner
         self.visitor =  other.visitor
 
+    # Sperrt den Mutex
+    # und wartet bis keine Besucher mehr da sind
+    # @param id: ID des Workers
     async fn lock(mut self, id: Int):
         while not self.owner[] == self.FREE:
             sleep(0.1)
@@ -146,15 +169,20 @@ struct Mutex:
         while self.visitor[] != 0:
             sleep(0.1)
     
+    # Entsperrt den Mutex
+    # @param id: ID des Workers
     async fn unlock(mut self, id: Int):
         if self.owner[] == id:
             self.owner[] = self.FREE
 
+    # Besucht den Mutex
+    # wartet bis der Mutex frei ist
     async fn visit(mut self):
         while self.owner[] != self.FREE:
             sleep(0.1)
         self.visitor[] += 1
 
+    # Verlaesst den Mutex
     async fn unvisit(mut self):
         if self.visitor[] > 0:
             self.visitor[] -= 1
@@ -165,6 +193,7 @@ Lee-Struktur
 """     
 @value  
 struct Lee:
+    alias LOG_PATH = "log/lee.log"
     alias SINK = -4
     alias SWITCH = -3
     alias BLOCKED = -2
@@ -181,7 +210,9 @@ struct Lee:
     var chanDelay: Float64
     var pins: List[Pin]
     var archiv: Dict[String, Tuple[Int, Int]]
+    var log: Optional[Log[True]]
     
+    # Konstruktor
     fn __init__(out self):
         self.isValid = False
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
@@ -194,7 +225,18 @@ struct Lee:
         self.chanDelay = 0.0
         self.pins = List[Pin]()
         self.archiv = Dict[String, Tuple[Int, Int]]()
+        try:
+            self.log = Log[True](self.LOG_PATH)
+        except:
+            self.log = None
 
+    # Konstruktor
+    # @param nets: Netze
+    # @param clbMap: CLB-Map
+    # @param archiv: Archiv
+    # @param chanWidth: Kanalbreite
+    # @param chanDelay: Kanalverzögerung
+    # @param pins: Pins
     fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: Matrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
         self.chanMap = List[Matrix[Int]]()
@@ -218,10 +260,16 @@ struct Lee:
         self.chanDelay = chanDelay
         self.pins = pins
         self.isValid = True
+        try:
+            self.log = Log[True](self.LOG_PATH)
+        except:
+            self.log = None
 
         for net in nets:
             self.netKeys.append(net[])
         
+        # Der Lee-Algorithmus für ein Netz
+        # @param id: ID des Netzes
         @parameter
         fn algo(id: Int):
             alias SINK = Lee.SINK
@@ -231,6 +279,7 @@ struct Lee:
             alias CONNECTED = Lee.CONNECTED
             alias START = CONNECTED + 1
             
+            # Initialisierung
             var routeList = Dict[Int, List[Block.SharedBlock]]()
             for i in range(self.chanWidth):
                 routeList[i] = List[Block.SharedBlock]()
@@ -238,7 +287,7 @@ struct Lee:
                     var coord = archiv[self.nets[self.netKeys[id]][0][0]]
                     routeList[i].append(self.clbMap[coord[0], coord[1]][0])
                 except e:
-                    print("Error: ", e)
+                    self.log.value().writeln("Error: ", e)
                     self.isValid = False
                     return
             var net = self.netKeys[id]
@@ -251,76 +300,102 @@ struct Lee:
             try:
                 routedClbs.add(self.nets[net][0][0])
             except e:
-                print("Error: ", e)
+                self.log.value().writeln("Error: ", e)
                 self.isValid = False
                 return
 
             var refMapClbs = Matrix[List[Block.SharedBlock]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
             initMap(refMapClbs)
+            initMap(maze, EMPTY)
             var sourceCoord: Tuple[Int, Int] = (0, 0)
             try:
                 sourceCoord = archiv[self.nets[net][0][0]]
             except e:
-                print("Error: ", e)
+                self.log.value().writeln("Error: ", e)
                 self.isValid = False
                 return
+
+            # Gibt die Kanalkoordinate des I/O-Pins des Blocks
+            # param coord: Koordinate des Blocks
+            # param idx: Index des Blocks in der Netzliste
+            # param pinIdx: Index des Pins
+            # param col: Ergebnis Spalte des Blocks
+            # param row: Ergebnis Zeile des Blocks
+            @parameter
+            fn getChanCoord(coord: Tuple[Int, Int], idx: Int, pinIdx: Int, mut col: Int, mut row: Int) raises:
+                # Wenn Block am Rand, dann Pad
+                if coord[0] == 0:
+                    col = 1
+                    row = coord[1]*2-1
+
+                elif coord[0] == self.clbMap.cols-1:
+                    col = maze.cols-2
+                    row = coord[1]*2-1
+
+                elif coord[1] == 0:
+                    col = coord[0]*2-1
+                    row = 1
+
+                elif coord[1] == self.clbMap.rows-1:
+                    col = coord[0]*2-1
+                    row = maze.rows-2
+
+                # Sonst CLB
+                else:
+                    var pinSide = self.pins[self.nets[net][idx][1]].sides[pinIdx]
+                    if pinSide == Faceside.TOP:
+                        col = coord[0]*2-1
+                        row = coord[1]*2
+
+                    elif pinSide == Faceside.RIGHT:
+                        col = coord[0]*2
+                        row = coord[1]*2-1
+
+                    elif pinSide == Faceside.BOTTOM:
+                        col = coord[0]*2-1
+                        row = coord[1]*2-2
+
+                    elif pinSide == Faceside.LEFT:
+                        col = coord[0]*2-2
+                        row = coord[1]*2-1
+            # end getChanCoord
+
             # Initialisiere das Labyrinth
             @parameter
             fn initMaze():
                 try:
                     for i in range(len(self.nets[net])):
-                        var coord: Tuple[Int, Int] = (0, 0)
-                        if i == 0:
-                            coord = archiv[self.nets[net][i][0]]
-                            if coord[0] == 0:
-                                maze[1, coord[1]*2-1] = CONNECTED
-                                if len(refMapClbs[1, coord[1]*2-1]) == 0:
-                                    refMapClbs[1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                        var coord: Tuple[Int, Int] = archiv[self.nets[net][i][0]]
+                        var col = 0
+                        var row = 0
+                        for pinIdx in range(len(self.pins[self.nets[net][i][1]].sides)):
+                            # erster Block ist Source
+                            if i == 0:
+                                getChanCoord(coord, i, pinIdx, col, row)
+                                maze[col, row] = CONNECTED
 
-                            elif coord[0] == self.clbMap.cols-1:
-                                maze[maze.cols-1, coord[1]*2-1] = CONNECTED
-                                if len(refMapClbs[maze.cols-1, coord[1]*2-1]) == 0:
-                                    refMapClbs[maze.cols-1, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                            else:
+                                getChanCoord(coord, i, pinIdx, col, row)
+                                if not self.nets[net][i][0] in routedClbs:
+                                    maze[col, row] = SINK
+                                else:
+                                    maze[col, row] = EMPTY
 
-                            elif coord[1] == 0:
-                                maze[coord[0]*2-1, 1] = CONNECTED
-                                if len(refMapClbs[coord[0]*2-1, 1]) == 0:
-                                    refMapClbs[coord[0]*2-1, 1].append(self.clbMap[coord[0], coord[1]][0])
-
-                            elif coord[1] == self.clbMap.rows-1:
-                                maze[coord[0]*2-1, maze.rows-1] = CONNECTED
-                                if len(refMapClbs[coord[0]*2-1, maze.rows-1]) == 0:
-                                    refMapClbs[coord[0]*2-1, maze.rows-1].append(self.clbMap[coord[0], coord[1]][0])
-
-                        else:
-                            if not self.nets[net][i][0] in routedClbs:
-                                coord = archiv[self.nets[net][i][0]]
-                                var pinSide = self.pins[self.nets[net][i][1]].sides[0]
-                                if pinSide == Faceside.TOP:
-                                    maze[coord[0]*2-1, coord[1]*2] = SINK
-                                    if len(refMapClbs[coord[0]*2-1, coord[1]*2]) == 0:
-                                        refMapClbs[coord[0]*2-1, coord[1]*2].append(self.clbMap[coord[0], coord[1]][0])
-
-                                elif pinSide == Faceside.RIGHT:
-                                    maze[coord[0]*2, coord[1]*2-1] = SINK
-                                    if len(refMapClbs[coord[0]*2, coord[1]*2-1]) == 0:
-                                        refMapClbs[coord[0]*2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
-
-                                elif pinSide == Faceside.BOTTOM:
-                                    maze[coord[0]*2-1, coord[1]*2-2] = SINK
-                                    if len(refMapClbs[coord[0]*2-1, coord[1]*2-2]) == 0:
-                                        refMapClbs[coord[0]*2-1, coord[1]*2-2].append(self.clbMap[coord[0], coord[1]][0])
-
-                                elif pinSide == Faceside.LEFT:
-                                    maze[coord[0]*2-2, coord[1]*2-1] = SINK
-                                    if len(refMapClbs[coord[0]*2-2, coord[1]*2-1]) == 0:
-                                        refMapClbs[coord[0]*2-2, coord[1]*2-1].append(self.clbMap[coord[0], coord[1]][0])
+                            if maze[col, row] != EMPTY:
+                                var isContained = False
+                                for clb in refMapClbs[col, row]:
+                                    if clb[][].name == self.nets[net][i][0]:
+                                        isContained = True
+                                        break
+                                if not isContained:
+                                    refMapClbs[col, row].append(self.clbMap[coord[0], coord[1]][0])
 
                 except e:
-                    print("Error: ", e)
+                    self.log.value().writeln("Error: ", e)
                     self.isValid = False
                     return
                     
+                # Verdrahtungskarte Uebertragen
                 for col in range(maze.cols):
                     for row in range(maze.rows):
                         await self.mutex[currentTrack].visit()
@@ -338,12 +413,14 @@ struct Lee:
                             else:
                                 maze[col, row] = BLOCKED
                         except e:
-                            print("Error: ", e)
+                            self.log.value().writeln("Error: ", e)
                             self.isValid = False
                             return
                         finally:
                             await self.mutex[currentTrack].unvisit()
+                # end initMaze
 
+            # Start des Algorithmus
             initMaze()
 
             var isFinished = False
@@ -385,7 +462,7 @@ struct Lee:
                                             sink = refMapClbs[col, row][0]
                                             foundSink = True
                                 except e:
-                                    print("Error: ", e)
+                                    self.log.value().writeln("Error: ", e)
                                     self.isValid = False
                                     return
                                 
@@ -394,7 +471,7 @@ struct Lee:
                             if foundSink:
                                 break
                 except e:
-                    print("Error: ", e)
+                    self.log.value().writeln("Error: ", e)
                     self.isValid = False
                     return
 
@@ -536,7 +613,7 @@ struct Lee:
 
 
                     except e:
-                        print("Error: ", e)
+                        self.log.value().writeln("Error: ", e)
                         self.isValid = False
                         return
                     finally:
@@ -563,16 +640,23 @@ struct Lee:
                             pathfinder += 1
                         initMaze()    
                     except e:
-                        print("Error: ", e)
+                        self.log.value().writeln("Error: ", e)
                         self.isValid = False
                         return
             
             self.routeLists[net] = routeList
             return
+            # end algo
 
+        # Berechne die Pfade
+        self.log.value().writeln("Start Parallel Lee-Algorithm")
         parallelize[algo](len(self.netKeys), len(self.netKeys))
+        self.log.value().writeln("End Parallel Lee-Algorithm")
 
-    fn getCriticalPath(self, outpads: Set[String]) -> Float64:
+    # Gibt den Kritischenpfad zurück
+    # @param outpads: Ausgänge
+    # @returns den Kritischenpfad
+    fn getCriticalPath(mut self, outpads: Set[String]) -> Float64:
         var criticalPath: Float64 = 0.0
         try:
             for padname in outpads:
@@ -584,5 +668,6 @@ struct Lee:
                         criticalPath = delay[]
         except e:
             criticalPath = 0.0
-            print("Error: Critical Path could not be calculated")
+            self.log.value().writeln("Error: Critical Path could not be calculated")
         return criticalPath
+

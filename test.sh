@@ -13,8 +13,8 @@
 
 #magic run mojo test -I src test/myFormats
 #magic run mojo test -I src test/myFormats/test_ArchFormat.mojo
-magic run mojo test -I src test/myFormats/test_NetFormat.mojo
+#magic run mojo test -I src test/myFormats/test_NetFormat.mojo
 #magic run mojo test -I src test/myFormats/test_PlaceFormat.mojo
 
 #magic run mojo test -I src test/myAlgorithm
-#magic run mojo test -I src test/myAlgorithm/test_Lee.mojo
+magic run mojo test -I src test/myAlgorithm/test_Lee.mojo
