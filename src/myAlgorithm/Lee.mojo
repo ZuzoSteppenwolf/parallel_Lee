@@ -322,8 +322,8 @@ struct Lee:
                 for col in range(maze.cols):
                     for row in range(maze.rows):                
                         self.mutex[currentTrack].visit()
-                        if self.log:
-                            self.log.value().writeln(id, "ID: ", id, "; Visit mutex")
+                        #if self.log:
+                        #    self.log.value().writeln(id, "ID: ", id, "; Visit mutex")
                         try:
                             if self.chanMap[currentTrack][col, row] == Lee.EMPTY 
                                 or self.chanMap[currentTrack][col, row] == Lee.BLOCKED:
@@ -344,8 +344,8 @@ struct Lee:
                             return
                         finally:
                             self.mutex[currentTrack].unvisit()
-                            if self.log:
-                                self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
+                            #if self.log:
+                            #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
 
                 # Setze Start und Zielkoordinaten                
                 try:
@@ -358,15 +358,15 @@ struct Lee:
                             if i == 0:
                                 getChanCoord(coord, i, pinIdx, col, row)
                                 maze[col, row] = CONNECTED
-                                if self.log:
-                                    self.log.value().writeln(id, "ID: ", id, "; Set source at: ", col, ";", row, " on track: ", currentTrack)
+                                #if self.log:
+                                #    self.log.value().writeln(id, "ID: ", id, "; Set source at: ", col, ";", row, " on track: ", currentTrack)
 
                             else:
                                 getChanCoord(coord, i, pinIdx, col, row)
                                 if not self.nets[net][i][0] in routedClbs:
                                     maze[col, row] = SINK
-                                    if self.log:
-                                        self.log.value().writeln(id, "ID: ", id, "; Set sink at: ", col, ";", row, " on track: ", currentTrack)
+                                    #if self.log:
+                                    #    self.log.value().writeln(id, "ID: ", id, "; Set sink at: ", col, ";", row, " on track: ", currentTrack)
                                     
                                 else:
                                     maze[col, row] = EMPTY
@@ -410,8 +410,8 @@ struct Lee:
                         foundSink = True
                         maze[sourceCoord[0], sourceCoord[1]] = CONNECTED
                         pathfinder = CONNECTED
-                        if self.log:
-                            self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sourceCoord[0], ";", sourceCoord[1], " on track: ", currentTrack)
+                        #if self.log:
+                        #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sourceCoord[0], ";", sourceCoord[1], " on track: ", currentTrack)
                     else:
                         for col in range(maze.cols):
                             for row in range(maze.rows):
@@ -424,8 +424,8 @@ struct Lee:
                                                 sinkCoord = (col, row)
                                                 sink = refMapClbs[col, row][0]
                                                 foundSink = True
-                                                if self.log:
-                                                    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", col, ";", row, " on track: ", currentTrack)
+                                                #if self.log:
+                                                #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", col, ";", row, " on track: ", currentTrack)
                                             else:
                                                 maze[col, row] = pathfinder
                                                 pathcount += 1
@@ -455,17 +455,17 @@ struct Lee:
                         self.log.value().writeln(id, "Error: ", e)
                     self.isValid = False
                     return
-                if self.log:
-                    self.log.value().writeln(id, "ID: ", id, "; Pathcount: ", pathcount, " on track: ", currentTrack)
+                #if self.log:
+                #    self.log.value().writeln(id, "ID: ", id, "; Pathcount: ", pathcount, " on track: ", currentTrack)
 
                 if foundSink:
-                    if self.log:
-                        self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1])
+                    #if self.log:
+                    #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
 
                     # Wenn Ziel gefunden, dann Pfad berechnen
                     self.mutex[currentTrack].lock(id)
-                    if self.log:
-                        self.log.value().writeln(id, "ID: ", id, "; Lock mutex")
+                    #if self.log:
+                    #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex")
                     try:
                         var isFree = True
                         var coord = sinkCoord
@@ -613,8 +613,8 @@ struct Lee:
                         return
                     finally:
                         self.mutex[currentTrack].unlock(id)
-                        if self.log:
-                            self.log.value().writeln(id, "ID: ", id, "; Unlock mutex")
+                        #if self.log:
+                        #    self.log.value().writeln(id, "ID: ", id, "; Unlock mutex")
                     pathfinder = START
                     initMap(maze, Lee.EMPTY)
                     initMaze()
