@@ -248,7 +248,6 @@ struct Lee:
             var currentTrack = (id+track) % self.chanWidth
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
-
             try:
                 routedClbs.add(self.nets[net][0][0])
             except e:
@@ -400,7 +399,7 @@ struct Lee:
             var sinkCoord: Tuple[Int, Int] = (0, 0)
             var sink: Block.SharedBlock = Block.SharedBlock(Block("Error"))
             var chanArchiv = Dict[String, Tuple[Int, Int]]()
-            while not isFinished:
+            while not isFinished and self.isValid:
                 var foundSink = False
                 pathcount = 0
                 # Suche nach dem nächsten Pfad
@@ -659,6 +658,7 @@ struct Lee:
         # Berechne die Pfade
         if self.log:
             self.log.value().writeln(-1, "Start Parallel Lee-Algorithm")
+            self.log.value().writeln(-1, "Netzanzahl: ", len(self.netKeys))
         parallelize[algo](len(self.netKeys), len(self.netKeys))
         if self.log:
             self.log.value().writeln(-1, "End Parallel Lee-Algorithm")
