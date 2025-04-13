@@ -3,6 +3,7 @@ from myUtil.Matrix import *
 from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
+from myUtil.Threading import Mutex
 from myUtil.Logger import Log
 from myFormats.Arch import *
 from collections import Dict, List, Set
@@ -133,59 +134,6 @@ struct PathTree:
 
 
         return path
-
-
-"""
-Mutex-Struktur
-"""
-struct Mutex:
-    var owner: ArcPointer[Int]
-    var visitor:  ArcPointer[Int]
-
-    alias FREE = -1
-
-    # Konstruktor
-    fn __init__(out self):
-        self.owner =  ArcPointer[Int](self.FREE)
-        self.visitor =  ArcPointer[Int](0)
-
-    # Copy-Konstruktor
-    fn __copyinit__(out self, other: Mutex):
-        self.owner =  other.owner
-        self.visitor =  other.visitor
-
-    # Move-Konstruktor
-    fn __moveinit__(out self, owned other: Mutex):
-        self.owner =  other.owner
-        self.visitor =  other.visitor
-
-    # Sperrt den Mutex
-    # und wartet bis keine Besucher mehr da sind
-    # @param id: ID des Workers
-    async fn lock(mut self, id: Int):
-        while not self.owner[] == self.FREE:
-            sleep(0.1)
-        self.owner[] = id
-        while self.visitor[] != 0:
-            sleep(0.1)
-    
-    # Entsperrt den Mutex
-    # @param id: ID des Workers
-    async fn unlock(mut self, id: Int):
-        if self.owner[] == id:
-            self.owner[] = self.FREE
-
-    # Besucht den Mutex
-    # wartet bis der Mutex frei ist
-    async fn visit(mut self):
-        while self.owner[] != self.FREE:
-            sleep(0.1)
-        self.visitor[] += 1
-
-    # Verlaesst den Mutex
-    async fn unvisit(mut self):
-        if self.visitor[] > 0:
-            self.visitor[] -= 1
 
 
 """
@@ -399,6 +347,7 @@ struct Lee:
                 for col in range(maze.cols):
                     for row in range(maze.rows):
                         await self.mutex[currentTrack].visit()
+                        self.log.value().writeln("ID: ", id, "; Visit mutex")
                         try:
                             if self.chanMap[currentTrack][col, row] == Lee.EMPTY 
                                 or self.chanMap[currentTrack][col, row] == Lee.BLOCKED:
@@ -418,11 +367,14 @@ struct Lee:
                             return
                         finally:
                             await self.mutex[currentTrack].unvisit()
+                            self.log.value().writeln("ID: ", id, "; Unvisit mutex")
                 # end initMaze
 
             # Start des Algorithmus
+            self.log.value().writeln("ID: ", id, "; Start Lee-Algorithm for net: ", net)
             initMaze()
-
+            self.log.value().writeln("ID: ", id, "; Init local maze")
+            
             var isFinished = False
             var pathfinder = START
             var pathcount = 0
@@ -476,7 +428,11 @@ struct Lee:
                     return
 
                 if foundSink:
+                    self.log.value().writeln("ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1])
+
+                    # Wenn Ziel gefunden, dann Pfad berechnen
                     await self.mutex[currentTrack].lock(id)
+                    self.log.value().writeln("ID: ", id, "; Lock mutex")
                     try:
                         var isFree = True
                         var coord = sinkCoord
@@ -618,6 +574,7 @@ struct Lee:
                         return
                     finally:
                         await self.mutex[currentTrack].unlock(id)
+                        self.log.value().writeln("ID: ", id, "; Unlock mutex")
                     pathfinder = START
                     initMap(maze, Lee.EMPTY)
                     initMaze()
