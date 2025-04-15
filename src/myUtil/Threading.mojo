@@ -16,6 +16,7 @@ struct Mutex:
     var owner: ArcPointer[Int]
     var visitor:  ArcPointer[Int]
 
+    alias sleep_sec = 0.000001
     alias FREE = -1
 
     # Konstruktor
@@ -38,10 +39,10 @@ struct Mutex:
     # @param id: ID des Workers
     fn lock(mut self, id: Int):
         while not self.owner[] == self.FREE:
-            sleep(0.1)
+            sleep(self.sleep_sec)
         self.owner[] = id
         while self.visitor[] != 0:
-            sleep(0.1)
+            sleep(self.sleep_sec)
     
     # Entsperrt den Mutex
     # @param id: ID des Workers
@@ -53,7 +54,7 @@ struct Mutex:
     # wartet bis der Mutex frei ist
     fn visit(mut self):
         while self.owner[] != self.FREE:
-            sleep(0.1)
+            sleep(self.sleep_sec)
         self.visitor[] += 1
 
     # Verlaesst den Mutex
