@@ -121,12 +121,15 @@ def main():
     fn calc():          
         for _ in range(maxIterations):
             route = ArcPointer[Lee](compute(channelWidth))
+            route[].run()
             if route[].isValid:
                 print("Success")
                 critPath = route[].getCriticalPath(netlist.outpads)
                 break
             else:
                 print("Failure")
+
+                
     if hasFixedChannelWidth:
         print()
         print("Start routing")

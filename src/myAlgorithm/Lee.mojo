@@ -70,7 +70,7 @@ struct PathTree:
             self.isDeadEnd = True
 
         # Überprüfen ob der Knoten am Ziel ist, somit Blatt
-        elif self.pathfinder == Lee.CONNECTED:
+        elif self.maze[][col, row] == Lee.CONNECTED:
             self.isLeaf = True
 
         # Gültiger Knoten
@@ -218,6 +218,8 @@ struct Lee:
             self.log = async_Log[True](self.LOG_PATH)
         except:
             self.log = None
+
+    fn run(mut self):
         
         # Der Lee-Algorithmus für ein Netz
         # @param id: ID des Netzes
@@ -235,7 +237,7 @@ struct Lee:
             for i in range(self.chanWidth):
                 routeList[i] = List[Block.SharedBlock]()
                 try:
-                    var coord = archiv[self.nets[self.netKeys[id]][0][0]]
+                    var coord = self.archiv[self.nets[self.netKeys[id]][0][0]]
                     routeList[i].append(self.clbMap[coord[0], coord[1]][0])
                 except e:
                     if self.log:
@@ -261,7 +263,7 @@ struct Lee:
             initMap(maze, EMPTY)
             var sourceCoord: Tuple[Int, Int] = (0, 0)
             try:
-                sourceCoord = archiv[self.nets[net][0][0]]
+                sourceCoord = self.archiv[self.nets[net][0][0]]
             except e:
                 if self.log:
                     self.log.value().writeln(id, "Error: ", e)
@@ -321,6 +323,7 @@ struct Lee:
                 for col in range(maze.cols):
                     for row in range(maze.rows):                
                         self.mutex[currentTrack].visit()
+                        # Debugging
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Visit mutex")
                         try:
@@ -343,13 +346,14 @@ struct Lee:
                             return
                         finally:
                             self.mutex[currentTrack].unvisit()
+                            # Debugging
                             #if self.log:
                             #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
 
                 # Setze Start und Zielkoordinaten                
                 try:
                     for i in range(len(self.nets[net])):
-                        var coord: Tuple[Int, Int] = archiv[self.nets[net][i][0]]
+                        var coord: Tuple[Int, Int] = self.archiv[self.nets[net][i][0]]
                         var col = 0
                         var row = 0
                         for pinIdx in range(len(self.pins[self.nets[net][i][1]].sides)):
@@ -357,6 +361,7 @@ struct Lee:
                             if i == 0:
                                 getChanCoord(coord, i, pinIdx, col, row)
                                 maze[col, row] = CONNECTED
+                                # Debugging
                                 #if self.log:
                                 #    self.log.value().writeln(id, "ID: ", id, "; Set source at: ", col, ";", row, " on track: ", currentTrack)
 
@@ -364,6 +369,7 @@ struct Lee:
                                 getChanCoord(coord, i, pinIdx, col, row)
                                 if not self.nets[net][i][0] in routedClbs:
                                     maze[col, row] = SINK
+                                    # Debugging
                                     #if self.log:
                                     #    self.log.value().writeln(id, "ID: ", id, "; Set sink at: ", col, ";", row, " on track: ", currentTrack)
                                     
@@ -409,6 +415,7 @@ struct Lee:
                         foundSink = True
                         maze[sourceCoord[0], sourceCoord[1]] = CONNECTED
                         pathfinder = CONNECTED
+                        # Debugging
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sourceCoord[0], ";", sourceCoord[1], " on track: ", currentTrack)
                     else:
@@ -423,6 +430,7 @@ struct Lee:
                                                 sinkCoord = (col, row)
                                                 sink = refMapClbs[col, row][0]
                                                 foundSink = True
+                                                # Debugging
                                                 #if self.log:
                                                 #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", col, ";", row, " on track: ", currentTrack)
                                             else:
@@ -454,17 +462,21 @@ struct Lee:
                         self.log.value().writeln(id, "Error: ", e)
                     self.isValid = False
                     return
+                # Debugging
                 #if self.log:
                 #    self.log.value().writeln(id, "ID: ", id, "; Pathcount: ", pathcount, " on track: ", currentTrack)
 
                 if foundSink:
-                    #if self.log:
-                    #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
+                    # Debugging
+                    if self.log:
+                        self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
+                        self.log.value().writeln(id, "ID: ", id, "; visitcount: ", self.mutex[currentTrack].visitor[], " on track: ", currentTrack)
 
                     # Wenn Ziel gefunden, dann Pfad berechnen
                     self.mutex[currentTrack].lock(id)
-                    #if self.log:
-                    #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex")
+                    # Debugging
+                    if self.log:
+                        self.log.value().writeln(id, "ID: ", id, "; Lock mutex")
                     try:
                         var isFree = True
                         var coord = sinkCoord
@@ -473,8 +485,14 @@ struct Lee:
 
 
                         var tree = PathTree(id, coord, UnsafePointer.address_of(maze), UnsafePointer.address_of(self.chanMap[currentTrack]), coord, 0, pathfinder)
+                        # Debugging
+                        if self.log:
+                            self.log.value().writeln(id, "ID: ", id, "; Create path tree")
                         tree.computePath()
                         isFree = not tree.isDeadEnd
+                        # Debuggung
+                        if self.log:
+                            self.log.value().writeln(id, "ID: ", id, "; isFree: ", isFree)
                         if isFree:
                             pathCoords = tree.getPath()
 
@@ -482,6 +500,9 @@ struct Lee:
 
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
                         if isFree:
+                            if self.log:
+                                self.log.value().writeln(id, "ID: ", id, "; Free path for sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
+                            
                             if len(pathCoords) == 1:
                                 var col = pathCoords[0][0]
                                 var row = pathCoords[0][1]
@@ -603,6 +624,8 @@ struct Lee:
                                             refMapClbs[col, row].append(chan)
                                             preChan = chan
                                             self.chanMap[currentTrack][col, row] = id
+                            if self.log:
+                                self.log.value().writeln(id, "ID: ", id, "; Added path to routeList on track: ", currentTrack)
 
 
                     except e:
@@ -612,8 +635,9 @@ struct Lee:
                         return
                     finally:
                         self.mutex[currentTrack].unlock(id)
-                        #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; Unlock mutex")
+                        # Debugging
+                        if self.log:
+                            self.log.value().writeln(id, "ID: ", id, "; Unlock mutex")
                     pathfinder = START
                     initMap(maze, Lee.EMPTY)
                     initMaze()
@@ -662,7 +686,8 @@ struct Lee:
         parallelize[algo](len(self.netKeys), len(self.netKeys))
         if self.log:
             self.log.value().writeln(-1, "End Parallel Lee-Algorithm")
-        self.writeChanMap()
+        # Debugging
+        #self.writeChanMap()
 
     # Gibt den Kritischenpfad zurück
     # @param outpads: Ausgänge
