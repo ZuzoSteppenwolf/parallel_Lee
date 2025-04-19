@@ -131,10 +131,7 @@ struct PathTree:
                     path.extend(child[].getPath())
                     path.append(self.coord)
                     break
-
-
         return path
-
 
 """
 Lee-Struktur
@@ -424,7 +421,7 @@ struct Lee:
                                 try:
                                     if maze[col, row] == EMPTY or maze[col, row] == SINK:
                                         @parameter
-                                        fn computePathfiner() raises:
+                                        fn computePathfinder() raises:
                                             if maze[col, row] == SINK:
                                                 maze[col, row] = pathfinder
                                                 sinkCoord = (col, row)
@@ -438,13 +435,13 @@ struct Lee:
                                                 pathcount += 1
 
                                         if col > 0 and maze[col-1, row] == pathfinder - 1:
-                                            computePathfiner()
+                                            computePathfinder()
                                         elif col < maze.cols - 1 and maze[col+1, row] == pathfinder - 1:
-                                            computePathfiner()
+                                            computePathfinder()
                                         elif row > 0 and maze[col, row-1] == pathfinder - 1:
-                                            computePathfiner()
+                                            computePathfinder()
                                         elif row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                            computePathfiner()
+                                            computePathfinder()
 
                                         
                                 except e:
@@ -478,11 +475,11 @@ struct Lee:
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Lock mutex")
                     try:
+                        
                         var isFree = True
                         var coord = sinkCoord
                         pathfinder = maze[sinkCoord[0], sinkCoord[1]]
                         var pathCoords = List[Tuple[Int, Int]]()
-
 
                         var tree = PathTree(id, coord, UnsafePointer.address_of(maze), UnsafePointer.address_of(self.chanMap[currentTrack]), coord, 0, pathfinder)
                         # Debugging

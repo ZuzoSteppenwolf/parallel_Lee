@@ -65,7 +65,7 @@ struct Mutex:
     # Besucht den Mutex
     # wartet bis der Mutex frei ist
     fn visit(mut self):
-        while self.owner[] != self.FREE:
+        while self.loc[0].counter.load() != self.FREE:
             sleep(self.sleep_sec)
         self.visitor[] += 1
 
@@ -73,3 +73,7 @@ struct Mutex:
     fn unvisit(mut self):
         if self.visitor[] > 0:
             self.visitor[] -= 1
+
+    # Destructor
+    fn __del__(owned self):
+        self.loc.free()
