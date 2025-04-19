@@ -117,6 +117,10 @@ struct PathTree:
                 for child in self.children:
                     if child[].turns < self.turns:
                         self.turns = child[].turns
+                for child in self.children: 
+                    if child[].turns == self.turns:
+                        self.children = List[PathTree](child[])
+                        break
 
     # Gibt den günstigsten Pfad zurück
     # @returns den günstigsten Pfad
