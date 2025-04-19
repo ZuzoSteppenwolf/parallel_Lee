@@ -467,7 +467,7 @@ struct Lee:
                     # Debugging
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
-                        self.log.value().writeln(id, "ID: ", id, "; visitcount: ", self.mutex[currentTrack].visitor[], " on track: ", currentTrack)
+                        self.log.value().writeln(id, "ID: ", id, "; visitcount: ", self.mutex[currentTrack].visitor[].load(), " on track: ", currentTrack)
 
                     # Wenn Ziel gefunden, dann Pfad berechnen
                     self.mutex[currentTrack].lock(id)
@@ -684,7 +684,7 @@ struct Lee:
         if self.log:
             self.log.value().writeln(-1, "End Parallel Lee-Algorithm")
         # Debugging
-        #self.writeChanMap()
+        self.writeChanMap()
 
     # Gibt den Kritischenpfad zurück
     # @param outpads: Ausgänge
