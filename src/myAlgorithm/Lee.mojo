@@ -220,7 +220,7 @@ struct Lee:
         except:
             self.log = None
 
-    fn run(mut self):
+    fn run(mut self, runParallel: Bool = True):
         
         # Der Lee-Algorithmus für ein Netz
         # @param id: ID des Netzes
@@ -684,7 +684,11 @@ struct Lee:
         if self.log:
             self.log.value().writeln(-1, "Start Parallel Lee-Algorithm")
             self.log.value().writeln(-1, "Netzanzahl: ", len(self.netKeys))
-        parallelize[algo](len(self.netKeys), len(self.netKeys))
+        if runParallel:
+            parallelize[algo](len(self.netKeys), len(self.netKeys))
+        else:
+            for i in range(len(self.netKeys)):
+                algo(i)
         if self.log:
             self.log.value().writeln(-1, "End Parallel Lee-Algorithm")
         # Debugging
