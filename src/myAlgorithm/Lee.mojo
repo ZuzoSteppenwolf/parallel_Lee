@@ -61,7 +61,7 @@ struct PathTree:
     fn computePath(mut self) raises:
         var col = self.coord[0]
         var row = self.coord[1]
-
+        
         # Überprüfe ob der Knoten eine Sackgasse ist
         if self.chanMap[][col, row] != Lee.EMPTY 
             and self.chanMap[][col, row] != Lee.SWITCH
@@ -75,39 +75,60 @@ struct PathTree:
 
         # Gültiger Knoten
         else:
-            # nächste mögliche Knoten
-            if col > 0 and self.maze[][col-1, row] == self.pathfinder - 1:
-                var turns = self.turns
-                if self.lastCoord[1] != row:
-                    turns += 1
-                var child = PathTree(self.id, (col-1, row), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
-                child.computePath()
-                if not child.isDeadEnd:
-                    self.children.append(child)
-            if col < self.maze[].cols - 1 and self.maze[][col+1, row] == self.pathfinder - 1:
-                var turns = self.turns
-                if self.lastCoord[1] != row:
-                    turns += 1
-                var child = PathTree(self.id, (col+1, row), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
-                child.computePath()
-                if not child.isDeadEnd:
-                    self.children.append(child)
-            if row > 0 and self.maze[][col, row-1] == self.pathfinder - 1:
-                var turns = self.turns
-                if self.lastCoord[0] != col:
-                    turns += 1
-                var child = PathTree(self.id, (col, row-1), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
-                child.computePath()
-                if not child.isDeadEnd:
-                    self.children.append(child)
-            if row < self.maze[].rows - 1 and self.maze[][col, row+1] == self.pathfinder - 1:
-                var turns = self.turns
-                if self.lastCoord[0] != col:
-                    turns += 1
-                var child = PathTree(self.id, (col, row+1), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
-                child.computePath()
-                if not child.isDeadEnd:
-                    self.children.append(child)
+            var prioMoveCol = self.coord[0] - self.lastCoord[0]
+            var prioMoveRow = self.coord[1] - self.lastCoord[1]
+            var prioNextCol = col + prioMoveCol
+            var prioNextRow = row + prioMoveRow
+
+            # nächster mögliche Knoten in selber Richtung
+            if prioNextCol >= 0 and prioNextCol < self.maze[].cols and prioNextRow >= 0 and prioNextRow < self.maze[].rows:
+                if self.maze[][prioNextCol, prioNextRow] == self.pathfinder - 1:
+                    var turns = self.turns
+                    if self.lastCoord[0] != col:
+                        turns += 1
+                    var child = PathTree(self.id, (prioNextCol, prioNextRow), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                    child.computePath()
+                    if not child.isDeadEnd:
+                        self.children.append(child)
+            
+            # Wenn Prio-Knoten Sackgasse ist, dann
+            if len(self.children) == 0:
+                # nächste mögliche Knoten suchen
+                if col > 0 and prioNextCol != col-1 and self.maze[][col-1, row] == self.pathfinder - 1:
+                    var turns = self.turns
+                    if self.lastCoord[1] != row:
+                        turns += 1
+                    var child = PathTree(self.id, (col-1, row), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                    child.computePath()
+                    if not child.isDeadEnd:
+                        self.children.append(child)
+
+                if col < self.maze[].cols - 1 and prioNextCol != col+1 and self.maze[][col+1, row] == self.pathfinder - 1:
+                    var turns = self.turns
+                    if self.lastCoord[1] != row:
+                        turns += 1
+                    var child = PathTree(self.id, (col+1, row), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                    child.computePath()
+                    if not child.isDeadEnd:
+                        self.children.append(child)
+
+                if row > 0 and prioNextRow != row-1 and self.maze[][col, row-1] == self.pathfinder - 1:
+                    var turns = self.turns
+                    if self.lastCoord[0] != col:
+                        turns += 1
+                    var child = PathTree(self.id, (col, row-1), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                    child.computePath()
+                    if not child.isDeadEnd:
+                        self.children.append(child)
+
+                if row < self.maze[].rows - 1 and prioNextRow != row+1 and self.maze[][col, row+1] == self.pathfinder - 1:
+                    var turns = self.turns
+                    if self.lastCoord[0] != col:
+                        turns += 1
+                    var child = PathTree(self.id, (col, row+1), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
+                    child.computePath()
+                    if not child.isDeadEnd:
+                        self.children.append(child)
 
             # Überprüfe ob der Knoten eine Sackgasse ist
             self.isDeadEnd = len(self.children) == 0
