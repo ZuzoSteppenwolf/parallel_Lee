@@ -458,8 +458,8 @@ def test_Lee9():
     assert_equal(route.chanMap[0][3, 0], id, "kein Kanal bei (3, 0)")
     assert_equal(route.chanMap[0][4, 1], id, "kein Kanal bei (4, 1)")
     assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
-    assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
-    assert_equal(route.chanMap[0][4, 2], id, "kein Kanal bei (4, 2)")
+    assert_equal(route.chanMap[0][3, 4], id, "kein Kanal bei (3, 4)")
+    assert_equal(route.chanMap[0][1, 4], id, "kein Kanal bei (1, 4)")
 
 def test_Lee10():
     alias id = 0
@@ -508,4 +508,4 @@ def test_Lee10():
     assert_equal(route.chanMap[0][3, 0], id, "kein Kanal bei (3, 0)")
     assert_equal(route.chanMap[0][4, 1], id, "kein Kanal bei (4, 1)")
     assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
-    assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
+    assert_equal(route.chanMap[0][3, 4], id, "kein Kanal bei (3, 4)")
