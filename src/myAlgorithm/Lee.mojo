@@ -65,8 +65,7 @@ struct PathTree:
         # Überprüfe ob der Knoten eine Sackgasse ist
         if self.chanMap[][col, row] != Lee.EMPTY 
             and self.chanMap[][col, row] != Lee.SWITCH
-            and self.chanMap[][col, row] != self.id
-            and self.chanMap[][col, row] != Lee.CONNECTED:
+            and self.chanMap[][col, row] != self.id:
             self.isDeadEnd = True
 
         # Überprüfen ob der Knoten am Ziel ist, somit Blatt
@@ -340,15 +339,14 @@ struct Lee:
             # Initialisiere das Labyrinth
             @parameter
             fn initMaze():
-                    
-                # Verdrahtungskarte Uebertragen
-                for col in range(maze.cols):
-                    for row in range(maze.rows):                
-                        self.mutex[currentTrack].visit()
+                try:
+                    self.mutex[currentTrack].visit()
                         # Debugging
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Visit mutex")
-                        try:
+                    # Verdrahtungskarte Uebertragen
+                    for col in range(maze.cols):
+                        for row in range(maze.rows):                
                             if self.chanMap[currentTrack][col, row] == Lee.EMPTY 
                                 or self.chanMap[currentTrack][col, row] == Lee.BLOCKED:
                                 maze[col, row] = self.chanMap[currentTrack][col, row]
@@ -361,19 +359,9 @@ struct Lee:
 
                             else:
                                 maze[col, row] = BLOCKED
-                        except e:
-                            if self.log:
-                                self.log.value().writeln(id, "Error: ", e)
-                            self.isValid = False
-                            return
-                        finally:
-                            self.mutex[currentTrack].unvisit()
-                            # Debugging
-                            #if self.log:
-                            #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
+                        
 
-                # Setze Start und Zielkoordinaten                
-                try:
+                    # Setze Start und Zielkoordinaten                
                     for i in range(len(self.nets[net])):
                         var coord: Tuple[Int, Int] = self.archiv[self.nets[net][i][0]]
                         var col = 0
@@ -382,21 +370,19 @@ struct Lee:
                             # erster Block ist Source
                             if i == 0:
                                 getChanCoord(coord, i, pinIdx, col, row)
-                                maze[col, row] = CONNECTED
+                                if self.chanMap[currentTrack][col, row] == Lee.EMPTY or self.chanMap[currentTrack][col, row] == id:
+                                    maze[col, row] = CONNECTED
                                 # Debugging
                                 #if self.log:
                                 #    self.log.value().writeln(id, "ID: ", id, "; Set source at: ", col, ";", row, " on track: ", currentTrack)
 
                             else:
                                 getChanCoord(coord, i, pinIdx, col, row)
-                                if not self.nets[net][i][0] in routedClbs:
+                                if self.chanMap[currentTrack][col, row] == Lee.EMPTY and not self.nets[net][i][0] in routedClbs:
                                     maze[col, row] = SINK
                                     # Debugging
                                     #if self.log:
-                                    #    self.log.value().writeln(id, "ID: ", id, "; Set sink at: ", col, ";", row, " on track: ", currentTrack)
-                                    
-                                else:
-                                    maze[col, row] = EMPTY
+                                    #    self.log.value().writeln(id, "ID: ", id, "; Set sink at: ", col, ";", row, " on track: ", currentTrack)                                                                
 
                             if maze[col, row] != EMPTY:
                                 var isContained = False
@@ -405,13 +391,18 @@ struct Lee:
                                         isContained = True
                                         break
                                 if not isContained:
-                                    refMapClbs[col, row].append(self.clbMap[coord[0], coord[1]][0])
+                                    refMapClbs[col, row].append(self.clbMap[coord[0], coord[1]][0])#TODO: PADs berücksichtigen
 
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "Error: ", e)
                     self.isValid = False
                     return
+                finally:
+                    self.mutex[currentTrack].unvisit()
+                    # Debugging
+                    #if self.log:
+                    #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
                 # end initMaze
 
             # Start des Algorithmus
@@ -458,6 +449,7 @@ struct Lee:
                                             else:
                                                 maze[col, row] = pathfinder
                                                 pathcount += 1
+                                        # end computePathfinder
 
                                         if col > 0 and maze[col-1, row] == pathfinder - 1:
                                             computePathfinder()
@@ -466,9 +458,7 @@ struct Lee:
                                         elif row > 0 and maze[col, row-1] == pathfinder - 1:
                                             computePathfinder()
                                         elif row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                            computePathfinder()
-
-                                        
+                                            computePathfinder()   
                                 except e:
                                     if self.log:
                                         self.log.value().writeln(id, "Error: ", e)
@@ -745,7 +735,14 @@ struct Lee:
                     for row in range(self.chanMap[i].rows-1, -1, -1):
                         var line: String = "["             
                         for col in range(self.chanMap[i].cols):
-                            line = line + String(self.chanMap[i][col, row])
+                            if self.chanMap[i][col, row] == Lee.EMPTY:
+                                line = line + "E"
+                            elif self.chanMap[i][col, row] == Lee.SWITCH:
+                                line = line + "S"
+                            elif self.chanMap[i][col, row] == Lee.BLOCKED:
+                                line = line + "B"
+                            else:
+                                line = line + String(self.chanMap[i][col, row])
                             if col != self.chanMap[i].cols - 1:
                                 line = line + ", "
                         line = line + "]"

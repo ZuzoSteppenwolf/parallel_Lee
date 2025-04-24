@@ -1,4 +1,4 @@
-from testing import assert_equal, assert_true
+from testing import assert_equal, assert_true, assert_false
 from collections import Dict, List, Set
 from myFormats.Arch import Pin
 from myFormats.Net import *
@@ -263,3 +263,249 @@ def test_Lee5():
     route.run(False)
 
     assert_true(route.isValid, "Lee ist nicht valide")
+
+def test_Lee6():
+    alias id = 0
+    var chanWidth = 2
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = Matrix[List[Block.SharedBlock]](42, 42)
+    initMap(clbMap)
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["2"] = List[Tuple[String, Int]]()
+
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("C", Blocktype.CLB, 4, 1)
+    clb.coord = Tuple(1, 20)   
+    nets["2"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(10, 40)
+    nets["1"].append(Tuple(clb.name, 2))
+    nets["2"].append(Tuple(clb.name, 0))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.run()
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+
+def test_Lee7():
+    alias id = 0
+    var chanWidth = 2
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = Matrix[List[Block.SharedBlock]](4, 4)
+    initMap(clbMap)
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["2"] = List[Tuple[String, Int]]()
+    nets["3"] = List[Tuple[String, Int]]()
+
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("C", Blocktype.CLB, 4, 1)
+    clb.coord = Tuple(1, 2)   
+    nets["2"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("D", Blocktype.CLB, 4, 1)
+    clb.coord = Tuple(2, 1)   
+    nets["3"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 2)
+    nets["1"].append(Tuple(clb.name, 2))
+    nets["2"].append(Tuple(clb.name, 0))
+    nets["3"].append(Tuple(clb.name, 2))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.run()
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+
+def test_Lee8():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = Matrix[List[Block.SharedBlock]](4, 4)
+    initMap(clbMap)
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 2)
+    nets["1"].append(Tuple(clb.name, 2))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("C", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 2)
+    nets["1"].append(Tuple(clb.name, 2))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+
+def test_Lee9():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = Matrix[List[Block.SharedBlock]](4, 4)
+    initMap(clbMap)
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 2)
+    nets["1"].append(Tuple(clb.name, 2))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("C", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 2)
+    nets["1"].append(Tuple(clb.name, 2))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("D", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 1)
+    nets["1"].append(Tuple(clb.name, 3))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
+    assert_equal(route.chanMap[0][3, 0], id, "kein Kanal bei (3, 0)")
+    assert_equal(route.chanMap[0][4, 1], id, "kein Kanal bei (4, 1)")
+    assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
+    assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
+    assert_equal(route.chanMap[0][4, 2], id, "kein Kanal bei (4, 2)")
+
+def test_Lee10():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = Matrix[List[Block.SharedBlock]](4, 4)
+    initMap(clbMap)
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 2)
+    nets["1"].append(Tuple(clb.name, 2))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("D", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 1)
+    nets["1"].append(Tuple(clb.name, 3))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
+    assert_equal(route.chanMap[0][3, 0], id, "kein Kanal bei (3, 0)")
+    assert_equal(route.chanMap[0][4, 1], id, "kein Kanal bei (4, 1)")
+    assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
+    assert_equal(route.chanMap[0][4, 3], id, "kein Kanal bei (4, 3)")
