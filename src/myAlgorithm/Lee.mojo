@@ -703,7 +703,7 @@ struct Lee:
         if self.log:
             self.log.value().writeln(-1, "End Parallel Lee-Algorithm")
         # Debugging
-        self.writeChanMap()
+        #self.writeChanMap()
 
     # Gibt den Kritischenpfad zurück
     # @param outpads: Ausgänge

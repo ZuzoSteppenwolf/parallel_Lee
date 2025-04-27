@@ -29,6 +29,7 @@ alias DEFAULT_MAX_ITERATIONS = 30
 var maxIterations = DEFAULT_MAX_ITERATIONS
 var channelWidth = STANDARD_CHANEL_WIDTH
 var hasFixedChannelWidth = False
+var runParallel = True
 
 """
 Main-Methode der Applikation
@@ -77,9 +78,11 @@ def main():
             print("Invalid max iterations: ", args[idx + 1])
             return
 
+    if "--single_thread" in args:
+        runParallel = False
+
     @parameter
     fn compute(chanWidth: Int) -> Lee:
-        print("Compute")
         var clbMap = Matrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2)
         initMap(clbMap)
         for clb in placement.archiv.keys():
@@ -121,7 +124,7 @@ def main():
     fn calc():          
         for _ in range(maxIterations):
             route = ArcPointer[Lee](compute(channelWidth))
-            route[].run()
+            route[].run(runParallel)
             if route[].isValid:
                 print("Success")
                 critPath = route[].getCriticalPath(netlist.outpads)
@@ -220,3 +223,5 @@ def print_help():
     print("  --route_chan_width <int>: Set the channel width for routing")
     print("    disabled binary search")
     print("  --max_iterations <int>: Set the maximum iterations for the routing")
+    print("    disabled binary search")
+    print("  --single_thread: Run the algorithm in single thread mode")
