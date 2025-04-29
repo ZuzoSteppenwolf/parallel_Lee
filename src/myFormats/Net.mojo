@@ -64,6 +64,8 @@ struct Net:
                     line = lines.pop(0)
                     words = line.split()
                     if words[0] != "pinlist:":
+                        if self.log:
+                            self.log.value().writeln("Error: 'pinlist:' nicht gefunden; ", words[0])
                         return False
                     var net = words[1]
                     if net in self.globalNets:
@@ -77,6 +79,8 @@ struct Net:
                     line = lines.pop(0)
                     words = line.split()
                     if words[0] != "pinlist:":
+                        if self.log:
+                            self.log.value().writeln("Error: 'pinlist:' nicht gefunden; ", words[0])
                         return False
                     var net = words[1]
                     if net in self.globalNets:
@@ -94,6 +98,8 @@ struct Net:
                     line = lines.pop(0)
                     words = line.split()
                     if words[0] != "pinlist:":
+                        if self.log:
+                            self.log.value().writeln("Error: 'pinlist:' nicht gefunden; ", words[0])
                         return False
                     for i in range(1, len(pins)+1):
                         var net = words[i]
@@ -106,10 +112,16 @@ struct Net:
                         line = lines.pop(0)
                         words = line.split()
                         if words[0] != "subblock:":
+                            if self.log:
+                                self.log.value().writeln("Error: 'subblock:' nicht gefunden; ", words[0])
                             return False
                 else:
+                    if self.log:
+                        self.log.value().writeln("Error: ", words[0], " nicht gefunden")
                     return False
-        except:
+        except e:
+            if self.log:
+                self.log.value().writeln("Error: ", e)
             return False
         return True
 
@@ -125,7 +137,7 @@ struct Net:
             except:
                 # Darf niemals ausgelöst werden
                 if self.log != None:
-                    self.log.value().writeln("NetError: ", net, " nicht gefunden")
+                    self.log.value().writeln("Error: ", net, " nicht gefunden")
         else:
             self.nets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
             self.netList.append(net)
@@ -145,7 +157,7 @@ struct Net:
             except:
                 # Darf niemals ausgelöst werden
                 if self.log != None:
-                    self.log.value().writeln("NetError: ", net, " nicht gefunden")
+                    self.log.value().writeln("Error: ", net, " nicht gefunden")
         else:
             self.globalNets[net] = List[Tuple[String, Int]](Tuple[String, Int](block, pin))
             self.netList.append(net)

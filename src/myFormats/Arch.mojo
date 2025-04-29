@@ -1,6 +1,7 @@
 from collections import List
 from myUtil.Enum import ChanType, Faceside, SwitchType, FcType
 from myUtil.Util import clearUpLines
+from myUtil.Logger import Log
 """
 @file Arch.mojo
 
@@ -53,16 +54,16 @@ struct Pin:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        var sides = String("")
+        var strsides = String("")
         for side in self.sides:
-            sides += String(side) + String(", ")
-            sides = sides[:-2]
-        return "IsInpin: " + String(self.isInpin) + ", PinClass: " + String(self.pinClass) + ", IsGlobal: " + String(self.isGlobal) + ", Sides: " + String(sides)
+            strsides += String(side[]) + String(", ")
+            strsides = strsides[:-2]
+        return "IsInpin: " + String(self.isInpin) + ", PinClass: " + String(self.pinClass) + ", IsGlobal: " + String(self.isGlobal) + ", Sides: " + strsides
 
 @value
 struct Segmentline:
     var frequency: Float64
-    var length: Float64
+    var length: Int8
     var isLongline: Bool
     var wire_switch: Int8
     var opin_switch: Int8
@@ -144,6 +145,8 @@ struct Arch:
     var t_sblk_opin_to_clb_opin: Float64
     var t_sblk_opin_to_sblk_ipin: Float64
     var subblocks: List[Subblock]
+    # Log
+    var log: Optional[Log[True]]
 
     fn __init__(out self, path: String):
         self.io_rat = -1
@@ -171,6 +174,10 @@ struct Arch:
         self.t_sblk_opin_to_sblk_ipin = -1
         self.subblocks = List[Subblock]()
         self.isValid = False
+        try:
+            self.log = Log[True]("log/arch.log")
+        except:
+            self.log = None
         self.isValid = self.parse(path)
 
     fn parse(mut self, path: String) -> Bool:
@@ -187,8 +194,14 @@ struct Arch:
                     continue
                 if words[0] == "io_rat":
                     self.io_rat = atol(words[1])
+                    if self.log:
+                        self.log.value().writeln("io_rat: " + String(self.io_rat))
+
                 elif words[0] == "chan_width_io":
                     self.chan_width_io = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("chan_width_io: " + String(self.chan_width_io))
+
                 elif words[0] == "chan_width_x":
                     var type = ChanType(words[1])
                     if type == ChanType.NONE:
@@ -197,6 +210,10 @@ struct Arch:
                         self.chan_width_x = ChanWidth(type, atof(words[2]))
                     else:
                         self.chan_width_x = ChanWidth(type, atof(words[2]), atof(words[3]), atof(words[4]), atof(words[5]))
+                    
+                    if self.log:
+                        self.log.value().writeln("chan_width_x: " + String(self.chan_width_x))
+
                 elif words[0] == "chan_width_y":
                     var type = ChanType(words[1])
                     if type == ChanType.NONE:
@@ -205,6 +222,10 @@ struct Arch:
                         self.chan_width_y = ChanWidth(type, atof(words[2]))
                     else:
                         self.chan_width_y = ChanWidth(type, atof(words[2]), atof(words[3]), atof(words[4]), atof(words[5]))
+                    
+                    if self.log:
+                        self.log.value().writeln("chan_width_y: " + String(self.chan_width_y))
+
                 elif words[0] == "inpin":
                     if words[1] != "class:":
                         return False
@@ -219,6 +240,10 @@ struct Arch:
                         for i in range(3, len(words)):
                             sides.append(Faceside(words[i]))
                         self.pins.append(Pin(isInpin, pinClass, sides))
+
+                    if self.log:
+                        self.log.value().writeln("inpin: " + String(self.pins[-1]))
+
                 elif words[0] == "outpin":
                     if words[1] != "class:":
                         return False
@@ -228,23 +253,47 @@ struct Arch:
                     for i in range(3, len(words)):
                         sides.append(Faceside(words[i]))
                     self.pins.append(Pin(isInpin, pinClass, sides))
+                    if self.log:
+                        self.log.value().writeln("outpin: " + String(self.pins[-1]))
+
                 elif words[0] == "subblocks_per_clb":
                     self.subblocks_per_clb = atol(words[1])
+                    if self.log:
+                        self.log.value().writeln("subblocks_per_clb: " + String(self.subblocks_per_clb))
+
                 elif words[0] == "subblock_lut_size":
                     self.subblock_lut_size = atol(words[1])
+                    if self.log:
+                        self.log.value().writeln("subblock_lut_size: " + String(self.subblock_lut_size))
+
                 elif words[0] == "switch_block_type":
                     self.switch_block_type = SwitchType(words[1])
+                    if self.log:
+                        self.log.value().writeln("switch_block_type: " + String(self.switch_block_type))
+
                 elif words[0] == "Fc_type":
                     self.fc_type = FcType(words[1])
+                    if self.log:
+                        self.log.value().writeln("Fc_type: " + String(self.fc_type))
+
                 elif words[0] == "Fc_input":
                     self.fc_input = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("Fc_input: " + String(self.fc_input))
+
                 elif words[0] == "Fc_output":
                     self.fc_output = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("Fc_output: " + String(self.fc_output))
+
                 elif words[0] == "Fc_pad":
                     self.fc_pad = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("Fc_pad: " + String(self.fc_pad))
+
                 elif words[0] == "segment":
                     var freq = -1.
-                    var length = -1.
+                    var length = -1
                     var isLongline = False
                     var wire_switch = -1
                     var opin_switch = -1
@@ -259,7 +308,7 @@ struct Arch:
                             if words[i+1] == "longline":
                                 isLongline = True
                             else:
-                                length = atof(words[i+1])
+                                length = atol(words[i+1])
                         elif words[i] == "wire_switch:":
                             wire_switch = atol(words[i+1])
                         elif words[i] == "opin_switch:":
@@ -275,6 +324,9 @@ struct Arch:
                         else:
                             return False
                     self.segments.append(Segmentline(freq, length, isLongline, wire_switch, opin_switch, frac_cb, frac_sb, rmetal, cmetal))
+                    if self.log:
+                        self.log.value().writeln("segment: " + String(self.segments[-1]))
+
                 elif words[0] == "switch":
                     var switch = atol(words[1])
                     var isBuffered = False
@@ -299,24 +351,54 @@ struct Arch:
                         else:
                             return False
                     self.switches.append(Switch(switch, isBuffered, R, Cin, Cout, Tdel))
+                    if self.log:
+                        self.log.value().writeln("switch: " + String(self.switches[-1]))
+
                 elif words[0] == "R_minW_nmos":
                     self.R_minW_nmos = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("R_minW_nmos: " + String(self.R_minW_nmos))
+
                 elif words[0] == "R_minW_pmos":
                     self.R_minW_pmos = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("R_minW_pmos: " + String(self.R_minW_pmos))
+
                 elif words[0] == "C_ipin_cblock":
                     self.c_ipin_cblock = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("C_ipin_cblock: " + String(self.c_ipin_cblock))
+
                 elif words[0] == "T_ipin_cblock":
-                    self.t_ipin_cblock = atof(words[1])
+                    self.t_ipin_cblock = atof(words[1]) 
+                    if self.log:
+                        self.log.value().writeln("T_ipin_cblock: " + String(self.t_ipin_cblock))
+
                 elif words[0] == "T_ipad":
                     self.t_ipad = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("T_ipad: " + String(self.t_ipad))
+
                 elif words[0] == "T_opad":
                     self.t_opad = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("T_opad: " + String(self.t_opad))
+
                 elif words[0] == "T_clb_ipin_to_sblk_ipin":
                     self.t_clb_ipin_to_sblk_ipin = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("T_clb_ipin_to_sblk_ipin: " + String(self.t_clb_ipin_to_sblk_ipin))
+
                 elif words[0] == "T_sblk_opin_to_clb_opin":
                     self.t_sblk_opin_to_clb_opin = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("T_sblk_opin_to_clb_opin: " + String(self.t_sblk_opin_to_clb_opin))
+
                 elif words[0] == "T_sblk_opin_to_sblk_ipin":
                     self.t_sblk_opin_to_sblk_ipin = atof(words[1])
+                    if self.log:
+                        self.log.value().writeln("T_sblk_opin_to_sblk_ipin: " + String(self.t_sblk_opin_to_sblk_ipin))
+
                 elif words[0] == "T_subblock":
                     var t_comb = -1.
                     var t_seq_in = -1.
@@ -331,9 +413,15 @@ struct Arch:
                         else:
                             return False
                     self.subblocks.append(Subblock(t_comb, t_seq_in, t_seq_out))
+                    if self.log:
+                        self.log.value().writeln("T_subblock: " + String(self.subblocks[-1]))
                 else:
+                    if self.log:
+                        self.log.value().writeln("Error: ", words[0], " nicht gefunden")
                     return False
-        except:
+        except e:
+            if self.log:
+                self.log.value().writeln("Error: ", e)
             return False
         return True
 

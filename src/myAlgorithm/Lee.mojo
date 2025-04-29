@@ -520,10 +520,10 @@ struct Lee:
                                 var row = pathCoords[0][1]
                                 var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
                                 if col % 2 == 0 and row % 2 == 1:
-                                    var name = "CHANY".join(col).join(row)
+                                    var name = String("CHANY").join(col).join(row)
                                     chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                 elif col % 2 == 1 and row % 2 == 0:
-                                    var name = "CHANX".join(col).join(row)
+                                    var name = String("CHANX").join(col).join(row)
                                     chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                 else:
                                     self.isValid = False
@@ -551,12 +551,12 @@ struct Lee:
                                                 preChan = refMapClbs[col, row][0] 
                                             else:
                                                 if col % 2 == 0 and row % 2 == 1:
-                                                    var name = "CHANY".join(col).join(row)
+                                                    var name = String("CHANY").join(col).join(row)
                                                     preChan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                                     preChan[].coord = ((col+1)//2, (row+1)//2)
                                                     preChan[].subblk = currentTrack
                                                 elif col % 2 == 1 and row % 2 == 0:
-                                                    var name = "CHANX".join(col).join(row)
+                                                    var name = String("CHANX").join(col).join(row)
                                                     preChan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                                     preChan[].coord = ((col+1)//2, (row+1)//2)
                                                     preChan[].subblk = currentTrack
@@ -588,12 +588,12 @@ struct Lee:
                                     elif idx == len(pathCoords)-1:
                                         var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
                                         if col % 2 == 0 and row % 2 == 1:
-                                            var name = "CHANY".join(col).join(row)
+                                            var name = String("CHANY").join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                             chan[].coord = ((col+1)//2, (row+1)//2)
                                             chan[].subblk = currentTrack
                                         elif col % 2 == 1 and row % 2 == 0:
-                                            var name = "CHANX".join(col).join(row)
+                                            var name = String("CHANX").join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                             chan[].coord = ((col+1)//2, (row+1)//2)
                                             chan[].subblk = currentTrack
@@ -616,13 +616,13 @@ struct Lee:
                                         var isChan = False
                                         var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
                                         if col % 2 == 0 and row % 2 == 1:
-                                            var name = "CHANY".join(col).join(row)
+                                            var name = String("CHANY").join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                             chan[].coord = ((col+1)//2, (row+1)//2)
                                             chan[].subblk = currentTrack
                                             isChan = True
                                         elif col % 2 == 1 and row % 2 == 0:
-                                            var name = "CHANX".join(col).join(row)
+                                            var name = String("CHANX").join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
                                             chan[].coord = ((col+1)//2, (row+1)//2)
                                             chan[].subblk = currentTrack
@@ -684,8 +684,8 @@ struct Lee:
                             self.log.value().writeln(id, "Error: ", e)
                         self.isValid = False
                         return
-            
-            self.routeLists[net] = routeList
+            if routeList:
+                self.routeLists[net] = routeList
             if self.log:
                 self.log.value().writeln(id, "ID: ", id, "; End Lee-Algorithm for net: ", net)
             return
