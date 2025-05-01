@@ -40,11 +40,18 @@ struct Matrix[type: CollectionElement]:
         (self.data+idx).init_pointee_move(val^)
 
 @value
-struct InlineMatrix[type: CollectionElement, cols: Int, rows: Int, size: Int = cols * rows]:
-    var data: InlineArray[type, size]
+struct ListMatrix[type: CollectionElement]:
+    var data: List[type]
+    var cols: Int
+    var rows: Int
+    var size: Int
 
-    fn __init__(out self, val: type):
-        self.data = InlineArray[type, size](fill=val)
+    fn __init__(out self, cols: Int, rows: Int, val: type):
+        self.data = List[type]()
+        self.cols = cols
+        self.rows = rows
+        self.size = rows * cols
+        self.data.resize(self.size, val)
 
     fn __getitem__(self, col: Int, row: Int) raises -> type:
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:

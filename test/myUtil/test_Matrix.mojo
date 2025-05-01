@@ -1,6 +1,6 @@
 from testing import assert_equal
 from collections import Dict, List
-from myUtil.Matrix import Matrix, InlineMatrix
+from myUtil.Matrix import Matrix, ListMatrix
 from myUtil.Util import initMap
 
 # Test: Matrix
@@ -82,7 +82,7 @@ def test_Matrix_6():
 
 def test_Matrix_7():
 
-    var mat = InlineMatrix[List[Int], 2, 1](List[Int]())
+    var mat = ListMatrix[List[Int]](2, 1, List[Int]())
     mat[0, 0] = List[Int](1, 2, 3)
     mat[1, 0] = List[Int](4, 5, 6)
     assert_equal(mat[0, 0], List[Int](1, 2, 3))
@@ -94,7 +94,7 @@ def test_Matrix_7():
 
 def test_Matrix_8():
 
-    var mat = InlineMatrix[List[Int], 2, 1](List[Int]())
+    var mat = ListMatrix[List[Int]](2, 1, List[Int]())
     assert_equal(mat[0, 0], List[Int]())
     assert_equal(mat[1, 0], List[Int]())
     mat[0, 0].append(4)
