@@ -1,7 +1,7 @@
 from collections import Dict, List
 from myUtil.Block import Block
 from myUtil.Enum import *
-from myUtil.Matrix import Matrix
+from myUtil.Matrix import Matrix, ListMatrix
 from myFormats.Arch import *
 """
 @file Route.mojo
@@ -19,7 +19,7 @@ Parser für das Route File Format vom VPR Tool
 # @param netPins Dict der Netz-IOPins
 # @return True, wenn die Routen geschrieben wurden, sonst False
 fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]], 
-    netKeys: List[String], pins: List[Pin], clbMap: Matrix[List[Block.SharedBlock]], 
+    netKeys: List[String], pins: List[Pin], clbMap: ListMatrix[List[Block.SharedBlock]], 
     clbNums: Dict[String, Int], netPins: Dict[String, Dict[String, Int]],
     globalNets: Dict[String, List[Tuple[String, Int]]], archiv: Dict[String, Tuple[Int, Int]]) -> Bool:
 

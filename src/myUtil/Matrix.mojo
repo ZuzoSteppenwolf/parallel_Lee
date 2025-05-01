@@ -22,10 +22,10 @@ struct Matrix[type: CollectionElement]:
     fn __getitem__(self, col: Int, row: Int) raises -> type:
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
             raise ("Index out of bounds")
-        return self.data[(row * self.cols) + col]
+        return (self.data + (row * self.cols) + col)[]
 
     fn __setitem__[width: Int = 1](mut self, col: Int, row: Int, owned val: type):
-        self.data[(row * self.cols) + col] = val
+        (self.data + (row * self.cols) + col)[] = val
 
     fn __len__(self) -> Int:
         return self.size

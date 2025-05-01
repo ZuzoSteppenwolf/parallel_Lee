@@ -1,6 +1,6 @@
 import benchmark
 from sys import argv
-from myUtil.Matrix import Matrix
+from myUtil.Matrix import Matrix, ListMatrix
 from myUtil.Block import Block
 from myUtil.Enum import Blocktype
 from myUtil.Util import initMap
@@ -83,8 +83,8 @@ def main():
 
     @parameter
     fn compute(chanWidth: Int) -> Lee:
-        var clbMap = Matrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2)
-        initMap(clbMap)
+        var clbMap = ListMatrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2, List[Block.SharedBlock]())
+        #initMap(clbMap)
         for clb in placement.archiv.keys():
             try:
                 if clb[] in netlist.inpads:
@@ -122,15 +122,15 @@ def main():
     var route: ArcPointer[Lee] = ArcPointer[Lee](Lee())
     @parameter
     fn calc():          
-        for _ in range(maxIterations):
+        for i in range(maxIterations):
             route = ArcPointer[Lee](compute(channelWidth))
             route[].run(runParallel)
             if route[].isValid:
-                print("Success")
+                print("Success", i)
                 critPath = route[].getCriticalPath(netlist.outpads)
                 break
             else:
-                print("Failure")
+                print("Failure", i)
 
                 
     if hasFixedChannelWidth:
@@ -138,11 +138,12 @@ def main():
         print("Start routing")
         print("Channel width: ", channelWidth)
         print("----------------")
-        var report = benchmark.run[calc]()
+        #var report = benchmark.run[calc]()
+        calc()
         print("----------------")
         print("Critical path: ", critPath)
         print()
-        report.print("ns")
+        #report.print("ns")
         
     else:
         # binäre Suche für die minimalste Kanal-Breite
@@ -158,11 +159,12 @@ def main():
             print("Start routing")
             print("Channel width: ", channelWidth)
             print("----------------")
-            report = benchmark.run[calc]()
+            #report = benchmark.run[calc]()
+            calc()
             print("----------------")
             print("Critical path: ", critPath)
             print()
-            report.print("ns")
+            #report.print("ns")
             if route[].isValid:
                 highWidth = channelWidth
                 bestWidth = channelWidth

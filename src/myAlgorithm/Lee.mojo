@@ -171,7 +171,7 @@ struct Lee:
     var isValid: Bool
     var routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]]
     var chanMap: List[Matrix[Int]]
-    var clbMap: Matrix[List[Block.SharedBlock]]
+    var clbMap: ListMatrix[List[Block.SharedBlock]]
     var netKeys: List[String]
     var nets: Dict[String, List[Tuple[String, Int]]]
     var mutex: List[Mutex]
@@ -186,7 +186,7 @@ struct Lee:
         self.isValid = False
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
         self.chanMap = List[Matrix[Int]]()
-        self.clbMap = Matrix[List[Block.SharedBlock]](0, 0)
+        self.clbMap = ListMatrix[List[Block.SharedBlock]](0, 0, List[Block.SharedBlock]())
         self.netKeys = List[String]()
         self.nets = Dict[String, List[Tuple[String, Int]]]()
         self.mutex = List[Mutex]()
@@ -206,8 +206,12 @@ struct Lee:
     # @param chanWidth: Kanalbreite
     # @param chanDelay: Kanalverzögerung
     # @param pins: Pins
-    fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: Matrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
+    fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
+        for key in nets.keys():
+            self.routeLists[key[]] = Dict[Int, List[Block.SharedBlock]]()
+            #for i in range(chanWidth):
+            #    self.routeLists[key[]][i] = List[Block.SharedBlock]()
         self.chanMap = List[Matrix[Int]]()
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
