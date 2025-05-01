@@ -259,7 +259,10 @@ struct Lee:
                 routeList[i] = List[Block.SharedBlock]()
                 try:
                     var coord = self.archiv[self.nets[self.netKeys[id]][0][0]]
-                    routeList[i].append(self.clbMap[coord[0], coord[1]][0])
+                    for clb in self.clbMap[coord[0], coord[1]]:
+                        if clb[][].name == self.nets[self.netKeys[id]][0][0]:
+                            routeList[i].append(clb[])
+                            break
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "Error: ", e)
@@ -391,8 +394,10 @@ struct Lee:
                                         isContained = True
                                         break
                                 if not isContained:
-                                    refMapClbs[col, row].append(self.clbMap[coord[0], coord[1]][0])#TODO: PADs berücksichtigen
-
+                                    for clb in self.clbMap[coord[0], coord[1]]:
+                                        if clb[][].name == self.nets[net][i][0]:
+                                            refMapClbs[col, row].append(clb[])
+                                            break
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "Error: ", e)

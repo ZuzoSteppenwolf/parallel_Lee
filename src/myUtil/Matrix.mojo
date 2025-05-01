@@ -1,5 +1,5 @@
 from memory import UnsafePointer, memset_zero
-from collections import Dict
+from collections import InlineArray
 """
 @file Matrix.mojo
 
@@ -7,7 +7,7 @@ from collections import Dict
 """
 
 @value
-struct Matrix[type: Copyable]:
+struct Matrix[type: CollectionElement]:
     var data: UnsafePointer[type]
     var cols: Int
     var rows: Int
@@ -18,14 +18,13 @@ struct Matrix[type: Copyable]:
         self.rows = rows
         self.size = rows * cols
         self.data = UnsafePointer[type].alloc(rows * cols)
-        memset_zero(self.data, rows * cols)
 
-    fn __getitem__(self, row: Int, col: Int) raises -> type:
+    fn __getitem__(self, col: Int, row: Int) raises -> type:
         if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
             raise ("Index out of bounds")
         return self.data[(row * self.cols) + col]
 
-    fn __setitem__[width: Int = 1](mut self, row: Int, col: Int, val: type):
+    fn __setitem__[width: Int = 1](mut self, col: Int, row: Int, owned val: type):
         self.data[(row * self.cols) + col] = val
 
     fn __len__(self) -> Int:
@@ -33,3 +32,27 @@ struct Matrix[type: Copyable]:
 
     fn __del__(owned self):
         self.data.free()
+
+    # Initialitiert den gegebenen Speicherbereich mit gegebenem Wert
+    # @param idx Der Index des Speicherbereichs, der initialisiert werden soll
+    # @param val Der Wert, mit dem der Speicherbereich initialisiert werden soll
+    fn initMemSpace(mut self, idx: Int, owned val: type):
+        (self.data+idx).init_pointee_move(val^)
+
+@value
+struct InlineMatrix[type: CollectionElement, cols: Int, rows: Int, size: Int = cols * rows]:
+    var data: InlineArray[type, size]
+
+    fn __init__(out self, val: type):
+        self.data = InlineArray[type, size](fill=val)
+
+    fn __getitem__(self, col: Int, row: Int) raises -> type:
+        if row < 0 or row >= self.rows or col < 0 or col >= self.cols:
+            raise ("Index out of bounds")
+        return self.data[(row * self.cols) + col]
+
+    fn __setitem__[width: Int = 1](mut self, col: Int, row: Int, owned val: type):
+        self.data[(row * self.cols) + col] = val
+
+    fn __len__(self) -> Int:
+        return self.size

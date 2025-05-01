@@ -47,21 +47,17 @@ fn clearUpLines(owned lines: List[String]) -> List[String]:
 
 
 fn initMap(mut map: Matrix[Dict[String, List[Block.SharedBlock]]]):
-    for i in range(map.cols):
-            for j in range(map.rows):
-                map[i, j] = Dict[String, List[Block.SharedBlock]]()
+    for idx in range(map.size):
+        map.initMemSpace(idx, Dict[String, List[Block.SharedBlock]]())
                 
 fn initMap(mut map: Matrix[Dict[Int, List[Block.SharedBlock]]]):
-    for i in range(map.cols):
-            for j in range(map.rows):
-                map[i, j] = Dict[Int, List[Block.SharedBlock]]()
+    for idx in range(map.size):
+        map.initMemSpace(idx, Dict[Int, List[Block.SharedBlock]]())
 
 fn initMap(mut map: Matrix[List[Block.SharedBlock]]):
-    for i in range(map.cols):
-            for j in range(map.rows):
-                map[i, j] = List[Block.SharedBlock]()
+    for idx in range(map.size):
+        map.initMemSpace(idx, List[Block.SharedBlock]())
 
 fn initMap(mut map: Matrix[Int], value: Int):
-    for i in range(map.cols):
-            for j in range(map.rows):
-                map[i, j] = value
+    for idx in range(map.size):
+        map.initMemSpace(idx, value)
