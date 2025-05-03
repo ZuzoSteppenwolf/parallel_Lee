@@ -34,7 +34,7 @@ struct Block:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return self.name.join(" ").join(self.subblk).join(" ") + self.type.__str__()
+        return self.name + " " + String(self.subblk) + " " + String(self.type) + " "+ String(self.delay) + " " + String(self.coord[0]) + ";" + String(self.coord[1])
 
     # Fügt eine Verbindung zu einem anderen Block hinzu
     #
