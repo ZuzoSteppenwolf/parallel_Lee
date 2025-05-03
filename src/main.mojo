@@ -4,6 +4,7 @@ from myUtil.Matrix import Matrix, ListMatrix
 from myUtil.Block import Block
 from myUtil.Enum import Blocktype
 from myUtil.Util import initMap
+from myUtil.Logger import Log
 from myFormats.Net import Net
 from myFormats.Place import Place
 from myFormats.Arch import Arch
@@ -23,7 +24,7 @@ erweitert um die Laufzeit zu optimieren.
 
 @author Marvin Wollbrück
 """
-
+alias LOG_PATH = "log/main.log"
 alias STANDARD_CHANEL_WIDTH = 12
 alias DEFAULT_MAX_ITERATIONS = 30
 var maxIterations = DEFAULT_MAX_ITERATIONS
@@ -80,6 +81,13 @@ def main():
 
     if "--single_thread" in args:
         runParallel = False
+
+
+    var log: Optional[Log[True]]
+    try:
+        log = Optional(Log[True](LOG_PATH))
+    except:
+        log = None
 
     @parameter
     fn compute(chanWidth: Int) -> Lee:
@@ -150,7 +158,7 @@ def main():
         var lowWidth = 0
         var highWidth = channelWidth
         var hasEnd = False
-        var report: benchmark.Report
+        #var report: benchmark.Report
         var bestRoute: ArcPointer[Lee] = ArcPointer[Lee](Lee())
         var bestWidth = channelWidth
         var bestCritPath = critPath
@@ -177,7 +185,8 @@ def main():
                     channelWidth = lowWidth + (highWidth // 2)
                 else:
                     channelWidth = (lowWidth + highWidth) // 2
-            if highWidth - lowWidth < 2:
+                highWidth = channelWidth
+            if channelWidth == lowWidth:
                 hasEnd = True
         
         route = bestRoute

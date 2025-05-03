@@ -308,20 +308,20 @@ struct Lee:
             fn getChanCoord(coord: Tuple[Int, Int], idx: Int, pinIdx: Int, mut col: Int, mut row: Int) raises:
                 # Wenn Block am Rand, dann Pad
                 if coord[0] == 0:
-                    col = 1
+                    col = 0
                     row = coord[1]*2-1
 
                 elif coord[0] == self.clbMap.cols-1:
-                    col = maze.cols-2
+                    col = maze.cols-1
                     row = coord[1]*2-1
 
                 elif coord[1] == 0:
                     col = coord[0]*2-1
-                    row = 1
+                    row = 0
 
                 elif coord[1] == self.clbMap.rows-1:
                     col = coord[0]*2-1
-                    row = maze.rows-2
+                    row = maze.rows-1
 
                 # Sonst CLB
                 else:
@@ -381,7 +381,10 @@ struct Lee:
                                     maze[col, row] = CONNECTED
                                 # Debugging
                                 #if self.log:
+                                #    self.log.value().writeln(id, "ID: ", id, "; Source at: ", coord[0], ";", coord[1])
                                 #    self.log.value().writeln(id, "ID: ", id, "; Set source at: ", col, ";", row, " on track: ", currentTrack)
+                                #    self.log.value().writeln(id, "ID: ", id, "; Set Value ", self.chanMap[currentTrack][col, row])
+
 
                             else:
                                 getChanCoord(coord, i, pinIdx, col, row)
@@ -411,6 +414,7 @@ struct Lee:
                     self.mutex[currentTrack].unvisit()
                     # Debugging
                     #if self.log:
+                        #self.writeMap(id, maze)
                     #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
                 # end initMaze
 
@@ -467,7 +471,7 @@ struct Lee:
                                         elif row > 0 and maze[col, row-1] == pathfinder - 1:
                                             computePathfinder()
                                         elif row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                            computePathfinder()   
+                                            computePathfinder()  
                                 except e:
                                     if self.log:
                                         self.log.value().writeln(id, "Error: ", e)
@@ -485,6 +489,7 @@ struct Lee:
                     return
                 # Debugging
                 #if self.log:
+                #    self.writeMap(id, maze)
                 #    self.log.value().writeln(id, "ID: ", id, "; Pathcount: ", pathcount, " on track: ", currentTrack)
 
                 if foundSink:
@@ -674,7 +679,7 @@ struct Lee:
                             track += 1
                             currentTrack = (id+track) % self.chanWidth
                             pathfinder = START
-                            if currentTrack == id % self.chanWidth:
+                            if currentTrack == self.chanWidth:#id % self.chanWidth:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
                                 isFinished = True
@@ -762,3 +767,25 @@ struct Lee:
             if self.log:
                 self.log.value().writeln(-1, "Error: ", e)
 
+    fn writeMap(mut self, id: Int, map: Matrix[Int]):
+        try:
+            self.log.value().writeln(id, "ID:", id, "; ", "[")
+            for row in range(map.rows-1, -1, -1):
+                var line: String = "["             
+                for col in range(map.cols):
+                    if map[col, row] == Lee.EMPTY:
+                        line = line + "E"
+                    elif map[col, row] == Lee.SWITCH:
+                        line = line + "S"
+                    elif map[col, row] == Lee.BLOCKED:
+                        line = line + "B"
+                    else:
+                        line = line + String(map[col, row])
+                    if col != map.cols - 1:
+                        line = line + ", "
+                line = line + "]"
+                self.log.value().writeln(id, "ID:", id, "; ", line)
+            self.log.value().writeln(id, "ID:", id, "; ", "]")
+        except e:
+            if self.log:
+                self.log.value().writeln(id, "Error: ", e)
