@@ -82,17 +82,9 @@ def main():
     if "--single_thread" in args:
         runParallel = False
 
-
-    var log: Optional[Log[True]]
-    try:
-        log = Optional(Log[True](LOG_PATH))
-    except:
-        log = None
-
     @parameter
     fn compute(chanWidth: Int) -> Lee:
         var clbMap = ListMatrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2, List[Block.SharedBlock]())
-        #initMap(clbMap)
         for clb in placement.archiv.keys():
             try:
                 if clb[] in netlist.inpads:
@@ -146,19 +138,16 @@ def main():
         print("Start routing")
         print("Channel width: ", channelWidth)
         print("----------------")
-        #var report = benchmark.run[calc]()
         calc()
         print("----------------")
         print("Critical path: ", critPath)
         print()
-        #report.print("ns")
         
     else:
         # binäre Suche für die minimalste Kanal-Breite
         var lowWidth = 0
         var highWidth = channelWidth
         var hasEnd = False
-        #var report: benchmark.Report
         var bestRoute: ArcPointer[Lee] = ArcPointer[Lee](Lee())
         var bestWidth = channelWidth
         var bestCritPath = critPath
@@ -167,12 +156,10 @@ def main():
             print("Start routing")
             print("Channel width: ", channelWidth)
             print("----------------")
-            #report = benchmark.run[calc]()
             calc()
             print("----------------")
             print("Critical path: ", critPath)
             print()
-            #report.print("ns")
             if route[].isValid:
                 highWidth = channelWidth
                 bestWidth = channelWidth

@@ -277,8 +277,8 @@ struct Lee:
                     return
             var net = self.netKeys[id]
             var routedClbs = Set[String]()
-            var track = 0
-            var currentTrack = (id+track) % self.chanWidth
+            #var track = 0
+            var currentTrack = 0#(id+track) % self.chanWidth
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
             try:
@@ -354,9 +354,9 @@ struct Lee:
                 try:
                     wavefront.clear()
                     self.mutex[currentTrack].visit()
-                        # Debugging
-                        #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; Visit mutex")
+                    # Debugging
+                    #if self.log:
+                    #    self.log.value().writeln(id, "ID: ", id, "; Visit mutex at Track: ", currentTrack)
                     # Verdrahtungskarte Uebertragen
                     for col in range(maze.cols):
                         for row in range(maze.rows):                
@@ -423,7 +423,7 @@ struct Lee:
                     # Debugging
                     #if self.log:
                         #self.writeMap(id, maze)
-                    #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex")
+                    #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex at Track: ", currentTrack)
                 # end initMaze
 
             # Start des Algorithmus
@@ -446,9 +446,6 @@ struct Lee:
                         foundSink = True
                         maze[sourceCoord[0], sourceCoord[1]] = CONNECTED
                         pathfinder = CONNECTED
-                        # Debugging
-                        #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sourceCoord[0], ";", sourceCoord[1], " on track: ", currentTrack)
                     else:
                         while wavefront and not foundSink and self.isValid:
                             var coord = wavefront.popleft()
@@ -478,15 +475,15 @@ struct Lee:
 
                 if foundSink:
                     # Debugging
-                    #if self.log:
-                    #    self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
+                    if self.log:
+                        self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
                     #    self.log.value().writeln(id, "ID: ", id, "; visitcount: ", self.mutex[currentTrack].visitor[].load(), " on track: ", currentTrack)
 
                     # Wenn Ziel gefunden, dann Pfad berechnen
                     self.mutex[currentTrack].lock(id)
                     # Debugging
                     #if self.log:
-                    #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex")
+                    #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex at Track: ", currentTrack)
                     try:
                         
                         var isFree = True
@@ -634,8 +631,8 @@ struct Lee:
                                             refMapClbs[col, row].append(chan)
                                             preChan = chan
                                             self.chanMap[currentTrack][col, row] = id
-                            #if self.log:
-                            #    self.log.value().writeln(id, "ID: ", id, "; Added path to routeList on track: ", currentTrack)
+                            if self.log:
+                                self.log.value().writeln(id, "ID: ", id, "; Added path to routeList on track: ", currentTrack)
 
 
                     except e:
@@ -647,9 +644,9 @@ struct Lee:
                         self.mutex[currentTrack].unlock(id)
                         # Debugging
                         #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; Unlock mutex")
+                        #    self.log.value().writeln(id, "ID: ", id, "; Unlock mutex at Track: ", currentTrack)
                     pathfinder = START
-                    initMap(maze, Lee.EMPTY)
+                    #initMap(maze, Lee.EMPTY)
                     initMaze()
                 else:
                     try:
@@ -660,10 +657,10 @@ struct Lee:
                         else:
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; No sink found")
-                            track += 1
-                            currentTrack = (id+track) % self.chanWidth
+                            #track += 1
+                            currentTrack += 1#(id+track) % self.chanWidth
                             pathfinder = START
-                            if currentTrack == id % self.chanWidth:
+                            if currentTrack == self.chanWidth:#id % self.chanWidth:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
                                 isFinished = True

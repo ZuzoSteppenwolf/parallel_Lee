@@ -3,7 +3,6 @@ from memory import ArcPointer
 from utils.write import write_args
 from time import monotonic
 from myUtil.Threading import Mutex
-from python import Python
 
 """
 @file Logger.mojo
@@ -12,38 +11,53 @@ Implementierung eines Loggers
 @author: Marvin Wollbrück
 """
 
+alias MAX_LINES = 1000
+alias MAX_FILES = 10
+
 """
 Erzeugt eine Logdatei und schreibt in diese.
 Die Logdatei wird im Konstruktor geöffnet und im Destruktor geschlossen.
+Die Logdatei erneurt sich, wenn die maximale Anzahl an Zeilen erreicht ist.
 
 @param hasTimestamp: True, wenn ein Zeitstempel in der Logdatei geschrieben werden soll
+@param maxLines: Maximale Anzahl an Zeilen, die in der Logdatei geschrieben werden sollen
+                bei 0 wird die Logdatei nicht erneuert
+@param maxFiles: Maximale Anzahl an Logdateien, die erstellt werden sollen
 """
-struct Log[hasTimestamp: Bool]:   
+struct Log[hasTimestamp: Bool, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:   
     var path: String
     var file: ArcPointer[FileHandle]
     var timestamp: UInt
+    var lines: Int
+    var files: UInt
 
     # Konstruktor
     # @param path: Pfad zur Logdatei
     fn __init__(out self, path: String) raises:
-        self.path = path   
-        self.file = open(self.path, "w")
+        self.path = String(path.rstrip(".log"))      
         self.timestamp = 0
+        self.lines = 0
+        self.files = 0
+        self.file = open(self.path + "_" + String(self.files) + ".log", "w")
         if hasTimestamp:
             self.timestamp = monotonic()
         self.writeln("Log created")  
 
     # Copy-Konstruktor
-    fn __copyinit__(out self, other: Log[hasTimestamp]):
+    fn __copyinit__(out self, other: Log[hasTimestamp, maxLines, maxFiles]):
 
         self.path = other.path
         self.file = other.file
+        self.lines = other.lines
+        self.files = other.files
         self.timestamp = other.timestamp
 
     # Move-Konstruktor
-    fn __moveinit__(out self, owned other: Log[hasTimestamp]):
+    fn __moveinit__(out self, owned other: Log[hasTimestamp, maxLines, maxFiles]):
         self.path = other.path
         self.file = other.file
+        self.lines = other.lines
+        self.files = other.files
         self.timestamp = other.timestamp
 
     # Schreibt in die Logdatei
@@ -61,6 +75,22 @@ struct Log[hasTimestamp: Bool]:
     fn write[*Ts: Writable](mut self, *text: *Ts):
         write_args(self.file[], text)
 
+    # Prüft, ob die maximale Anzahl an Zeilen erreicht ist
+    # und erstellt eine neue Logdatei, wenn dies der Fall ist
+    fn newFile(mut self):
+        try:
+            if maxLines > 0:
+                if self.lines >= maxLines:
+                    self.lines = 0
+                    self.files += 1
+                    self.files %= maxFiles
+                    self.file[].close()
+                    self.file = open(self.path + "_" + String(self.files) + ".log", "w")
+                    self.writeln("Log created")
+                self.lines += 1    
+        except:
+                pass
+
     # Schreibt den Zeitstempel in ns in die Logdatei
     fn writeStamp(mut self):
         if hasTimestamp:
@@ -70,18 +100,21 @@ struct Log[hasTimestamp: Bool]:
     # Schreibt in die Logdatei eine Zeile
     # @param text: Text, der in die Logdatei geschrieben werden soll
     fn writeln(mut self, text: String):
+        self.newFile()
         self.writeStamp()
         self.file[].write(text, "\n")
 
     # Schreibt in die Logdatei eine Zeile
     # @param text: Writeable Objekt, das in die Logdatei geschrieben werden soll
     fn writeln[T: Writable](mut self, text: T):
+        self.newFile()
         self.writeStamp()
         self.file[].write(text, "\n")
 
     # Schreibt in die Logdatei eine Zeile
     # @param text: Writeable Objekte, die in die Logdatei geschrieben werden soll
     fn writeln[*Ts: Writable](mut self, *text: *Ts):
+        self.newFile()
         self.writeStamp()
         write_args(self.file[], text)
         self.file[].write("\n")
@@ -97,26 +130,30 @@ struct Log[hasTimestamp: Bool]:
 """
 Erzeugt eine Threadsafe Logdatei und schreibt in diese.
 Die Logdatei wird im Konstruktor geöffnet und im Destruktor geschlossen.
+Die Logdatei erneurt sich, wenn die maximale Anzahl an Zeilen erreicht ist.
 
 @param hasTimestamp: True, wenn ein Zeitstempel in der Logdatei geschrieben werden soll
+@param maxLines: Maximale Anzahl an Zeilen, die in der Logdatei geschrieben werden sollen
+                bei 0 wird die Logdatei nicht erneuert
+@param maxFiles: Maximale Anzahl an Logdateien, die erstellt werden sollen
 """
-struct async_Log[hasTimestamp: Bool]:
-    var log: ArcPointer[Log[hasTimestamp]]
+struct async_Log[hasTimestamp: Bool, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:
+    var log: ArcPointer[Log[hasTimestamp, maxLines, maxFiles]]
     var mutex: Mutex
 
     # Konstruktor
     # @param path: Pfad zur Logdatei
     fn __init__(out self, path: String) raises:
-        self.log = ArcPointer[Log[hasTimestamp]](Log[hasTimestamp](path))
+        self.log = ArcPointer[Log[hasTimestamp, maxLines, maxFiles]](Log[hasTimestamp, maxLines, maxFiles](path))
         self.mutex = Mutex()
 
     # Copy-Konstruktor
-    fn __copyinit__(out self, other: async_Log[hasTimestamp]):
+    fn __copyinit__(out self, other: async_Log[hasTimestamp, maxLines, maxFiles]):
         self.log = other.log
         self.mutex = other.mutex
 
     # Move-Konstruktor
-    fn __moveinit__(out self, owned other: async_Log[hasTimestamp]):
+    fn __moveinit__(out self, owned other: async_Log[hasTimestamp, maxLines, maxFiles]):
         self.log = other.log
         self.mutex = other.mutex
 
@@ -125,6 +162,7 @@ struct async_Log[hasTimestamp: Bool]:
     # @param text: Text, der in die Logdatei geschrieben werden soll
     fn writeln[*Ts: Writable](mut self, id: Int, *text: *Ts):
         self.mutex.lock(id)
+        self.log[].newFile()
         self.log[].writeStamp()
         write_args(self.log[].file[], text)
         self.log[].write("\n")
