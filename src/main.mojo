@@ -11,6 +11,7 @@ from myFormats.Arch import Arch
 from collections import Dict, List, Set
 from myAlgorithm.Lee import Lee
 from memory import ArcPointer
+from time import perf_counter
 from myFormats.Route import *
 
 """
@@ -36,6 +37,7 @@ var runParallel = True
 Main-Methode der Applikation
 """
 def main():
+    _ = perf_counter()
     args = List[String]()
     for arg in argv():
         args.append(String(arg))
@@ -48,18 +50,21 @@ def main():
     placement = Place(args[1])
     if not placement.isValid:
         print("Invalid placement file")
+        print_duration()
         return
 
     print("Read file ", args[3])
     arch = Arch(args[3])
     if not arch.isValid:
         print("Invalid architecture file")
+        print_duration()
         return
 
     print("Read file ", args[2])
     netlist = Net(args[2], len(arch.subblocks), arch.pins)
     if not netlist.isValid:
         print("Invalid netlist file")
+        print_duration()
         return
     
     if "--route_chan_width" in args:
@@ -69,6 +74,7 @@ def main():
             channelWidth = atol(args[idx + 1])
         except:
             print("Invalid channel width: ", args[idx + 1])
+            print_duration()
             return
 
     if "--max_iterations" in args:
@@ -77,6 +83,7 @@ def main():
             maxIterations = atol(args[idx + 1])
         except:
             print("Invalid max iterations: ", args[idx + 1])
+            print_duration()
             return
 
     if "--single_thread" in args:
@@ -204,6 +211,7 @@ def main():
     print()
     print("Routing finished")
     print()
+    print_duration()
     return
 
 """
@@ -223,3 +231,7 @@ def print_help():
     print("  --max_iterations <int>: Set the maximum iterations for the routing")
     print("    disabled binary search")
     print("  --single_thread: Run the algorithm in single thread mode")
+
+def print_duration():
+    print("Programm Duration: ", perf_counter(), "ns")
+    return
