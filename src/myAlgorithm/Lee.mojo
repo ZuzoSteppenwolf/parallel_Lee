@@ -213,8 +213,6 @@ struct Lee:
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
         for key in nets.keys():
             self.routeLists[key[]] = Dict[Int, List[Block.SharedBlock]]()
-            #for i in range(chanWidth):
-            #    self.routeLists[key[]][i] = List[Block.SharedBlock]()
         self.chanMap = List[Matrix[Int]]()
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
@@ -292,7 +290,7 @@ struct Lee:
             var refMapClbs = Matrix[List[Block.SharedBlock]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
             initMap(refMapClbs)
             initMap(maze, EMPTY)
-            var sourceCoord: Tuple[Int, Int] = (0, 0)
+            var sourceCoord: Tuple[Int, Int]
             try:
                 sourceCoord = self.archiv[self.nets[net][0][0]]
             except e:
@@ -424,6 +422,7 @@ struct Lee:
                     #if self.log:
                         #self.writeMap(id, maze)
                     #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex at Track: ", currentTrack)
+                        
                 # end initMaze
 
             # Start des Algorithmus
@@ -434,19 +433,24 @@ struct Lee:
                 self.log.value().writeln(id, "ID: ", id, "; Init local maze")
             
             var isFinished = False
-            var pathfinder = START
             var sinkCoord: Tuple[Int, Int] = (0, 0)
             var chanArchiv = Dict[String, Tuple[Int, Int]]()
             while not isFinished and self.isValid:
                 var foundSink = False
                 # Suche nach dem nächsten Pfad
                 try:
-                    if maze[sourceCoord[0], sourceCoord[1]] == SINK:
-                        sinkCoord = sourceCoord
-                        foundSink = True
-                        maze[sourceCoord[0], sourceCoord[1]] = CONNECTED
-                        pathfinder = CONNECTED
-                    else:
+                    for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
+                        var col = 0
+                        var row = 0
+                        getChanCoord(sourceCoord, 0, pinIdx, col, row)
+                        if maze[col, row] == SINK:
+                            sinkCoord = (col, row)
+                            foundSink = True
+                            maze[col, row] = CONNECTED
+                            if self.log:
+                                self.log.value().writeln(id, "ID: ", id, "; Found sink at source: ", col, ";", row, " Value ", col, row, " on track: ", currentTrack)
+                            break
+                    if not foundSink:
                         while wavefront and not foundSink and self.isValid:
                             var coord = wavefront.popleft()
                             pathfinder = maze[coord[0], coord[1]] + 1
@@ -454,12 +458,14 @@ struct Lee:
                                 var col = coord[0] + DCOL[i]
                                 var row = coord[1] + DROW[i]
                                 if col >= 0 and col < maze.cols and row >= 0 and row < maze.rows:
-                                    if maze[col, row] == EMPTY or maze[col, row] == SINK:
-                                        if maze[col, row] == SINK:
-                                            foundSink = True
-                                            sinkCoord = (col, row)
-                                            maze[col, row] = pathfinder
-                                            break
+                                    if maze[col, row] == SINK:
+                                        foundSink = True
+                                        sinkCoord = (col, row)
+                                        maze[col, row] = pathfinder
+                                        if self.log:
+                                            self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", col, ";", row, " Value ", maze[col, row], " on track: ", currentTrack)
+                                        break
+                                    if maze[col, row] == EMPTY:
                                         maze[col, row] = pathfinder
                                         wavefront.append((col, row))
 
@@ -491,7 +497,7 @@ struct Lee:
                         pathfinder = maze[sinkCoord[0], sinkCoord[1]]
                         var pathCoords = List[Tuple[Int, Int]]()
 
-                        var tree = PathTree(id, coord, UnsafePointer.address_of(maze), UnsafePointer.address_of(self.chanMap[currentTrack]), coord, 0, pathfinder)
+                        var tree = PathTree(id, coord, UnsafePointer(to=maze), UnsafePointer(to=self.chanMap[currentTrack]), coord, 0, pathfinder)
                         # Debugging
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Create path tree")
@@ -513,7 +519,7 @@ struct Lee:
                             if len(pathCoords) == 1:
                                 var col = pathCoords[0][0]
                                 var row = pathCoords[0][1]
-                                var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+                                var chan: Block.SharedBlock
                                 if col % 2 == 0 and row % 2 == 1:
                                     var name = String("CHANY").join(col).join(row)
                                     chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
@@ -568,7 +574,7 @@ struct Lee:
                                                 if clb[][].type == Blocktype.CHANX or clb[][].type == Blocktype.CHANY:
                                                     preChan = clb[]
                                                     break    
-                                            var chan = preChan[].preconnections[0]
+                                            var chan = preChan[].preconnections[0]# TODO speicher fehler
                                             if chan[].type == Blocktype.CHANX or chan[].type == Blocktype.CHANY:
                                                 var chanCol = chanArchiv[chan[].name][0]
                                                 var chanRow = chanArchiv[chan[].name][1]
@@ -581,7 +587,7 @@ struct Lee:
                                             self.chanMap[currentTrack][col, row] = id
 
                                     elif idx == len(pathCoords)-1:
-                                        var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
+                                        var chan: Block.SharedBlock
                                         if col % 2 == 0 and row % 2 == 1:
                                             var name = String("CHANY").join(col).join(row)
                                             chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
@@ -622,8 +628,6 @@ struct Lee:
                                             chan[].coord = ((col+1)//2, (row+1)//2)
                                             chan[].subblk = currentTrack
                                             isChan = True
-                                        else:
-                                            isChan = False
                                         if isChan:
                                             chan[].addPreconnection(preChan)
                                             routeList[currentTrack].append(chan)
@@ -645,9 +649,10 @@ struct Lee:
                         # Debugging
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Unlock mutex at Track: ", currentTrack)
-                    pathfinder = START
                     #initMap(maze, Lee.EMPTY)
                     initMaze()
+                    if self.log:
+                        self.log.value().writeln(id, "ID: ", id, "; Init local maze")
                 else:
                     try:
                         if len(routedClbs) == len(self.nets[net]):
@@ -659,7 +664,6 @@ struct Lee:
                                 self.log.value().writeln(id, "ID: ", id, "; No sink found")
                             #track += 1
                             currentTrack += 1#(id+track) % self.chanWidth
-                            pathfinder = START
                             if currentTrack == self.chanWidth:#id % self.chanWidth:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
@@ -670,6 +674,8 @@ struct Lee:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found, try next track")
                                 initMap(refMapClbs)  
                                 initMaze()    
+                                if self.log:
+                                    self.log.value().writeln(id, "ID: ", id, "; Init local maze")
                                 chanArchiv = Dict[String, Tuple[Int, Int]]()
                               
                     except e:
