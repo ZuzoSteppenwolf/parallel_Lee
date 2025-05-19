@@ -38,6 +38,7 @@ struct PathTree:
     var turns: Int
     var pathfinder: Int
     var id: Int
+    var path: List[Tuple[Int, Int]]
 
     # Konstruktor
     # @param id: ID des Pfades
@@ -58,6 +59,7 @@ struct PathTree:
         self.chanMap = chanMap
         self.turns = turns
         self.isLeaf = False
+        self.path = List[Tuple[Int, Int]]()
 
     # Berechnet den/die Pfad/e
     # @raises Exception
@@ -74,6 +76,7 @@ struct PathTree:
         # Überprüfen ob der Knoten am Ziel ist, somit Blatt
         elif self.maze[][col, row] == Lee.CONNECTED:
             self.isLeaf = True
+            self.path.append(self.coord)
 
         # Gültiger Knoten
         else:
@@ -143,6 +146,8 @@ struct PathTree:
                 for child in self.children: 
                     if child[].turns == self.turns:
                         self.children = List[PathTree](child[])
+                        self.path.extend(child[].path)
+                        self.path.append(self.coord)
                         break
 
     # Gibt den günstigsten Pfad zurück
