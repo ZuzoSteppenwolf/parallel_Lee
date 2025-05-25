@@ -54,6 +54,7 @@ def test_Lee1():
     outpads.add("B")
 
     assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
     assert_equal(route.getCriticalPath(outpads), 6, "Lee Kritischerpfad ist nicht 6")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][2, 1], id, "kein Kanal bei (2, 1)")
@@ -120,6 +121,7 @@ def test_Lee2():
 
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(route.getCriticalPath(outpads), 6, "Lee Kritischerpfad ist nicht 6")
+    assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
     assert_equal(route.routeLists["1"][0][0][].name, "A", "Falscher Source Block")
     assert_equal(route.routeLists["1"][0][1][].type, Blocktype.CHANX, "Kein CHANX Kanal bei (1, 0)")
     assert_equal(route.routeLists["1"][0][1][].coord[0], 1, "Falsche CHANX Kanal Koordinaten bei (1, 0)")

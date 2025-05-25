@@ -452,7 +452,7 @@ struct Lee:
                             foundSink = True
                             maze[col, row] = CONNECTED
                             if self.log:
-                                self.log.value().writeln(id, "ID: ", id, "; Found sink at source: ", col, ";", row, " Value ", col, row, " on track: ", currentTrack)
+                                self.log.value().writeln(id, "ID: ", id, "; Found sink at source: ", col, ";", row, " Value ", maze[col, row], " on track: ", currentTrack)
                             break
                     if not foundSink:
                         while wavefront and not foundSink and self.isValid:
@@ -538,6 +538,7 @@ struct Lee:
                                             if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
                                                 preChan = chan[]
                                                 break
+                                    routeList[currentTrack].append(preChan.value())
                                 elif self.chanMap[currentTrack][coord[0], coord[1]] != Lee.SWITCH:
                                     var chan: Block.SharedBlock
                                     if preChan is None:
@@ -573,11 +574,13 @@ struct Lee:
                                     chan[].subblk = currentTrack
                                     chan[].addPreconnection(preChan.value())
                                     chanArchiv[chan[].name] = (col, row)
+                                    routeList[currentTrack].append(chan[])
                                     if len(pathCoords) == 1:
                                         for clb in refMapClbs[col, row]:
                                             if clb[][].name != self.nets[net][0][0] and (clb[][].type == Blocktype.CLB or clb[][].type == Blocktype.OUTPAD):
                                                 clb[][].addPreconnection(chan)
                                                 routedClbs.add(clb[][].name)
+                                                routeList[currentTrack].append(clb[])
                                     refMapClbs[col, row].append(chan[])
                                     self.chanMap[currentTrack][coord[0], coord[1]] = id                        
                                 _ = pathCoords.pop(0)
