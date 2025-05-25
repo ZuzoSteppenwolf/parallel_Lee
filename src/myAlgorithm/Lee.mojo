@@ -38,7 +38,6 @@ struct PathTree:
     var turns: Int
     var pathfinder: Int
     var id: Int
-    var path: List[Tuple[Int, Int]]
 
     # Konstruktor
     # @param id: ID des Pfades
@@ -59,7 +58,6 @@ struct PathTree:
         self.chanMap = chanMap
         self.turns = turns
         self.isLeaf = False
-        self.path = List[Tuple[Int, Int]]()
 
     # Berechnet den/die Pfad/e
     # @raises Exception
@@ -76,7 +74,6 @@ struct PathTree:
         # Überprüfen ob der Knoten am Ziel ist, somit Blatt
         elif self.maze[][col, row] == Lee.CONNECTED:
             self.isLeaf = True
-            self.path.append(self.coord)
 
         # Gültiger Knoten
         else:
@@ -143,12 +140,6 @@ struct PathTree:
                 for child in self.children:
                     if child[].turns < self.turns:
                         self.turns = child[].turns
-                for child in self.children: 
-                    if child[].turns == self.turns:
-                        self.children = List[PathTree](child[])
-                        self.path.extend(child[].path)
-                        self.path.append(self.coord)
-                        break
 
     # Gibt den günstigsten Pfad zurück
     # @returns den günstigsten Pfad
@@ -215,9 +206,20 @@ struct Lee:
     # @param chanDelay: Kanalverzögerung
     # @param pins: Pins
     fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
+        try:
+            self.log = async_Log[True](self.LOG_PATH)
+        except:
+            self.log = None
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
         for key in nets.keys():
             self.routeLists[key[]] = Dict[Int, List[Block.SharedBlock]]()
+            try:
+                for i in range(chanWidth):
+                    self.routeLists[key[]][i] = List[Block.SharedBlock]()
+            except e:
+                if self.log:
+                    self.log.value().writeln(-1, "Error: ", e)
+                self.isValid = False
         self.chanMap = List[Matrix[Int]]()
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
@@ -245,10 +247,7 @@ struct Lee:
         for net in nets:
             self.netKeys.append(net[])
 
-        try:
-            self.log = async_Log[True](self.LOG_PATH)
-        except:
-            self.log = None
+        
 
     fn run(mut self, runParallel: Bool = True):
         
@@ -275,7 +274,7 @@ struct Lee:
                             break
                 except e:
                     if self.log:
-                        self.log.value().writeln(id, "Error: ", e)
+                        self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                     self.isValid = False
                     return
             var net = self.netKeys[id]
@@ -288,7 +287,7 @@ struct Lee:
                 routedClbs.add(self.nets[net][0][0])
             except e:
                 if self.log:
-                    self.log.value().writeln(id, "Error: ", e)
+                    self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                 self.isValid = False
                 return
 
@@ -300,7 +299,7 @@ struct Lee:
                 sourceCoord = self.archiv[self.nets[net][0][0]]
             except e:
                 if self.log:
-                    self.log.value().writeln(id, "Error: ", e)
+                    self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                 self.isValid = False
                 return
 
@@ -418,7 +417,7 @@ struct Lee:
                                             break
                 except e:
                     if self.log:
-                        self.log.value().writeln(id, "Error: ", e)
+                        self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                     self.isValid = False
                     return
                 finally:
@@ -476,7 +475,7 @@ struct Lee:
 
                 except e:
                     if self.log:
-                        self.log.value().writeln(id, "Error: ", e)
+                        self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                     self.isValid = False
                     return
                 # Debugging
@@ -521,132 +520,74 @@ struct Lee:
                             #if self.log:
                             #    self.log.value().writeln(id, "ID: ", id, "; Free path for sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
                             
-                            if len(pathCoords) == 1:
-                                var col = pathCoords[0][0]
-                                var row = pathCoords[0][1]
-                                var chan: Block.SharedBlock
-                                if col % 2 == 0 and row % 2 == 1:
-                                    var name = String("CHANY").join(col).join(row)
-                                    chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
-                                elif col % 2 == 1 and row % 2 == 0:
-                                    var name = String("CHANX").join(col).join(row)
-                                    chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
-                                else:
-                                    self.isValid = False
-                                    return
-
-                                for idx in range(len(refMapClbs[col, row])):
-                                    if idx == 0:
-                                        chan[].addPreconnection(refMapClbs[col, row][idx])
-                                        routeList[currentTrack].append(chan)
+                            var preChan: Optional[Block.SharedBlock] = None
+                            while pathCoords:
+                                var coord = pathCoords[0]
+                                
+                                if self.chanMap[currentTrack][coord[0], coord[1]] == id:
+                                    for clb in refMapClbs[coord[0], coord[1]]:
+                                        if clb[][].type == Blocktype.CHANX or clb[][].type == Blocktype.CHANY:
+                                            preChan = clb[]
+                                            break
+                                    for chan in preChan.value()[].preconnections:
+                                        if chan[][].type == Blocktype.CHANX or chan[][].type == Blocktype.CHANX:
+                                            var chanCol = chanArchiv[chan[][].name][0]
+                                            var chanRow = chanArchiv[chan[][].name][1]
+                                            var nextCol = pathCoords[0][0]
+                                            var nextRow = pathCoords[0][1]
+                                            if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
+                                                preChan = chan[]
+                                                break
+                                elif self.chanMap[currentTrack][coord[0], coord[1]] != Lee.SWITCH:
+                                    var chan: Block.SharedBlock
+                                    if preChan is None:
+                                        for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
+                                            var col = 0
+                                            var row = 0
+                                            getChanCoord(sourceCoord, 0, pinIdx, col, row)
+                                            if col == coord[0] and row == coord[1]:
+                                                for clb in refMapClbs[col, row]:
+                                                    if clb[][].name == self.nets[net][0][0]:
+                                                        preChan = clb[]
+                                                        break
+                                    var col = coord[0]
+                                    var row = coord[1]
+                                    if col % 2 == 0 and row % 2 == 1:
+                                        var name = String(id).join("CHANY").join(col).join(row).join("T").join(currentTrack)
+                                        chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                    elif col % 2 == 1 and row % 2 == 0:
+                                        var name = String(id).join("CHANX").join(col).join(row).join("T").join(currentTrack)
+                                        chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))            
                                     else:
-                                        refMapClbs[col, row][idx][].addPreconnection(chan)
-                                        routeList[currentTrack].append(refMapClbs[col, row][idx])
-                                        routedClbs.add(refMapClbs[col, row][idx][].name)
-                                refMapClbs[col, row].append(chan)
-                                chanArchiv[chan[].name] = (col, row)
-                                self.chanMap[currentTrack][col, row] = id
-                            else:
-                                var preChan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
-                                for idx in range(len(pathCoords)):                                   
-                                    var col = pathCoords[idx][0]
-                                    var row = pathCoords[idx][1]
-                                    if idx == 0:
-                                        if len(refMapClbs[col, row]) == 1:
-                                            if refMapClbs[col, row][0][].type == Blocktype.CHANX or refMapClbs[col, row][0][].type == Blocktype.CHANY:
-                                                preChan = refMapClbs[col, row][0] 
-                                            else:
-                                                if col % 2 == 0 and row % 2 == 1:
-                                                    var name = String("CHANY").join(col).join(row)
-                                                    preChan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
-                                                    preChan[].coord = ((col+1)//2, (row+1)//2)
-                                                    preChan[].subblk = currentTrack
-                                                elif col % 2 == 1 and row % 2 == 0:
-                                                    var name = String("CHANX").join(col).join(row)
-                                                    preChan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
-                                                    preChan[].coord = ((col+1)//2, (row+1)//2)
-                                                    preChan[].subblk = currentTrack
-                                                else:
-                                                    self.isValid = False
-                                                    return
-                                                preChan[].addPreconnection(refMapClbs[col, row][idx])
-                                                routeList[currentTrack].append(preChan)
-                                                chanArchiv[preChan[].name] = (col, row)
-                                                refMapClbs[col, row].append(preChan)
-                                                self.chanMap[currentTrack][col, row] = id
-                                        else:
-                                            for clb in refMapClbs[col, row]:
-                                                if clb[][].type == Blocktype.CHANX or clb[][].type == Blocktype.CHANY:
-                                                    preChan = clb[]
-                                                    break    
-                                            var chan = preChan[].preconnections[0]# TODO speicher fehler
-                                            if chan[].type == Blocktype.CHANX or chan[].type == Blocktype.CHANY:
-                                                var chanCol = chanArchiv[chan[].name][0]
-                                                var chanRow = chanArchiv[chan[].name][1]
-                                                var nextCol = pathCoords[idx+1][0]
-                                                var nextRow = pathCoords[idx+1][1]
-                                                if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
-                                                    preChan = chan
-                                            
-                                            routeList[currentTrack].append(preChan)
-                                            self.chanMap[currentTrack][col, row] = id
-
-                                    elif idx == len(pathCoords)-1:
-                                        var chan: Block.SharedBlock
-                                        if col % 2 == 0 and row % 2 == 1:
-                                            var name = String("CHANY").join(col).join(row)
-                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
-                                            chan[].coord = ((col+1)//2, (row+1)//2)
-                                            chan[].subblk = currentTrack
-                                        elif col % 2 == 1 and row % 2 == 0:
-                                            var name = String("CHANX").join(col).join(row)
-                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
-                                            chan[].coord = ((col+1)//2, (row+1)//2)
-                                            chan[].subblk = currentTrack
-                                        else:
-                                            self.isValid = False
-                                            return
-                                        chan[].addPreconnection(preChan)
-                                        routeList[currentTrack].append(chan)
-                                        chanArchiv[chan[].name] = (col, row)
+                                        self.isValid = False
+                                        if self.log:
+                                            self.log.value().writeln(id, "ID: ", id, "; Error: Coordinate corresponds to no channel block")
+                                        return
+                                    if preChan is None:
+                                        if self.log:
+                                            self.log.value().writeln(id, "ID: ", id, "; Error: PreChan is None")
+                                        self.isValid = False
+                                        return
+                                    
+                                    chan[].coord = ((col+1)//2, (row+1)//2)
+                                    chan[].subblk = currentTrack
+                                    chan[].addPreconnection(preChan.value())
+                                    chanArchiv[chan[].name] = (col, row)
+                                    if len(pathCoords) == 1:
                                         for clb in refMapClbs[col, row]:
-                                            clb[][].addPreconnection(chan)
-                                            routeList[currentTrack].append(clb[])
-                                            routedClbs.add(clb[][].name)
-
-                                        refMapClbs[col, row].append(chan)
-                                        preChan = chan
-                                        self.chanMap[currentTrack][col, row] = id
-                                        
-                                    else:
-                                        var isChan = False
-                                        var chan: Block.SharedBlock = Block.SharedBlock(Block("Error"))
-                                        if col % 2 == 0 and row % 2 == 1:
-                                            var name = String("CHANY").join(col).join(row)
-                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
-                                            chan[].coord = ((col+1)//2, (row+1)//2)
-                                            chan[].subblk = currentTrack
-                                            isChan = True
-                                        elif col % 2 == 1 and row % 2 == 0:
-                                            var name = String("CHANX").join(col).join(row)
-                                            chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))
-                                            chan[].coord = ((col+1)//2, (row+1)//2)
-                                            chan[].subblk = currentTrack
-                                            isChan = True
-                                        if isChan:
-                                            chan[].addPreconnection(preChan)
-                                            routeList[currentTrack].append(chan)
-                                            chanArchiv[chan[].name] = (col, row)
-                                            refMapClbs[col, row].append(chan)
-                                            preChan = chan
-                                            self.chanMap[currentTrack][col, row] = id
+                                            if clb[][].name != self.nets[net][0][0] and (clb[][].type == Blocktype.CLB or clb[][].type == Blocktype.OUTPAD):
+                                                clb[][].addPreconnection(chan)
+                                                routedClbs.add(clb[][].name)
+                                    refMapClbs[col, row].append(chan[])
+                                    self.chanMap[currentTrack][coord[0], coord[1]] = id                        
+                                _ = pathCoords.pop(0)
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; Added path to routeList on track: ", currentTrack)
 
 
                     except e:
                         if self.log:
-                            self.log.value().writeln(id, "Error: ", e)
+                            self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                         self.isValid = False
                         return
                     finally:
@@ -685,7 +626,7 @@ struct Lee:
                               
                     except e:
                         if self.log:
-                            self.log.value().writeln(id, "Error: ", e)
+                            self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                         self.isValid = False
                         return
             if routeList:
