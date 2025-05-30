@@ -530,13 +530,16 @@ struct Lee:
                                             preChan = clb[]
                                             break
                                     for chan in preChan.value()[].preconnections:
-                                        if chan[][].type == Blocktype.CHANX or chan[][].type == Blocktype.CHANX:
+                                        if chan[][].type == Blocktype.CHANX or chan[][].type == Blocktype.CHANY:
                                             var chanCol = chanArchiv[chan[][].name][0]
                                             var chanRow = chanArchiv[chan[][].name][1]
-                                            var nextCol = pathCoords[0][0]
-                                            var nextRow = pathCoords[0][1]
+                                            var nextCol = pathCoords[1][0]
+                                            var nextRow = pathCoords[1][1]
                                             if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
                                                 preChan = chan[]
+                                                #debugging
+                                                if self.log:
+                                                    self.log.value().writeln(id, "ID: ", id, "; PreChan ", chan[][].name, " found at: ", chanCol, ";", chanRow, " Diff: ", abs(chanCol - nextCol), ";", abs(chanRow - nextRow), " on track: ", currentTrack)
                                                 break
                                     routeList[currentTrack].append(preChan.value())
                                 elif self.chanMap[currentTrack][coord[0], coord[1]] != Lee.SWITCH:
@@ -554,10 +557,10 @@ struct Lee:
                                     var col = coord[0]
                                     var row = coord[1]
                                     if col % 2 == 0 and row % 2 == 1:
-                                        var name = String(id).join("CHANY").join(col).join(row).join("T").join(currentTrack)
+                                        var name = String(id) + "CHANY" + String(col) + ":" + String(row) + "T" + String(currentTrack)
                                         chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
                                     elif col % 2 == 1 and row % 2 == 0:
-                                        var name = String(id).join("CHANX").join(col).join(row).join("T").join(currentTrack)
+                                        var name = String(id) + "CHANX" + String(col) + ":" + String(row) + "T" + String(currentTrack)
                                         chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))            
                                     else:
                                         self.isValid = False
@@ -582,7 +585,8 @@ struct Lee:
                                                 routedClbs.add(clb[][].name)
                                                 routeList[currentTrack].append(clb[])
                                     refMapClbs[col, row].append(chan[])
-                                    self.chanMap[currentTrack][coord[0], coord[1]] = id                        
+                                    self.chanMap[currentTrack][coord[0], coord[1]] = id      
+                                    preChan = chan                  
                                 _ = pathCoords.pop(0)
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; Added path to routeList on track: ", currentTrack)
