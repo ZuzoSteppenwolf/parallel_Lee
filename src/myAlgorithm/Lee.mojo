@@ -537,9 +537,6 @@ struct Lee:
                                             var nextRow = pathCoords[1][1]
                                             if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
                                                 preChan = chan[]
-                                                #debugging
-                                                if self.log:
-                                                    self.log.value().writeln(id, "ID: ", id, "; PreChan ", chan[][].name, " found at: ", chanCol, ";", chanRow, " Diff: ", abs(chanCol - nextCol), ";", abs(chanRow - nextRow), " on track: ", currentTrack)
                                                 break
                                     routeList[currentTrack].append(preChan.value())
                                 elif self.chanMap[currentTrack][coord[0], coord[1]] != Lee.SWITCH:
@@ -669,6 +666,10 @@ struct Lee:
             for padname in outpads:
                 var coord = self.archiv[padname[]]
                 var clb = self.clbMap[coord[0], coord[1]][0]
+                for block in self.clbMap[coord[0], coord[1]]:
+                    if block[][].name == padname[]:
+                        clb = block[]
+                        break
                 var delays = clb[].getDelay()
                 for delay in delays:
                     if delay[] > criticalPath:
