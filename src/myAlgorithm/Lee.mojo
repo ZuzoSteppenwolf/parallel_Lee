@@ -81,10 +81,11 @@ struct PathTree:
             var prioMoveRow = self.coord[1] - self.lastCoord[1]
             var prioNextCol = col + prioMoveCol
             var prioNextRow = row + prioMoveRow
-
+            var hasPrio = False
             # nächster mögliche Knoten in selber Richtung
             if prioNextCol >= 0 and prioNextCol < self.maze[].cols and prioNextRow >= 0 and prioNextRow < self.maze[].rows:
                 if self.maze[][prioNextCol, prioNextRow] == self.pathfinder - 1:
+                    hasPrio = True
                     var turns = self.turns
                     if self.lastCoord[0] != col:
                         turns += 1
@@ -94,7 +95,7 @@ struct PathTree:
                         self.children.append(child)
             
             # Wenn Prio-Knoten Sackgasse ist, dann
-            if len(self.children) == 0:
+            if not hasPrio:#len(self.children) == 0:
                 # nächste mögliche Knoten suchen
                 if col > 0 and prioNextCol != col-1 and self.maze[][col-1, row] == self.pathfinder - 1:
                     var turns = self.turns

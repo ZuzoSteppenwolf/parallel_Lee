@@ -11,7 +11,7 @@ from myFormats.Arch import Arch
 from collections import Dict, List, Set
 from myAlgorithm.Lee import Lee
 from memory import ArcPointer
-from time import perf_counter
+from time import monotonic
 from myFormats.Route import *
 
 """
@@ -32,12 +32,13 @@ var maxIterations = DEFAULT_MAX_ITERATIONS
 var channelWidth = STANDARD_CHANEL_WIDTH
 var hasFixedChannelWidth = False
 var runParallel = True
+var startTime: Float64 = 0.0
 
 """
 Main-Methode der Applikation
 """
 def main():
-    _ = perf_counter()
+    startTime = monotonic()
     args = List[String]()
     for arg in argv():
         args.append(String(arg))
@@ -233,5 +234,5 @@ def print_help():
     print("  --single_thread: Run the algorithm in single thread mode")
 
 def print_duration():
-    print("Programm Duration: ", perf_counter(), "ns")
+    print("Programm Duration: ", (monotonic() - startTime)/1000000000, "s")
     return
