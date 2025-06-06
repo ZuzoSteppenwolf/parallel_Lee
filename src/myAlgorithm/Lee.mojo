@@ -59,10 +59,14 @@ struct PathTree:
     # @raises Exception
     fn computePath(mut self) raises:
         if self.children:
-            self.turns = self.children[0][].turns
+            var isDeadEnd = True
+            self.turns = Int.MAX
             for child in self.children:
+                child[][].computePath()
+                isDeadEnd = isDeadEnd and child[][].isDeadEnd
                 if child[][].turns < self.turns:
                     self.turns = child[][].turns
+            self.isDeadEnd = isDeadEnd
 
 
 
@@ -525,7 +529,6 @@ struct Lee:
                     #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex at Track: ", currentTrack)
                     try:
                         var root = ArcPointer(PathTree(sinkCoord, sinkCoord, 0))
-                        var isFree = True
                         #var coord = sinkCoord
                         #pathfinder = maze[sinkCoord[0], sinkCoord[1]]
                         var pathCoords = List[Tuple[Int, Int]]()
@@ -581,7 +584,7 @@ struct Lee:
                         #    self.log.value().writeln(id, "ID: ", id, "; Create path tree")
                         """
                         root[].computePath()
-                        isFree = not root[].isDeadEnd
+                        var isFree = not root[].isDeadEnd
                         # Debuggung
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; isFree: ", isFree)
