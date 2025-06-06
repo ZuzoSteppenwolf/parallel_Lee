@@ -32,13 +32,41 @@ struct PathTree:
     var isLeaf: Bool
     var lastCoord: Tuple[Int, Int]
     var coord: Tuple[Int, Int]
-    var children: List[PathTree]
-    var maze: UnsafePointer[Matrix[Int]]
-    var chanMap: UnsafePointer[Matrix[Int]]
+    var children: List[ArcPointer[PathTree]]
+    #var maze: UnsafePointer[Matrix[Int]]
+    #var chanMap: UnsafePointer[Matrix[Int]]
     var turns: Int
-    var pathfinder: Int
-    var id: Int
+    #var pathfinder: Int
+    #var id: Int
 
+    # Konstruktor
+    # @param coord: Koordinate des Pfades
+    # @param lastCoord: Koordinate des letzten Knotens
+    # @param turns: Anzahl der Knoten im Pfad
+
+    fn __init__(out self, coord: Tuple[Int, Int], lastCoord: Tuple[Int, Int], turns: Int = 0):
+        self.isDeadEnd = False
+        self.isLeaf = False
+        self.lastCoord = lastCoord
+        self.coord = coord
+        self.children = List[ArcPointer[PathTree]]()
+        self.turns = turns
+
+    fn addChild(mut self, child: ArcPointer[PathTree]):
+        self.children.append(child)
+
+    # Berechnet die Knicke in den Pfade
+    # @raises Exception
+    fn computePath(mut self) raises:
+        if self.children:
+            self.turns = self.children[0][].turns
+            for child in self.children:
+                if child[][].turns < self.turns:
+                    self.turns = child[][].turns
+
+
+
+    """
     # Konstruktor
     # @param id: ID des Pfades
     # @param coord: Koordinate des Pfades
@@ -141,7 +169,7 @@ struct PathTree:
                 for child in self.children:
                     if child[].turns < self.turns:
                         self.turns = child[].turns
-
+    """
     # Gibt den günstigsten Pfad zurück
     # @returns den günstigsten Pfad
     # @raises Exception
@@ -151,8 +179,8 @@ struct PathTree:
             path.append(self.coord)
         elif not self.isDeadEnd:
             for child in self.children:
-                if child[].turns == self.turns:                  
-                    path.extend(child[].getPath())
+                if child[][].turns == self.turns:                  
+                    path.extend(child[][].getPath())
                     path.append(self.coord)
                     break
         return path
@@ -458,7 +486,7 @@ struct Lee:
                     if not foundSink:
                         while wavefront and not foundSink and self.isValid:
                             var coord = wavefront.popleft()
-                            pathfinder = maze[coord[0], coord[1]] + 1
+                            var pathfinder = maze[coord[0], coord[1]] + 1
                             for i in range(4):
                                 var col = coord[0] + DCOL[i]
                                 var row = coord[1] + DROW[i]
@@ -496,24 +524,70 @@ struct Lee:
                     #if self.log:
                     #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex at Track: ", currentTrack)
                     try:
-                        
+                        var root = ArcPointer(PathTree(sinkCoord, sinkCoord, 0))
                         var isFree = True
-                        var coord = sinkCoord
-                        pathfinder = maze[sinkCoord[0], sinkCoord[1]]
+                        #var coord = sinkCoord
+                        #pathfinder = maze[sinkCoord[0], sinkCoord[1]]
                         var pathCoords = List[Tuple[Int, Int]]()
+                        var treefront = Deque[ArcPointer[PathTree]]()
+                        treefront.append(root)
+                        
+                        while treefront:
+                            var tree = treefront.popleft()
+                            var col = tree[].coord[0]
+                            var row = tree[].coord[1]
+                            tree[].isLeaf = maze[col, row] == CONNECTED
+                            tree[].isDeadEnd = self.chanMap[currentTrack][col, row] != id and self.chanMap[currentTrack][col, row] != Lee.EMPTY and self.chanMap[currentTrack][col, row] != Lee.SWITCH
+                            if not (tree[].isLeaf or tree[].isDeadEnd):
+                                var pathfinder = maze[col, row]
 
+                                if col > 0 and maze[col-1, row] == pathfinder - 1:
+                                    var turns = tree[].turns
+                                    if tree[].lastCoord[1] != row:
+                                        turns += 1
+                                    var child = ArcPointer(PathTree((col-1, row), tree[].coord, turns))
+                                    tree[].addChild(child)
+                                    treefront.append(child)
+
+                                if col < maze.cols - 1 and maze[col+1, row] == pathfinder - 1:
+                                    var turns = tree[].turns
+                                    if tree[].lastCoord[1] != row:
+                                        turns += 1
+                                    var child = ArcPointer(PathTree((col+1, row), tree[].coord, turns))
+                                    tree[].addChild(child)
+                                    treefront.append(child)
+
+                                if row > 0 and maze[col, row-1] == pathfinder - 1:
+                                    var turns = tree[].turns
+                                    if tree[].lastCoord[0] != col:
+                                        turns += 1
+                                    var child = ArcPointer(PathTree((col, row-1), tree[].coord, turns))
+                                    tree[].addChild(child)
+                                    treefront.append(child)
+
+                                if row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
+                                    var turns = tree[].turns
+                                    if tree[].lastCoord[0] != col:
+                                        turns += 1
+                                    var child = ArcPointer(PathTree((col, row+1), tree[].coord, turns))
+                                    tree[].addChild(child)
+                                    treefront.append(child)
+
+
+                        """
                         var tree = PathTree(id, coord, UnsafePointer(to=maze), UnsafePointer(to=self.chanMap[currentTrack]), coord, 0, pathfinder)
                         # Debugging
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Create path tree")
-                        tree.computePath()
-                        isFree = not tree.isDeadEnd
+                        """
+                        root[].computePath()
+                        isFree = not root[].isDeadEnd
                         # Debuggung
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; isFree: ", isFree)
                         if isFree:
-                            pathCoords = tree.getPath()
-
+                            pathCoords = root[].getPath()
+                            
 
 
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
