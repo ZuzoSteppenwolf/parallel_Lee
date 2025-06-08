@@ -619,7 +619,19 @@ struct Lee:
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; isFree: ", isFree)
                         if isFree:
-                            pathCoords = root[].getPath()
+                            #pathCoords = root[].getPath()
+                            pathCoords = List[Tuple[Int, Int]]()
+                            var tree = root
+                            pathCoords.append(tree[].coord)
+                            while not tree[].isLeaf:
+                                for child in tree[].children:
+                                    if not child[][].isDeadEnd and child[][].turns == tree[].turns:
+                                        pathCoords.append(child[][].coord)
+                                        tree = child[]
+                                        break
+                            pathCoords.reverse()
+                            
+                            
                             
 
 
