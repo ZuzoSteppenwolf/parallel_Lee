@@ -602,6 +602,12 @@ struct Lee:
                                 if idxs[-1] < len(tree[].children):
                                     treefront.append(tree[].children[idxs[-1]])
                                 else:
+                                    for child in tree[].children:
+                                        if not child[][].isDeadEnd and child[][].turns == tree[].turns:
+                                            var childs = List[ArcPointer[PathTree]]()
+                                            childs.append(child[])
+                                            tree[].children = childs
+                                            break
                                     _ = treefront.pop()
                             else:
                                 _ = treefront.pop()
