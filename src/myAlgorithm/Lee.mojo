@@ -576,6 +576,36 @@ struct Lee:
                                     tree[].addChild(child)
                                     treefront.append(child)
 
+                        var idxs = Deque[Int]()
+                        treefront.append(root)
+                        while treefront:
+                            var tree = treefront[-1]
+                            if len(treefront) > len(idxs):
+                                idxs.append(0)
+                            elif len(treefront) < len(idxs):
+                                _ = idxs.pop()
+                                idxs[-1] += 1
+                            else:
+                                if self.log:
+                                    self.log.value().writeln(id, "ID: ", id, "; Error: treefront and idxs have same length")
+
+                            if tree[].children:
+                                if idxs[-1] == 0:
+                                    tree[].isDeadEnd = True
+                                    tree[].turns = Int.MAX
+                                if idxs[-1] > 0:
+                                    var idx = idxs[-1] - 1
+                                    tree[].isDeadEnd = tree[].isDeadEnd and tree[].children[idx][].isDeadEnd
+                                    if not tree[].children[idx][].isDeadEnd:
+                                        if tree[].children[idx][].turns < tree[].turns:
+                                            tree[].turns = tree[].children[idx][].turns
+                                if idxs[-1] < len(tree[].children):
+                                    treefront.append(tree[].children[idxs[-1]])
+                                else:
+                                    _ = treefront.pop()
+                            else:
+                                _ = treefront.pop()
+
 
                         """
                         var tree = PathTree(id, coord, UnsafePointer(to=maze), UnsafePointer(to=self.chanMap[currentTrack]), coord, 0, pathfinder)
@@ -583,7 +613,7 @@ struct Lee:
                         #if self.log:
                         #    self.log.value().writeln(id, "ID: ", id, "; Create path tree")
                         """
-                        root[].computePath()
+                        #root[].computePath()
                         var isFree = not root[].isDeadEnd
                         # Debuggung
                         #if self.log:
