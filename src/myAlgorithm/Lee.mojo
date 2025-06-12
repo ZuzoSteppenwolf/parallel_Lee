@@ -535,46 +535,6 @@ struct Lee:
                         var treefront = Deque[ArcPointer[PathTree]]()
                         treefront.append(root)
                         
-                        while treefront:
-                            var tree = treefront.popleft()
-                            var col = tree[].coord[0]
-                            var row = tree[].coord[1]
-                            tree[].isLeaf = maze[col, row] == CONNECTED
-                            tree[].isDeadEnd = self.chanMap[currentTrack][col, row] != id and self.chanMap[currentTrack][col, row] != Lee.EMPTY and self.chanMap[currentTrack][col, row] != Lee.SWITCH
-                            if not (tree[].isLeaf or tree[].isDeadEnd):
-                                var pathfinder = maze[col, row]
-
-                                if col > 0 and maze[col-1, row] == pathfinder - 1:
-                                    var turns = tree[].turns
-                                    if tree[].lastCoord[1] != row:
-                                        turns += 1
-                                    var child = ArcPointer(PathTree((col-1, row), tree[].coord, turns))
-                                    tree[].addChild(child)
-                                    treefront.append(child)
-
-                                if col < maze.cols - 1 and maze[col+1, row] == pathfinder - 1:
-                                    var turns = tree[].turns
-                                    if tree[].lastCoord[1] != row:
-                                        turns += 1
-                                    var child = ArcPointer(PathTree((col+1, row), tree[].coord, turns))
-                                    tree[].addChild(child)
-                                    treefront.append(child)
-
-                                if row > 0 and maze[col, row-1] == pathfinder - 1:
-                                    var turns = tree[].turns
-                                    if tree[].lastCoord[0] != col:
-                                        turns += 1
-                                    var child = ArcPointer(PathTree((col, row-1), tree[].coord, turns))
-                                    tree[].addChild(child)
-                                    treefront.append(child)
-
-                                if row < maze.rows - 1 and maze[col, row+1] == pathfinder - 1:
-                                    var turns = tree[].turns
-                                    if tree[].lastCoord[0] != col:
-                                        turns += 1
-                                    var child = ArcPointer(PathTree((col, row+1), tree[].coord, turns))
-                                    tree[].addChild(child)
-                                    treefront.append(child)
 
                         var idxs = Deque[Int]()
                         treefront.append(root)
@@ -584,33 +544,46 @@ struct Lee:
                                 idxs.append(0)
                             elif len(treefront) < len(idxs):
                                 _ = idxs.pop()
+
+                            if idxs[-1] < len(DCOL):
+                                var col = tree[].coord[0]
+                                var row = tree[].coord[1]
+                                tree[].isLeaf = maze[col, row] == CONNECTED
+                                tree[].isDeadEnd = self.chanMap[currentTrack][col, row] != id and self.chanMap[currentTrack][col, row] != Lee.EMPTY and self.chanMap[currentTrack][col, row] != Lee.SWITCH
+                                if not (tree[].isLeaf or tree[].isDeadEnd):
+                                    var pathfinder = maze[col, row]
+                                    var nextCol = col + DCOL[idxs[-1]]
+                                    var nextRow = row + DROW[idxs[-1]]
+                                    if nextCol >= 0 and nextCol < maze.cols and nextRow >= 0 and nextRow < maze.rows:
+                                        if maze[nextCol, nextRow] == pathfinder - 1:
+                                            var turns = tree[].turns
+                                            if not (abs(tree[].lastCoord[0] - nextCol) < 2 and abs(tree[].lastCoord[1] - nextRow) < 2):
+                                                turns += 1
+                                            var child = ArcPointer(PathTree((nextCol, nextRow), tree[].coord, turns))
+                                            tree[].addChild(child)
+                                            treefront.append(child)
+                                        
                                 idxs[-1] += 1
                             else:
-                                if self.log:
-                                    self.log.value().writeln(id, "ID: ", id, "; Error: treefront and idxs have same length")
-
-                            if tree[].children:
-                                if idxs[-1] == 0:
+                                if tree[].children:
                                     tree[].isDeadEnd = True
                                     tree[].turns = Int.MAX
-                                if idxs[-1] > 0:
-                                    var idx = idxs[-1] - 1
-                                    tree[].isDeadEnd = tree[].isDeadEnd and tree[].children[idx][].isDeadEnd
-                                    if not tree[].children[idx][].isDeadEnd:
-                                        if tree[].children[idx][].turns < tree[].turns:
-                                            tree[].turns = tree[].children[idx][].turns
-                                if idxs[-1] < len(tree[].children):
-                                    treefront.append(tree[].children[idxs[-1]])
-                                else:
+                                    for child in tree[].children:
+                                        if not child[][].isDeadEnd:
+                                            tree[].isDeadEnd = False
+                                            if child[][].turns < tree[].turns:
+                                                tree[].turns = child[][].turns
+                                                
+                                    var childs = List[ArcPointer[PathTree]]()
                                     for child in tree[].children:
                                         if not child[][].isDeadEnd and child[][].turns == tree[].turns:
-                                            var childs = List[ArcPointer[PathTree]]()
                                             childs.append(child[])
                                             tree[].children = childs
                                             break
+                                    tree[].children = childs
                                     _ = treefront.pop()
-                            else:
-                                _ = treefront.pop()
+                                else:
+                                    _ = treefront.pop()
 
 
                         """
