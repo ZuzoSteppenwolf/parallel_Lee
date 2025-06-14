@@ -164,9 +164,11 @@ def main():
             print("Start routing")
             print("Channel width: ", channelWidth)
             print("----------------")
+            var startAlgo = monotonic()
             calc()
+            var endAlgo = monotonic()
             print("----------------")
-            print("Critical path: ", critPath)
+            print("Critical path: ", critPath, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
             print()
             if route[].isValid:
                 highWidth = channelWidth
