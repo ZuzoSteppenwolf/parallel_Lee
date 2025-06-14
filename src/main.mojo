@@ -132,13 +132,15 @@ def main():
     fn calc():          
         for i in range(maxIterations):
             route = ArcPointer[Lee](compute(channelWidth))
+            var startAlgo = monotonic()
             route[].run(runParallel)
+            var endAlgo = monotonic()
             if route[].isValid:
-                print("Success", i)
+                print("Success", i, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
                 critPath = route[].getCriticalPath(netlist.outpads)
                 break
             else:
-                print("Failure", i)
+                print("Failure", i, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
 
                 
     if hasFixedChannelWidth:
@@ -163,12 +165,10 @@ def main():
             print()
             print("Start routing")
             print("Channel width: ", channelWidth)
-            print("----------------")
-            var startAlgo = monotonic()
+            print("----------------")           
             calc()
-            var endAlgo = monotonic()
             print("----------------")
-            print("Critical path: ", critPath, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
+            print("Critical path: ", critPath,)
             print()
             if route[].isValid:
                 highWidth = channelWidth
