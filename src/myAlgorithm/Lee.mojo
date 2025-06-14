@@ -85,9 +85,9 @@ struct PathTree:
             # nächster mögliche Knoten in selber Richtung
             if prioNextCol >= 0 and prioNextCol < self.maze[].cols and prioNextRow >= 0 and prioNextRow < self.maze[].rows:
                 if self.maze[][prioNextCol, prioNextRow] == self.pathfinder - 1:
-                    hasPrio = True
+                    hasPrio = self.turns != 0
                     var turns = self.turns
-                    if self.lastCoord[0] != col:
+                    if not (abs(self.lastCoord[0] - col) < 2 and abs(self.lastCoord[1] - row) < 2):
                         turns += 1
                     var child = PathTree(self.id, (prioNextCol, prioNextRow), self.maze, self.chanMap, self.coord, turns, self.pathfinder-1)
                     child.computePath()
@@ -141,6 +141,12 @@ struct PathTree:
                 for child in self.children:
                     if child[].turns < self.turns:
                         self.turns = child[].turns
+                var childs = List[PathTree]()
+                for child in self.children:
+                    if child[].turns == self.turns:
+                        childs.append(child[])
+                        break
+                self.children = childs
 
     # Gibt den günstigsten Pfad zurück
     # @returns den günstigsten Pfad
