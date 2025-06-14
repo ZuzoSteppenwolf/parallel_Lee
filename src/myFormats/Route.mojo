@@ -34,16 +34,16 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                 try:
                     var line: String = ""
                     if isSink:
-                        line = String("  IPIN (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Pin: ").join(netPins[net][block[].name]).join("\n")
+                        line = String("  IPIN (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Pin: " + String(netPins[net][block[].name]) + "\n"
                         file.write(line)
-                        line = String("  SINK (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Class: ").join(pins[netPins[net][block[].name]].pinClass).join("\n")
+                        line = String("  SINK (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Class: " + String(pins[netPins[net][block[].name]].pinClass) + "\n"
                         file.write(line)
                     else:
                         if isFirst:
-                            line = String("SOURCE (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Class: ").join(pins[netPins[net][block[].name]].pinClass).join("\n")
+                            line = String("SOURCE (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Class: " + String(pins[netPins[net][block[].name]].pinClass) + "\n"
                             file.write(line)
 
-                        line = String("  OPIN (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Pin: ").join(netPins[net][block[].name]).join("\n")
+                        line = String("  OPIN (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Pin: " + String(netPins[net][block[].name]) + "\n"
                         file.write(line)
                 except e:
                     print("Error writing CLB: ", e)
@@ -52,29 +52,29 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
             fn writePad(isSink: Bool, block: Block.SharedBlock, isFirst: Bool = False):
                 var line: String = ""
                 if isSink:
-                    line = String("  IPIN (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Pad: ").join(block[].subblk).join("\n")
+                    line = String("  IPIN (") + String(block[].coord[0]) + "," + String(block[].coord[1]) + ")  Pad: " + String(block[].subblk) + "\n"
                     file.write(line)
-                    line = String("  SINK (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Pad: ").join(block[].subblk).join("\n")
+                    line = String("  SINK (") + String(block[].coord[0]) + "," + String(block[].coord[1]) + ")  Pad: " + String(block[].subblk) + "\n"
                     file.write(line)
                 else:
                     if isFirst:
-                        line = String("SOURCE (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Pad: ").join(block[].subblk).join("\n")
+                        line = String("SOURCE (") + String(block[].coord[0]) + "," + String(block[].coord[1]) + ")  Pad: " + String(block[].subblk) + "\n"
                         file.write(line)
 
-                    line = String("  OPIN (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Pad: ").join(block[].subblk).join("\n")
+                    line = String("  OPIN (") + String(block[].coord[0]) + "," + String(block[].coord[1]) + ")  Pad: " + String(block[].subblk) + "\n"
                     file.write(line)
 
             @parameter
             fn writeChan(block: Block.SharedBlock):
                 var line: String = ""
                 if block[].type == Blocktype.CHANX:
-                    line = String(" CHANX (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Track: ").join(block[].subblk).join("\n")
+                    line = String(" CHANX (") + String(block[].coord[0]) + "," + String(block[].coord[1]) + ")  Track: " + String(block[].subblk) + "\n"
                     file.write(line)
                 elif block[].type == Blocktype.CHANY:
-                    line = String(" CHANY (").join(block[].coord[0]).join(",").join(block[].coord[1]).join(")  Track: ").join(block[].subblk).join("\n")
+                    line = String(" CHANY (") + String(block[].coord[0]) + "," + String(block[].coord[1]) + ")  Track: " + String(block[].subblk) + "\n"
                     file.write(line)
 
-            file.write(String("Array size: ").join(clbMap.cols-2).join(" x ").join(clbMap.rows-2).join(" logic blocks.\n"))
+            file.write(String("Array size: ") + String(clbMap.cols-2) + " x " + String(clbMap.rows-2) + " logic blocks.\n")
             writeNL()
             file.write("Routing:\n")
             
@@ -84,7 +84,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                 var net = netKeys[netIdx]
                 writeNL()
                 if net in routeLists:
-                    file.write(String("Net ").join(netIdx).join(" (").join(net).join(")\n"))
+                    file.write(String("Net ") + String(netIdx) + " (" + String(net) + ")\n")
                     writeNL()
                     for track in routeLists[net]:
                         var blocks = routeLists[net][track[]]
@@ -99,12 +99,12 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                                 writeChan(block[])
                             isFirst = False
                 else:
-                    file.write(String("Net ").join(netIdx).join(" (").join(net).join("): global net connecting:\n"))
+                    file.write(String("Net ") + String(netIdx) + " (" + String(net) + "): global net connecting:\n")
                     writeNL()
                     for clb in globalNets[net]:
                         var clbName = clb[][0]
-                        var line: String = String("Block ").join(clbName).join(" (#").join(clbNums[clbName]).join(") at (").join(archiv[clbName][0]).join(", ").
-                           join(archiv[clbName][1]).join("), Pin Class ").join(clb[][1]).join(")\n")
+                        var line: String = String("Block ") + String(clbName) + " (#" + String(clbNums[clbName]) + ") at (" + String(archiv[clbName][0]) + ", " +
+                           String(archiv[clbName][1]) + "), Pin Class " + String(clb[][1]) + ")\n"
                         """
                         var block: Block.SharedBlock = Block.SharedBlock(Block("Error"))
                         for otherClb in clbMap[archiv[clbName][0], archiv[clbName][1]]:
@@ -112,15 +112,15 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                                 block = otherClb[]
                                 break
                         if block[].type == Blocktype.CLB:
-                            line = line.join(clb[][1])
+                            line = line + String(clb[][1])
                         elif block[].type == Blocktype.INPAD:
-                            line = line.join(-1)
+                            line = line + String(-1)
                         elif block[].type == Blocktype.OUTPAD:
-                            line = line.join(-1)
+                            line = line + String(-1)
                         else:
                             print("Error Write Net: ", net)
                             return False
-                        line = line.join(".\n")
+                        line = line + ".\n"
                         """
                         file.write(line)
                 writeNL()
