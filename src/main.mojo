@@ -162,13 +162,14 @@ def main():
         var bestWidth = channelWidth
         var bestCritPath = critPath
         while not hasEnd:
+            critPath = 0.0
             print()
             print("Start routing")
             print("Channel width: ", channelWidth)
             print("----------------")           
             calc()
             print("----------------")
-            print("Critical path: ", critPath,)
+            print("Critical path: ", critPath)
             print()
             if route[].isValid:
                 highWidth = channelWidth
