@@ -24,7 +24,7 @@ Die Logdatei erneurt sich, wenn die maximale Anzahl an Zeilen erreicht ist.
                 bei 0 wird die Logdatei nicht erneuert
 @param maxFiles: Maximale Anzahl an Logdateien, die erstellt werden sollen
 """
-struct Log[hasTimestamp: Bool, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:   
+struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:   
     var path: String
     var file: ArcPointer[FileHandle]
     var timestamp: UInt
@@ -38,13 +38,16 @@ struct Log[hasTimestamp: Bool, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FI
         self.timestamp = 0
         self.lines = 0
         self.files = 0
-        self.file = open(self.path + "_" + String(self.files) + ".log", "w")
+        if testDebug:
+            self.file = open(self.path + ".log", "w")
+        else:
+            self.file = open(self.path + "_" + String(self.files) + ".log", "w")
         if hasTimestamp:
             self.timestamp = monotonic()
         self.writeln("Log created")  
 
     # Copy-Konstruktor
-    fn __copyinit__(out self, other: Log[hasTimestamp, maxLines, maxFiles]):
+    fn __copyinit__(out self, other: Log[hasTimestamp, testDebug, maxLines, maxFiles]):
 
         self.path = other.path
         self.file = other.file
@@ -53,7 +56,7 @@ struct Log[hasTimestamp: Bool, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FI
         self.timestamp = other.timestamp
 
     # Move-Konstruktor
-    fn __moveinit__(out self, owned other: Log[hasTimestamp, maxLines, maxFiles]):
+    fn __moveinit__(out self, owned other: Log[hasTimestamp, testDebug, maxLines, maxFiles]):
         self.path = other.path
         self.file = other.file
         self.lines = other.lines
@@ -137,23 +140,23 @@ Die Logdatei erneurt sich, wenn die maximale Anzahl an Zeilen erreicht ist.
                 bei 0 wird die Logdatei nicht erneuert
 @param maxFiles: Maximale Anzahl an Logdateien, die erstellt werden sollen
 """
-struct async_Log[hasTimestamp: Bool, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:
-    var log: ArcPointer[Log[hasTimestamp, maxLines, maxFiles]]
+struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:
+    var log: ArcPointer[Log[hasTimestamp, testDebug, maxLines, maxFiles]]
     var mutex: Mutex
 
     # Konstruktor
     # @param path: Pfad zur Logdatei
     fn __init__(out self, path: String) raises:
-        self.log = ArcPointer[Log[hasTimestamp, maxLines, maxFiles]](Log[hasTimestamp, maxLines, maxFiles](path))
+        self.log = ArcPointer[Log[hasTimestamp, testDebug, maxLines, maxFiles]](Log[hasTimestamp, testDebug, maxLines, maxFiles](path))
         self.mutex = Mutex()
 
     # Copy-Konstruktor
-    fn __copyinit__(out self, other: async_Log[hasTimestamp, maxLines, maxFiles]):
+    fn __copyinit__(out self, other: async_Log[hasTimestamp, testDebug, maxLines, maxFiles]):
         self.log = other.log
         self.mutex = other.mutex
 
     # Move-Konstruktor
-    fn __moveinit__(out self, owned other: async_Log[hasTimestamp, maxLines, maxFiles]):
+    fn __moveinit__(out self, owned other: async_Log[hasTimestamp, testDebug, maxLines, maxFiles]):
         self.log = other.log
         self.mutex = other.mutex
 
