@@ -641,6 +641,17 @@ struct Lee:
                         self.isValid = False
                         return
             if routeList:
+                var set: Set[Int] = Set[Int]()
+                try:
+                    for idx in routeList.keys():
+                    
+                        if not len(routeList[idx[]]) > 1:
+                            set.add(idx[])
+                    for idx in set:
+                        _ = routeList.pop(idx[])
+                except e:
+                    if self.log:
+                        self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                 self.routeLists[net] = routeList
             if self.log:
                 self.log.value().writeln(id, "ID: ", id, "; End Lee-Algorithm for net: ", net)
