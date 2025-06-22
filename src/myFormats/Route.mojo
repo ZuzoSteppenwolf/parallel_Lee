@@ -17,6 +17,8 @@ Parser für das Route File Format vom VPR Tool
 # @param clbMap Matrix der CLBs
 # @param clbNums Dict der CLB-Nummern
 # @param netPins Dict der Netz-IOPins
+# @param globalNets Dict der globalen Netze
+# @param archiv Dict der Archivierung der CLBs
 # @return True, wenn die Routen geschrieben wurden, sonst False
 fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]], 
     netKeys: List[String], pins: List[Pin], clbMap: ListMatrix[List[Block.SharedBlock]], 
@@ -104,26 +106,13 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                     for clb in globalNets[net]:
                         var clbName = clb[][0]
                         var line: String = String("Block ") + String(clbName) + " (#" + String(clbNums[clbName]) + ") at (" + String(archiv[clbName][0]) + ", " +
-                           String(archiv[clbName][1]) + "), Pin Class " + String(clb[][1]) + ")\n"
-                        """
-                        var block: Block.SharedBlock = Block.SharedBlock(Block("Error"))
-                        for otherClb in clbMap[archiv[clbName][0], archiv[clbName][1]]:
-                            if otherClb[][].name == clbName:
-                                block = otherClb[]
-                                break
-                        if block[].type == Blocktype.CLB:
-                            line = line + String(clb[][1])
-                        elif block[].type == Blocktype.INPAD:
-                            line = line + String(-1)
-                        elif block[].type == Blocktype.OUTPAD:
-                            line = line + String(-1)
+                           String(archiv[clbName][1]) + "), Pin class "
+                        if clb[][1] > -1:
+                            line += String(pins[clb[][1]].pinClass)
                         else:
-                            print("Error Write Net: ", net)
-                            return False
-                        line = line + ".\n"
-                        """
+                            line += String(clb[][1])
+                        line += ".\n"
                         file.write(line)
-                writeNL()
 
     except:
         return False
