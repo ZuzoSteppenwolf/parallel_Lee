@@ -1,0 +1,15 @@
+Array size: 40 x 40 logic blocks.
+
+Routing:
+
+Net 0 ([7326])
+
+SOURCE (33,37)  Class: 1
+  OPIN (33,37)  Pin: 4
+ CHANX (33,36)  Track: 8
+  IPIN (33,36)  Pin: 2
+  SINK (33,36)  Class: 0
+ CHANX (33,36)  Track: 8
+ CHANX (34,36)  Track: 8
+  IPIN (34,36)  Pin: 2
+  SINK (34,36)  Class: 0
