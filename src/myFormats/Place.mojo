@@ -11,12 +11,15 @@ Parser für das Placement File Format vom VPR Tool
 @author Marvin Wollbrück
 """
 
+"""
+Datenstruktur für die Platzierung von Blöcken in einer Matrix.
+Enthält Informationen über die Netzliste, Architektur, Größe der Matrix,
+"""
 struct Place:
 
     var isValid: Bool
     var net: String
     var arch: String
-    #var map: Matrix[Dict[String, List[Block]]]
     var archiv: Dict[String, Tuple[Int, Int]]
     var path: String
     var rows: Int
@@ -24,10 +27,11 @@ struct Place:
     var clbNums: Dict[String, Int]
     var log: Optional[Log[True]]
 
+    # Konstruktor
+    # @arg path: Pfad zur Platzierungsdatei
     fn __init__(out self, path: String):
         self.net = ""
         self.arch = ""
-        #self.map = Matrix[Dict[String, List[Block]]](0, 0)
         self.isValid = False
         self.archiv = Dict[String, Tuple[Int, Int]]()
         self.path = path
@@ -40,8 +44,9 @@ struct Place:
             self.log = None
         self.isValid = self.parse(path)
 
-
-
+    # Liest die Platzierungsdatei und speichert die Informationen in der Struktur
+    # @arg path: Pfad zur Platzierungsdatei
+    # @return: True, wenn die Datei erfolgreich gelesen wurde, sonst False
     fn parse(mut self, path: String) -> Bool:
         try:
             var lines: List[String]
@@ -80,7 +85,7 @@ struct Place:
                                     if self.log:
                                         self.log.value().writeln("Netlist: ", self.net)
                                 counter += 1
-                                
+                            
                             elif not hasArch:
                                 if counter == 3 and word[] != "Architecture":
                                     if self.log:
@@ -119,7 +124,6 @@ struct Place:
                                     row = atol(word[])
                                     if self.log:
                                         self.log.value().writeln("Rows: ", row)
-                                    #self.initMatrix(col+2, row+2)
                                     self.cols = col
                                     self.rows = row
                                 elif counter == 5 and word[] != "logic":
@@ -148,7 +152,6 @@ struct Place:
                                 elif counter == 3:
                                     block = Block(name)
                                     block.subblk = atol(word[])
-                                    #self.addToMap(block, col, row)
                                     self.archiv[name] = Tuple[Int, Int](col, row)
                                     self.clbNums[name] = blockNum
                                     blockNum += 1
@@ -158,21 +161,4 @@ struct Place:
         except:
             return False
         return True
-    """ 
-    fn addToMap(mut self, block: Block, col: Int, row: Int):
-        try:
-            if block.name in self.map[col, row]:
-                self.map[col, row][block.name].append(block)
-            else:
-                self.map[col, row][block.name] = List[Block](block)
-            self.archiv[block.name] = Tuple[Int, Int](col, row)
-        except:
-                print("Error: " + block.name + " ", col ," ", row)
-
-    fn initMatrix(mut self, col: Int, row: Int):
-        self.map = Matrix[Dict[String, List[Block]]](col, row)
-        for i in range(col):
-            for j in range(row):
-                self.map[i, j] = Dict[String, List[Block]]()
-    """
 

@@ -10,6 +10,9 @@ Parser für das Arch File Format vom VPR Tool
 @author Marvin Wollbrück
 """
 
+"""
+Datenstruktur für die Kanalbreite eines FPGA-Designs.
+"""
 @value
 struct ChanWidth:
     var type: ChanType
@@ -18,6 +21,12 @@ struct ChanWidth:
     var xpeak: Float64
     var dc: Float64
 
+    # Konstruktor
+    # @arg type: Typ der Kanalbreite
+    # @arg peak: peak
+    # @arg width: width (optional, Standardwert -1)
+    # @arg xpeak: xpeak (optional, Standardwert -1)
+    # @arg dc: dc (optional, Standardwert -1)
     fn __init__(out self, type: ChanType, peak: Float64, width: Float64 = -1, xpeak: Float64 = -1, dc: Float64 = -1):
         self.type = type
         self.peak = peak
@@ -34,6 +43,9 @@ struct ChanWidth:
     fn __str__(self) -> String:
         return "Type: " + String(self.type) + ", Peak: " + String(self.peak) + ", Width: " + String(self.width) + ", Xpeak: " + String(self.xpeak) + ", DC: " + String(self.dc)
 
+"""
+Datenstruktur für die Pins eines FPGA-Designs.
+"""
 @value
 struct Pin:
     var isInpin: Bool # Input-Pin, sonst Output-Pin
@@ -41,6 +53,11 @@ struct Pin:
     var isGlobal: Bool
     var sides: List[Faceside]
 
+    # Konstruktor
+    # @arg isInpin: True, wenn es sich um einen Input-Pin handelt, sonst False
+    # @arg pinClass: Klasse des Pins
+    # @arg sides: Liste der Seiten, an denen der Pin angeschlossen ist
+    # @arg isGlobal: True, wenn es sich um einen globalen Pin handelt, sonst False (Standardwert False)
     fn __init__(out self, isInpin: Bool, pinClass: Int8, sides: List[Faceside], isGlobal: Bool = False):
         self.isInpin = isInpin
         self.pinClass = pinClass
@@ -60,6 +77,9 @@ struct Pin:
             strsides = strsides[:-2]
         return "IsInpin: " + String(self.isInpin) + ", PinClass: " + String(self.pinClass) + ", IsGlobal: " + String(self.isGlobal) + ", Sides: " + strsides
 
+"""
+Datenstruktur für die Segmentlinie eines FPGA-Designs.
+"""
 @value
 struct Segmentline:
     var frequency: Float64
@@ -81,23 +101,26 @@ struct Segmentline:
     fn __str__(self) -> String:
         return "Frequency: " + String(self.frequency) + ", Length: " + String(self.length) + ", IsLongline: " + String(self.isLongline) + ", WireSwitch: " + String(self.wire_switch) + ", OpinSwitch: " + String(self.opin_switch) + ", FracCB: " + String(self.frac_cb) + ", FracSB: " + String(self.frac_sb) + ", Rmetal: " + String(self.rmetal) + ", Cmetal: " + String(self.cmetal)
 
+"""
+Datenstruktur für die Switchs eines FPGA-Designs.
+"""
 @value
 struct Switch:
     var switch: Int8
-    var isBufferes: Bool
+    var isBuffered: Bool
     var R: Float64
     var Cin: Float64
     var Cout: Float64
     var Tdel: Float64
 
     fn __eq__(self, other: Switch) -> Bool:
-        return self.switch == other.switch and self.isBufferes == other.isBufferes and self.R == other.R and self.Cin == other.Cin and self.Cout == other.Cout and self.Tdel == other.Tdel
+        return self.switch == other.switch and self.isBuffered == other.isBuffered and self.R == other.R and self.Cin == other.Cin and self.Cout == other.Cout and self.Tdel == other.Tdel
 
     fn __ne__(self, other: Switch) -> Bool:
         return not self.__eq__(other)
 
     fn __str__(self) -> String:
-        return "Switch: " + String(self.switch) + ", IsBuffered: " + String(self.isBufferes) + ", R: " + String(self.R) + ", Cin: " + String(self.Cin) + ", Cout: " + String(self.Cout) + ", Tdel: " + String(self.Tdel)
+        return "Switch: " + String(self.switch) + ", IsBuffered: " + String(self.isBuffered) + ", R: " + String(self.R) + ", Cin: " + String(self.Cin) + ", Cout: " + String(self.Cout) + ", Tdel: " + String(self.Tdel)
 
 @value
 struct Subblock:
@@ -114,6 +137,9 @@ struct Subblock:
     fn __str__(self) -> String:
         return "T_Comb: " + String(self.t_comb) + ", T_Seq_In: " + String(self.t_seq_in) + ", T_Seq_Out: " + String(self.t_seq_out)
 
+"""
+Datenstruktur für die Architektur eines FPGA-Designs.
+"""
 @value
 struct Arch:
     var isValid: Bool
@@ -148,6 +174,7 @@ struct Arch:
     # Log
     var log: Optional[Log[True]]
 
+    # Konstruktor
     fn __init__(out self, path: String):
         self.io_rat = -1
         self.chan_width_io = -1
@@ -180,6 +207,9 @@ struct Arch:
             self.log = None
         self.isValid = self.parse(path)
 
+    # Liest die Architekturdatei und speichert die Informationen in der Struktur
+    # @arg path: Pfad zur Architekturdatei
+    # @return: True, wenn die Datei erfolgreich gelesen wurde, sonst False
     fn parse(mut self, path: String) -> Bool:
         try:
             var lines: List[String]
@@ -301,6 +331,7 @@ struct Arch:
                     var frac_sb = -1.
                     var rmetal = -1.
                     var cmetal = -1.
+                    # Liest die Segmentinformationen aus der Zeile
                     for i in range(1, len(words), 2):
                         if words[i] == "frequency:":
                             freq = atof(words[i+1])
@@ -334,6 +365,7 @@ struct Arch:
                     var Cin = -1.
                     var Cout = -1.
                     var Tdel = -1.
+                    # Liest die Switchinformationen aus der Zeile
                     for i in range(2, len(words), 2):
                         if words[i] == "buffered:":
                             if words[i+1] == "yes":
@@ -403,6 +435,7 @@ struct Arch:
                     var t_comb = -1.
                     var t_seq_in = -1.
                     var t_seq_out = -1.
+                    # Liest die Subblockinformationen aus der Zeile
                     for i in range(1, len(words), 2):
                         if words[i] == "T_comb:":
                             t_comb = atof(words[i+1])

@@ -10,6 +10,9 @@ Parser für das Net File Format vom VPR Tool
 @author Marvin Wollbrück
 """
 
+"""
+Datenstruktur für die Netliste eines FPGA-Designs.
+"""
 @value
 struct Net:
     var isValid: Bool
@@ -21,6 +24,10 @@ struct Net:
     var netList: List[String]
     var log: Optional[Log[True]]
 
+    # Konstruktor
+    # @arg path: Pfad zur Netliste
+    # @arg sbblknum: Anzahl der Subblöcke
+    # @arg pins: Liste der Pins, die in der Netliste verwendet werden
     fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
         self.nets = Dict[String, List[Tuple[String, Int]]]()
         self.globalNets = Dict[String, List[Tuple[String, Int]]]()
@@ -35,7 +42,7 @@ struct Net:
             self.log = None
         self.isValid = self.parse(path, sbblknum, pins)
         
-
+    # Copy-Konstruktor
     fn __copyinit__(out self, other: Net):
         self.nets = other.nets
         self.globalNets = other.globalNets
@@ -46,7 +53,11 @@ struct Net:
         self.netList = List[String](other.netList)
         self.log = other.log
 
-
+    # Liest die Netliste und speichert die Informationen in der Struktur
+    # @arg path: Pfad zur Netliste
+    # @arg sbblknum: Anzahl der Subblöcke
+    # @arg pins: Liste der Pins, die in der Netliste verwendet werden
+    # @return: True, wenn die Datei erfolgreich gelesen wurde, sonst False
     fn parse(mut self, path: String, sbblknum: Int8, pins: List[Pin]) -> Bool:
         try:
             var lines: List[String]
@@ -58,6 +69,8 @@ struct Net:
             while len(lines) > 0:
                 var line = lines.pop(0)
                 var words = line.split()
+
+                # Parser für Inpad
                 if words[0] == ".input":
                     var name = words[1]
                     self.inpads.add(name)
@@ -73,6 +86,7 @@ struct Net:
                     else:
                         self.addToNets(net, name, -1)
                     
+                # Parser für Outpad
                 elif words[0] == ".output":
                     var name = words[1]
                     self.outpads.add(name)
@@ -88,10 +102,13 @@ struct Net:
                     else:
                         self.addToNets(net, name, -1, True)
                     
+                # Parser für globale Netze
+                # Setzt ein globales Netz, das nicht ein Block ist
                 elif words[0] == ".global":
                     var name = words[1]
                     self.addToGlobalNets(name)
 
+                # Parser für Logikblöcke
                 elif words[0] == ".clb":
                     var name = words[1]
                     self.clbs.add(name)
@@ -125,6 +142,11 @@ struct Net:
             return False
         return True
 
+    # Hilfsfunktion, um ein Netz zu einer Liste hinzuzufügen
+    # @arg net: Name des Netzes
+    # @arg block: Name des Blocks, der dem Netz hinzugefügt werden soll
+    # @arg pin: Pin-Idx des Blocks im Netz
+    # @arg isInpin: True, wenn es sich um einen Eingangspin handelt, sonst False
     fn addToNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
         if net in self.nets:
             try:
@@ -145,6 +167,11 @@ struct Net:
         if self.log != None:
             self.log.value().writeln("Net: ", net, " ", block, " ", pin)
         
+    # Hilfsfunktion, um ein globales Netz zu einer Liste hinzuzufügen
+    # @arg net: Name des globalen Netzes
+    # @arg block: Name des Blocks, der dem globalen Netz hinzugefügt werden soll
+    # @arg pin: Pin-Idx des Blocks im globalen Netz
+    # @arg isInpin: True, wenn es sich um einen Eingangspin handelt, sonst False
     fn addToGlobalNets(mut self, net: String, block: String, pin: Int, isInpin: Bool = False):
         if net in self.globalNets:           
             try:
@@ -165,6 +192,8 @@ struct Net:
         if self.log != None:
             self.log.value().writeln("GlobalNet: ", net, " ", block, " ", pin)
 
+    # Hilfsfunktion, um ein globales Netz zu einer Liste hinzuzufügen
+    # @arg net: Name des globalen Netzes
     fn addToGlobalNets(mut self, net: String):
             self.globalNets[net] = List[Tuple[String, Int]]()
             if self.log != None:
