@@ -12,13 +12,15 @@ Parser für das Route File Format vom VPR Tool
 """
 
 # Schreibt die Route in eine Datei
-# @arg path Name der Datei
-# @arg routeLists Liste der Routen
-# @arg netKeys Liste der Netzkeys
-# @arg pins Liste der Pins
-# @arg clbMap Matrix der CLBs
-# @arg clbNums Dict der CLB-Nummern
-# @arg netPins Dict der Netz-IOPins
+# @param path Name der Datei
+# @param routeLists Liste der Routen
+# @param netKeys Liste der Netzkeys
+# @param pins Liste der Pins
+# @param clbMap Matrix der CLBs
+# @param clbNums Dict der CLB-Nummern
+# @param netPins Dict der Netz-IOPins
+# @param globalNets Dict der globalen Netze
+# @param archiv Dict der Archivierung der CLBs
 # @return True, wenn die Routen geschrieben wurden, sonst False
 fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]], 
     netKeys: List[String], pins: List[Pin], clbMap: ListMatrix[List[Block.SharedBlock]], 
@@ -120,9 +122,13 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                     for clb in globalNets[net]:
                         var clbName = clb[][0]
                         var line: String = String("Block ") + String(clbName) + " (#" + String(clbNums[clbName]) + ") at (" + String(archiv[clbName][0]) + ", " +
-                           String(archiv[clbName][1]) + "), Pin Class " + String(clb[][1]) + ")\n"
+                           String(archiv[clbName][1]) + "), Pin class "
+                        if clb[][1] > -1:
+                            line += String(pins[clb[][1]].pinClass)
+                        else:
+                            line += String(clb[][1])
+                        line += ".\n"
                         file.write(line)
-                writeNL()
 
     except:
         return False

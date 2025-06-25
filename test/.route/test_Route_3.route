@@ -1,0 +1,29 @@
+Array size: 60 x 60 logic blocks.
+
+Routing:
+
+Net 0 ([7326])
+
+SOURCE (33,37)  Class: 1
+  OPIN (33,37)  Pin: 4
+ CHANX (33,36)  Track: 8
+  IPIN (33,36)  Pin: 2
+  SINK (33,36)  Class: 0
+
+Net 1 (pclk): global net connecting:
+
+Block pclk (#8) at (7, 61), Pin class -1.
+Block [16920] (#136) at (53, 30), Pin class 2.
+Block [17024] (#137) at (2, 49), Pin class 2.
+Block [17050] (#138) at (16, 28), Pin class 2.
+
+Net 2 (tin_pdata_8_8_)
+
+SOURCE (61,31)  Pad: 0
+  OPIN (61,31)  Pad: 0
+ CHANY (60,31)  Track: 11
+ CHANX (60,31)  Track: 11
+ CHANX (59,31)  Track: 11
+ CHANY (58,31)  Track: 11
+  IPIN (58,31)  Pin: 3
+  SINK (58,31)  Class: 0
