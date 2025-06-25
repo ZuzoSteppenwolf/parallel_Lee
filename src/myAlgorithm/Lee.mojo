@@ -95,7 +95,7 @@ struct PathTree:
                         self.children.append(child)
             
             # Wenn Prio-Knoten Sackgasse ist, dann
-            if not hasPrio:#len(self.children) == 0:
+            if not hasPrio:
                 # nächste mögliche Knoten suchen
                 if col > 0 and prioNextCol != col-1 and self.maze[][col-1, row] == self.pathfinder - 1:
                     var turns = self.turns
@@ -255,7 +255,8 @@ struct Lee:
             self.netKeys.append(net[])
 
         
-
+    # Führe den Lee-Algorithmus aus
+    # @param runParallel: True, wenn der Algorithmus parallel ausgeführt werden soll, sonst False
     fn run(mut self, runParallel: Bool = True):
         
         # Der Lee-Algorithmus für ein Netz
@@ -286,8 +287,7 @@ struct Lee:
                     return
             var net = self.netKeys[id]
             var routedClbs = Set[String]()
-            #var track = 0
-            var currentTrack = 0#(id+track) % self.chanWidth
+            var currentTrack = 0
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
             try:
@@ -363,9 +363,7 @@ struct Lee:
                 try:
                     wavefront.clear()
                     self.mutex[currentTrack].visit()
-                    # Debugging
-                    #if self.log:
-                    #    self.log.value().writeln(id, "ID: ", id, "; Visit mutex at Track: ", currentTrack)
+
                     # Verdrahtungskarte Uebertragen
                     for col in range(maze.cols):
                         for row in range(maze.rows):                
@@ -393,24 +391,16 @@ struct Lee:
                             # erster Block ist Source
                             if i == 0:
                                 getChanCoord(coord, i, pinIdx, col, row)
-                                if self.chanMap[currentTrack][col, row] == Lee.EMPTY: #or self.chanMap[currentTrack][col, row] == id:
+                                if self.chanMap[currentTrack][col, row] == Lee.EMPTY:
                                     maze[col, row] = CONNECTED
-                                    wavefront.append((col, row))
-                                # Debugging
-                                #if self.log:
-                                #    self.log.value().writeln(id, "ID: ", id, "; Source at: ", coord[0], ";", coord[1])
-                                #    self.log.value().writeln(id, "ID: ", id, "; Set source at: ", col, ";", row, " on track: ", currentTrack)
-                                #    self.log.value().writeln(id, "ID: ", id, "; Set Value ", self.chanMap[currentTrack][col, row])
-
+                                    wavefront.append((col, row))   
 
                             else:
                                 getChanCoord(coord, i, pinIdx, col, row)
                                 if self.chanMap[currentTrack][col, row] == Lee.EMPTY and not self.nets[net][i][0] in routedClbs:
                                     maze[col, row] = SINK
-                                    # Debugging
-                                    #if self.log:
-                                    #    self.log.value().writeln(id, "ID: ", id, "; Set sink at: ", col, ";", row, " on track: ", currentTrack)                                                                
-
+                                    
+                            # Füge die CLBs zur Referenzkarte hinzu
                             if maze[col, row] != EMPTY:
                                 var isContained = False
                                 for clb in refMapClbs[col, row]:
@@ -429,10 +419,7 @@ struct Lee:
                     return
                 finally:
                     self.mutex[currentTrack].unvisit()
-                    # Debugging
-                    #if self.log:
-                        #self.writeMap(id, maze)
-                    #    self.log.value().writeln(id, "ID: ", id, "; Unvisit mutex at Track: ", currentTrack)
+                    
                         
                 # end initMaze
 
@@ -450,6 +437,7 @@ struct Lee:
                 var foundSink = False
                 # Suche nach dem nächsten Pfad
                 try:
+                    # Wenn Source gleich Sink, dann fertig
                     for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
                         var col = 0
                         var row = 0
@@ -461,10 +449,12 @@ struct Lee:
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; Found sink at source: ", col, ";", row, " Value ", maze[col, row], " on track: ", currentTrack)
                             break
+                    # Wenn kein Pfad gefunden wurde, dann suche weiter
                     if not foundSink:
                         while wavefront and not foundSink and self.isValid:
                             var coord = wavefront.popleft()
                             pathfinder = maze[coord[0], coord[1]] + 1
+                            # Suche in alle 4 Richtungen
                             for i in range(4):
                                 var col = coord[0] + DCOL[i]
                                 var row = coord[1] + DROW[i]
@@ -485,22 +475,12 @@ struct Lee:
                         self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
                     self.isValid = False
                     return
-                # Debugging
-                #if self.log:
-                #    self.writeMap(id, maze)
-                #    self.log.value().writeln(id, "ID: ", id, "; Pathcount: ", pathcount, " on track: ", currentTrack)
-
+               
                 if foundSink:
-                    # Debugging
-                    if self.log:
-                        self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
-                    #    self.log.value().writeln(id, "ID: ", id, "; visitcount: ", self.mutex[currentTrack].visitor[].load(), " on track: ", currentTrack)
-
+                    
                     # Wenn Ziel gefunden, dann Pfad berechnen
                     self.mutex[currentTrack].lock(id)
-                    # Debugging
-                    #if self.log:
-                    #    self.log.value().writeln(id, "ID: ", id, "; Lock mutex at Track: ", currentTrack)
+
                     try:
                         
                         var isFree = True
@@ -509,28 +489,21 @@ struct Lee:
                         var pathCoords = List[Tuple[Int, Int]]()
 
                         var tree = PathTree(id, coord, UnsafePointer(to=maze), UnsafePointer(to=self.chanMap[currentTrack]), coord, 0, pathfinder)
-                        # Debugging
-                        #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; Create path tree")
+
                         tree.computePath()
                         isFree = not tree.isDeadEnd
-                        # Debuggung
-                        #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; isFree: ", isFree)
+
                         if isFree:
                             pathCoords = tree.getPath()
 
-
-
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
                         if isFree:
-                            #if self.log:
-                            #    self.log.value().writeln(id, "ID: ", id, "; Free path for sink at: ", sinkCoord[0], ";", sinkCoord[1], " on track: ", currentTrack)
                             
                             var preChan: Optional[Block.SharedBlock] = None
                             while pathCoords:
                                 var coord = pathCoords[0]
                                 
+                                # Bestehender Kanal ermitteln
                                 if self.chanMap[currentTrack][coord[0], coord[1]] == id:
                                     for clb in refMapClbs[coord[0], coord[1]]:
                                         if clb[][].type == Blocktype.CHANX or clb[][].type == Blocktype.CHANY:
@@ -546,8 +519,10 @@ struct Lee:
                                                 preChan = chan[]
                                                 break
                                     routeList[currentTrack].append(preChan.value())
+                                # Anbindung erweitern bis Sink
                                 elif self.chanMap[currentTrack][coord[0], coord[1]] != Lee.SWITCH:
                                     var chan: Block.SharedBlock
+                                    # Wenn kein bestehender Kanal vorhanden, dann Source
                                     if preChan is None:
                                         for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
                                             var col = 0
@@ -558,6 +533,7 @@ struct Lee:
                                                     if clb[][].name == self.nets[net][0][0]:
                                                         preChan = clb[]
                                                         break
+                                    # Kanal erstellen
                                     var col = coord[0]
                                     var row = coord[1]
                                     if col % 2 == 0 and row % 2 == 1:
@@ -582,6 +558,7 @@ struct Lee:
                                     chan[].addPreconnection(preChan.value())
                                     chanArchiv[chan[].name] = (col, row)
                                     routeList[currentTrack].append(chan[])
+                                    # Füge die CLBs hinzu, die mit dem Kanal verbunden sind
                                     if len(pathCoords) == 1:
                                         for clb in refMapClbs[col, row]:
                                             if clb[][].name != self.nets[net][0][0] and (clb[][].type == Blocktype.CLB or clb[][].type == Blocktype.OUTPAD):
@@ -590,11 +567,11 @@ struct Lee:
                                                 routeList[currentTrack].append(clb[])
                                     refMapClbs[col, row].append(chan[])
                                     self.chanMap[currentTrack][coord[0], coord[1]] = id      
-                                    preChan = chan                  
+                                    preChan = chan  
+
                                 _ = pathCoords.pop(0)
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; Added path to routeList on track: ", currentTrack)
-
 
                     except e:
                         if self.log:
@@ -603,15 +580,12 @@ struct Lee:
                         return
                     finally:
                         self.mutex[currentTrack].unlock(id)
-                        # Debugging
-                        #if self.log:
-                        #    self.log.value().writeln(id, "ID: ", id, "; Unlock mutex at Track: ", currentTrack)
-                    #initMap(maze, Lee.EMPTY)
                     initMaze()
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Init local maze")
                 else:
                     try:
+                        # Wenn ganzes Netz abgearbeitet, dann fertig
                         if len(routedClbs) == len(self.nets[net]):
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; All blocks routed")
@@ -619,9 +593,10 @@ struct Lee:
                         else:
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; No sink found")
-                            #track += 1
-                            currentTrack += 1#(id+track) % self.chanWidth
-                            if currentTrack == self.chanWidth:#id % self.chanWidth:
+
+                            currentTrack += 1
+                            # Wenn alle Kanäle abgearbeitet sind, dann abbrechen
+                            if currentTrack == self.chanWidth:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
                                 isFinished = True
@@ -629,6 +604,7 @@ struct Lee:
                             else:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found, try next track")
+                                # Initialisierung für den nächsten Durchgang
                                 initMap(refMapClbs)  
                                 initMaze()    
                                 if self.log:
@@ -661,8 +637,6 @@ struct Lee:
                 algo(i)
         if self.log:
             self.log.value().writeln(-1, "End Lee-Algorithm")
-        # Debugging
-        #self.writeChanMap()
 
     # Gibt den Kritischenpfad zurück
     # @param outpads: Ausgänge
@@ -686,55 +660,3 @@ struct Lee:
             if self.log:
                 self.log.value().writeln(-1, "Error: Critical Path could not be calculated")
         return criticalPath
-
-    # Schreibt die chanMap in das Log
-    fn writeChanMap(mut self):
-        try:
-            if self.log:
-                self.log.value().writeln(-1, "Start write chanMap(s)")
-                for i in range(self.chanWidth):
-                    self.log.value().writeln(-1, "chanMap: ", i)
-                    self.log.value().writeln(-1, "[")
-                    for row in range(self.chanMap[i].rows-1, -1, -1):
-                        var line: String = "["             
-                        for col in range(self.chanMap[i].cols):
-                            if self.chanMap[i][col, row] == Lee.EMPTY:
-                                line = line + "E"
-                            elif self.chanMap[i][col, row] == Lee.SWITCH:
-                                line = line + "S"
-                            elif self.chanMap[i][col, row] == Lee.BLOCKED:
-                                line = line + "B"
-                            else:
-                                line = line + String(self.chanMap[i][col, row])
-                            if col != self.chanMap[i].cols - 1:
-                                line = line + ", "
-                        line = line + "]"
-                        self.log.value().writeln(-1, line)
-                    self.log.value().writeln(-1, "]")
-                self.log.value().writeln(-1, "End write chanMap(s)")
-        except e:
-            if self.log:
-                self.log.value().writeln(-1, "Error: ", e)
-
-    fn writeMap(mut self, id: Int, map: Matrix[Int]):
-        try:
-            self.log.value().writeln(id, "ID:", id, "; ", "[")
-            for row in range(map.rows-1, -1, -1):
-                var line: String = "["             
-                for col in range(map.cols):
-                    if map[col, row] == Lee.EMPTY:
-                        line = line + "E"
-                    elif map[col, row] == Lee.SWITCH:
-                        line = line + "S"
-                    elif map[col, row] == Lee.BLOCKED:
-                        line = line + "B"
-                    else:
-                        line = line + String(map[col, row])
-                    if col != map.cols - 1:
-                        line = line + ", "
-                line = line + "]"
-                self.log.value().writeln(id, "ID:", id, "; ", line)
-            self.log.value().writeln(id, "ID:", id, "; ", "]")
-        except e:
-            if self.log:
-                self.log.value().writeln(id, "Error: ", e)
