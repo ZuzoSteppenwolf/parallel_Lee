@@ -29,7 +29,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
 
     try:
         with open(path, "w") as file:
-            @argeter
+            @parameter
             fn writeNL():
                 file.write("\n")
             
@@ -38,7 +38,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
             # @arg block: Block, der geschrieben werden soll
             # @arg net: Name des Netzes, zu dem der Block gehört
             # @arg isFirst: True, wenn es sich um den ersten Block des Netzes handelt
-            @argeter
+            @parameter
             fn writeClb(isSink: Bool, block: Block.SharedBlock, net: String, isFirst: Bool = False):
                 try:
                     var line: String = ""
@@ -61,7 +61,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
             # @arg isSink: True, wenn es sich um einen Sink handelt, sonst False
             # @arg block: Pad, das geschrieben werden soll
             # @arg isFirst: True, wenn es sich um den ersten Block des Netzes handelt
-            @argeter
+            @parameter
             fn writePad(isSink: Bool, block: Block.SharedBlock, isFirst: Bool = False):
                 var line: String = ""
                 if isSink:
@@ -79,7 +79,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
 
             # Schreibt die Kanal-Informationen in die Datei
             # @arg block: Kanal, der geschrieben werden soll
-            @argeter
+            @parameter
             fn writeChan(block: Block.SharedBlock):
                 var line: String = ""
                 if block[].type == Blocktype.CHANX:
