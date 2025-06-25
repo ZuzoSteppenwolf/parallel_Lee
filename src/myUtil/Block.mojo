@@ -6,6 +6,12 @@ Repräsentiert einen Block in der Architektur.
 
 @author Marvin Wollbrück
 """
+
+"""
+Repräsentiert einen Block in der Architektur.
+Der Block enthält Informationen über seinen Namen, Typ, Verzögerung,
+Subblock-Index, Verbindungen zu anderen Blöcken und Koordinaten.
+"""
 @value
 struct Block:
 
@@ -18,6 +24,11 @@ struct Block:
     var preconnections: List[Self.SharedBlock]
     var coord: Tuple[Int, Int]
 
+    # Konstruktor
+    # @arg name: Name des Blocks
+    # @arg type: Typ des Blocks (Standard: Blocktype.NONE)
+    # @arg delay: Verzögerung des Blocks (Standard: 0.0)
+    # @arg subblk: Subblock-Index (Standard: 0)
     fn __init__(out self, name: String,  type: Blocktype = Blocktype.NONE, delay: Float64 = 0.0, subblk: Int8 = 0):
         self.name = name
         self.subblk = subblk
@@ -38,7 +49,7 @@ struct Block:
 
     # Fügt eine Verbindung zu einem anderen Block hinzu
     #
-    # @param block Der Blockzeiger, zu dem die Verbindung hinzugefügt werden soll
+    # @arg block Der Blockzeiger, zu dem die Verbindung hinzugefügt werden soll
     fn addPreconnection(mut self, block: Self.SharedBlock):
         self.preconnections.append(block)
 

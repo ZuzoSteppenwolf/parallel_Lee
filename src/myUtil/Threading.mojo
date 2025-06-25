@@ -13,6 +13,13 @@ Komponenten für multithreaded Programmierung
 
 """
 Mutex-Struktur
+
+Unterscheidet zwischen Besuchern und Besitzern.
+Besitzer sind die Threads, die den Mutex gesperrt haben.
+
+Besucher sind die Threads, die den Mutex besuchen wollen,
+aber nicht gesperrt haben. Dabei darf der Mutex nicht gesperrt sein,
+damit der Besucher den Mutex besuchen kann.
 """
 struct Mutex:
     var owner: UnsafePointer[BlockingSpinLock]
@@ -40,14 +47,14 @@ struct Mutex:
 
     # Sperrt den Mutex
     # und wartet bis keine Besucher mehr da sind
-    # @param id: ID des Workers
+    # @arg id: ID des Workers
     fn lock(mut self, id: Int):
         self.owner[0].lock(id)
         while self.visitor[].load() != 0:
             sleep(self.sleep_sec)
     
     # Entsperrt den Mutex
-    # @param id: ID des Workers
+    # @arg id: ID des Workers
     fn unlock(mut self, id: Int):
         _ = self.owner[0].unlock(id)
 

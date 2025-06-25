@@ -32,7 +32,7 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     var files: UInt
 
     # Konstruktor
-    # @param path: Pfad zur Logdatei
+    # @arg path: Pfad zur Logdatei
     fn __init__(out self, path: String) raises:
         self.path = String(path.rstrip(".log"))      
         self.timestamp = 0
@@ -64,17 +64,17 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
         self.timestamp = other.timestamp
 
     # Schreibt in die Logdatei
-    # @param text: Text, der in die Logdatei geschrieben werden soll
+    # @arg text: Text, der in die Logdatei geschrieben werden soll
     fn write(mut self, text: String):
         self.file[].write(text)
 
     # Schreibt in die Logdatei
-    # @param text: Writeable Objekt, das in die Logdatei geschrieben werden soll
+    # @arg text: Writeable Objekt, das in die Logdatei geschrieben werden soll
     fn write[T: Writable](mut self, text: T):
         self.file[].write(text)
 
     # Schreibt in die Logdatei
-    # @param text: Writeable Objekte, die in die Logdatei geschrieben werden soll
+    # @arg text: Writeable Objekte, die in die Logdatei geschrieben werden soll
     fn write[*Ts: Writable](mut self, *text: *Ts):
         write_args(self.file[], text)
 
@@ -101,21 +101,21 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
             self.file[].write(diff, "ns: ")
 
     # Schreibt in die Logdatei eine Zeile
-    # @param text: Text, der in die Logdatei geschrieben werden soll
+    # @arg text: Text, der in die Logdatei geschrieben werden soll
     fn writeln(mut self, text: String):
         self.newFile()
         self.writeStamp()
         self.file[].write(text, "\n")
 
     # Schreibt in die Logdatei eine Zeile
-    # @param text: Writeable Objekt, das in die Logdatei geschrieben werden soll
+    # @arg text: Writeable Objekt, das in die Logdatei geschrieben werden soll
     fn writeln[T: Writable](mut self, text: T):
         self.newFile()
         self.writeStamp()
         self.file[].write(text, "\n")
 
     # Schreibt in die Logdatei eine Zeile
-    # @param text: Writeable Objekte, die in die Logdatei geschrieben werden soll
+    # @arg text: Writeable Objekte, die in die Logdatei geschrieben werden soll
     fn writeln[*Ts: Writable](mut self, *text: *Ts):
         self.newFile()
         self.writeStamp()
@@ -145,7 +145,7 @@ struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MA
     var mutex: Mutex
 
     # Konstruktor
-    # @param path: Pfad zur Logdatei
+    # @arg path: Pfad zur Logdatei
     fn __init__(out self, path: String) raises:
         self.log = ArcPointer[Log[hasTimestamp, testDebug, maxLines, maxFiles]](Log[hasTimestamp, testDebug, maxLines, maxFiles](path))
         self.mutex = Mutex()
@@ -161,8 +161,8 @@ struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MA
         self.mutex = other.mutex
 
     # Schreibt in die Logdatei eine Zeile
-    # @param id: ID des Threads
-    # @param text: Text, der in die Logdatei geschrieben werden soll
+    # @arg id: ID des Threads
+    # @arg text: Text, der in die Logdatei geschrieben werden soll
     fn writeln[*Ts: Writable](mut self, id: Int, *text: *Ts):
         self.mutex.lock(id)
         self.log[].newFile()

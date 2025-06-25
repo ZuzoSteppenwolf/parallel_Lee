@@ -1,5 +1,21 @@
+"""
+@file Enum.mojo
+Repräsentiert verschiedene Enums.
 
+@author Marvin Wollbrück
+"""
 
+"""
+Repräsentiert verschiedene Blocktypen.
+
+Typen:
+- NONE: Kein Block
+- INPAD: Eingabepad
+- OUTPAD: Ausgabepad
+- CLB: Konfigurierbarer Logikblock
+- CHANX: Kanal in X-Richtung
+- CHANY: Kanal in Y-Richtung
+"""
 @register_passable("trivial")
 struct Blocktype:
     var value: Int8
@@ -48,6 +64,15 @@ struct Blocktype:
         else:
             return "UNKNOWN"
 
+"""
+Repräsentiert verschiedene Kanaltypen.
+Typen:
+- NONE: Kein Kanal
+- GAUSSIAN: Gaußscher Kanal
+- UNIFORM: Uniformer Kanal
+- PULSE: Pulsierender Kanal
+- DELTA: Delta-Kanal
+"""
 @register_passable("trivial")
 struct ChanType:
     var value: Int8
@@ -105,6 +130,15 @@ struct ChanType:
         else:
             return "UNKNOWN"
 
+"""
+Repräsentiert verschiedene Richtungsseiten.
+Typen:
+- NONE: Keine Richtungsseite
+- TOP: Oberseite
+- BOTTOM: Unterseite
+- LEFT: Linke Seite
+- RIGHT: Rechte Seite
+"""
 @register_passable("trivial")
 struct Faceside:
     var value: Int8
@@ -162,6 +196,14 @@ struct Faceside:
         else:
             return "UNKNOWN"
 
+"""
+Repräsentiert verschiedene Switchtypen.
+Typen:
+- NONE: Kein Switch
+- SUBSET: Subset-Switch
+- WILTON: Wilton-Switch
+- UNIVERSAL: Universal-Switch
+"""
 @register_passable("trivial")
 struct SwitchType:
     var value: Int8
@@ -214,6 +256,13 @@ struct SwitchType:
         else:
             return "UNKNOWN"
 
+"""
+Repräsentiert die Unterscheidung von Absoluten- und Fraktalen-Werten.
+Typen:
+- NONE: Kein Wert
+- ABSOLUTE: Absoluter Wert
+- FRACTIONAL: Fraktionaler Wert
+"""
 @register_passable("trivial")
 struct FcType:
     var value: Int8

@@ -12,7 +12,7 @@ from myUtil.Matrix import Matrix
 """
 Bereinigt die übergebenen Zeilen von Kommentaren und Zeilenumbrüchen
 
-@param lines: Liste von Zeilen
+@arg lines: Liste von Zeilen
 @return: Liste von bereinigten Zeilen
 """
 fn clearUpLines(owned lines: List[String]) -> List[String]:
@@ -45,19 +45,35 @@ fn clearUpLines(owned lines: List[String]) -> List[String]:
         
     return newLines
 
-
+"""
+Initialisiert die Map mit leeren Werten
+@arg map: Matrix, die initialisiert werden soll
+"""
 fn initMap(mut map: Matrix[Dict[String, List[Block.SharedBlock]]]):
     for idx in range(map.size):
         map.initMemSpace(idx, Dict[String, List[Block.SharedBlock]]())
-                
+
+"""
+Initialisiert die Map mit leeren Werten
+@arg map: Matrix, die initialisiert werden soll
+"""
 fn initMap(mut map: Matrix[Dict[Int, List[Block.SharedBlock]]]):
     for idx in range(map.size):
         map.initMemSpace(idx, Dict[Int, List[Block.SharedBlock]]())
 
+"""
+Initialisiert die Map mit leeren Werten
+@arg map: Matrix, die initialisiert werden soll
+"""
 fn initMap(mut map: Matrix[List[Block.SharedBlock]]):
     for idx in range(map.size):
         map.initMemSpace(idx, List[Block.SharedBlock]())
 
+"""
+Initialisiert die Map mit leeren Werten
+@arg map: Matrix, die initialisiert werden soll
+@arg value: Wert, mit dem die Map initialisiert werden soll
+"""
 fn initMap(mut map: Matrix[Int], value: Int):
     for idx in range(map.size):
         map.initMemSpace(idx, value)
