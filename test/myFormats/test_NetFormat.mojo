@@ -2,6 +2,9 @@ from testing import assert_equal, assert_true
 from myFormats.Arch import Pin
 from myFormats.Net import *
 from myUtil.Enum import *
+"""
+@author Marvin Wollbrück
+"""
 
 alias sbblknum = 1
 def initPins() -> List[Pin]:

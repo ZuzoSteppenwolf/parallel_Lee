@@ -1,7 +1,9 @@
 from testing import assert_equal
 from myFormats.Place import Place, Block
 from myUtil.Enum import Blocktype
-
+"""
+@author Marvin Wollbrück
+"""
 
 def test_PlaceFormat_1():
 

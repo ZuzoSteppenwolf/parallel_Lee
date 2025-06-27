@@ -1,7 +1,9 @@
 from testing import assert_equal
 from myFormats.Arch import *
 from myUtil.Enum import *
-
+"""
+@author Marvin Wollbrück
+"""
 
 def test_ArchFormat_1():
     

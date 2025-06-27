@@ -1,6 +1,8 @@
 from testing import assert_equal
 from myUtil.Util import *
-
+"""
+@author Marvin Wollbrück
+"""
 
 
 def test_Util_1():
