@@ -54,6 +54,16 @@ def main():
         print_duration()
         return
 
+    if not(args[3].split("/")[-1] == placement.arch.split("/")[-1]):
+        print("Architecture file is different from placement file: ", args[3], " != ", placement.arch.split("/")[-1])
+        print_duration()
+        return
+
+    if not(args[2].split("/")[-1] == placement.net.split("/")[-1]):
+        print("Netlist file is different from placement file: ", args[2], " != ", placement.net.split("/")[-1])
+        print_duration()
+        return
+
     print("Read file ", args[3])
     arch = Arch(args[3])
     if not arch.isValid:
