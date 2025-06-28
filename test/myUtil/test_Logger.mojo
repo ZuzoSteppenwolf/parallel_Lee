@@ -4,6 +4,7 @@ from testing import assert_equal
 """
 @file test_Logger.mojo
 Test für den Logger
+@author Marvin Wollbrück
 """
 
 def test_Logger1():
