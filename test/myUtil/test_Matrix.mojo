@@ -29,7 +29,7 @@ def test_Matrix_1():
 
 """
 unable to test
-Ausführung beendet sich nicht
+Ausführung beendet sich nicht, nach mojo versions wechsel
 def test_Matrix_2():
 
     var mat = Matrix[List[Int]](1, 1)
@@ -76,7 +76,7 @@ def test_Matrix_5():
 
 """
 unable to test
-Ausführung beendet sich nicht
+Ausführung beendet sich nicht, nach mojo versions wechsel
 def test_Matrix_6():
 
     var mat = Matrix[List[Int]](2, 1)
