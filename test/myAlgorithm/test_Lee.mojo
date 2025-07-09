@@ -55,7 +55,7 @@ def test_Lee1():
 
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
-    assert_equal(route.getCriticalPath(outpads), 6, "Lee Kritischerpfad ist nicht 6")
+    assert_equal(route.getCriticalPath(outpads), 7, "Lee Kritischerpfad ist nicht 7")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][2, 1], id, "kein Kanal bei (2, 1)")
     assert_equal(route.chanMap[0][2, 3], id, "kein Kanal bei (2, 3)")
@@ -120,7 +120,7 @@ def test_Lee2():
     outpads.add("B")
 
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 7, "Lee Kritischerpfad ist nicht 7")
+    assert_equal(route.getCriticalPath(outpads), 8, "Lee Kritischerpfad ist nicht 8")
     assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
     assert_equal(route.routeLists["1"][0][0][].name, "A", "Falscher Source Block")
     assert_equal(route.routeLists["1"][0][1][].type, Blocktype.CHANX, "Kein CHANX Kanal bei (1, 0)")
@@ -653,7 +653,7 @@ def test_Lee13():
     outpads.add("B")
 
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 3, "Lee Kritischerpfad ist nicht 3")
+    assert_equal(route.getCriticalPath(outpads), 4, "Lee Kritischerpfad ist nicht 4")
 
 def test_Lee14():
     alias id = 0
@@ -690,7 +690,7 @@ def test_Lee14():
     outpads.add("B")
 
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 3, "Lee Kritischerpfad ist nicht 3")
+    assert_equal(route.getCriticalPath(outpads), 4, "Lee Kritischerpfad ist nicht 4")
 
 def test_Lee15():
     alias id = 0
@@ -730,7 +730,7 @@ def test_Lee15():
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(len(route.routeLists["1"]), 1, "Zwei Tracks für Netz 1")
     assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
-    assert_equal(route.getCriticalPath(outpads), 6, "Lee Kritischerpfad ist nicht 6")
+    assert_equal(route.getCriticalPath(outpads), 7, "Lee Kritischerpfad ist nicht 7")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][2, 1], id, "kein Kanal bei (2, 1)")
     assert_equal(route.chanMap[0][2, 3], id, "kein Kanal bei (2, 3)")
@@ -789,7 +789,7 @@ def test_Lee16():
 
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(len(route.routeLists["1"][0]), 8, "Route Liste für Netz 1 ist nicht 6 lang")
-    assert_equal(route.getCriticalPath(outpads), 8, "Lee Kritischerpfad ist nicht 6")
+    assert_equal(route.getCriticalPath(outpads), 9, "Lee Kritischerpfad ist nicht 9")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][3, 0], id, "kein Kanal bei (3, 0)")
     assert_equal(route.chanMap[0][5, 0], id, "kein Kanal bei (5, 0)")

@@ -536,12 +536,23 @@ struct Lee:
                                     # Kanal erstellen
                                     var col = coord[0]
                                     var row = coord[1]
+                                    var isSourceChan = False
+                                    for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
+                                        var sourceCol = 0
+                                        var sourceRow = 0
+                                        getChanCoord(sourceCoord, 0, pinIdx, sourceCol, sourceRow)
+                                        if col == sourceCol and row == sourceRow:
+                                            isSourceChan = True
+                                            break
+                                    var delay = self.chanDelay
+                                    if isSourceChan:
+                                        delay = self.chanDelay * 2
                                     if col % 2 == 0 and row % 2 == 1:
                                         var name = String(id) + "CHANY" + String(col) + ":" + String(row) + "T" + String(currentTrack)
-                                        chan = Block.SharedBlock(Block(name, Blocktype.CHANY, self.chanDelay))
+                                        chan = Block.SharedBlock(Block(name, Blocktype.CHANY, delay))
                                     elif col % 2 == 1 and row % 2 == 0:
                                         var name = String(id) + "CHANX" + String(col) + ":" + String(row) + "T" + String(currentTrack)
-                                        chan = Block.SharedBlock(Block(name, Blocktype.CHANX, self.chanDelay))            
+                                        chan = Block.SharedBlock(Block(name, Blocktype.CHANX, delay))
                                     else:
                                         self.isValid = False
                                         if self.log:
