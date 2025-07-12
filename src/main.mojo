@@ -241,9 +241,10 @@ def main():
                 lowWidth = channelWidth                
                 if lowWidth == highWidth:
                     channelWidth = lowWidth + (highWidth // 2)
+                    highWidth = channelWidth
                 else:
                     channelWidth = (lowWidth + highWidth) // 2
-                highWidth = channelWidth
+                    
             if channelWidth == lowWidth:
                 hasEnd = True
         
