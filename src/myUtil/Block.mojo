@@ -57,12 +57,17 @@ struct Block:
     #
     # @return Die Verzögerung(en) des Blocks
     fn getDelay(self) -> List[Float64]:
+        var delays: List[Float64] = List[Float64]()
         if len(self.preconnections) == 0:
-            return List[Float64](self.delay)
+            delays.append(self.delay)
         else:
-            var delays: List[Float64] = List[Float64]()
+            
             for preconnection in self.preconnections:
                 var preDelays: List[Float64] = preconnection[][].getDelay()
+                var maxDelay: Float64 = 0.0
                 for d in preDelays:
-                    delays.append(d[] + self.delay)
-            return delays
+                    if d[] > maxDelay:
+                        maxDelay = d[]
+                
+                delays.append(maxDelay + self.delay)
+        return delays

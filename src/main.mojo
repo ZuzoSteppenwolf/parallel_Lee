@@ -150,6 +150,12 @@ def main():
     if "--single_thread" in args:
         runParallel = False
 
+    print()
+    print("In total ", len(netlist.netList), " nets")
+    print(len(netlist.globalNets), " are global nets")
+    print(len(netlist.nets), " to be routed")
+
+
     @parameter
     fn compute(chanWidth: Int) -> Lee:
         var clbMap = ListMatrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2, List[Block.SharedBlock]())

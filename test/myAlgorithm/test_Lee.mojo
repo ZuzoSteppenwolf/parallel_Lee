@@ -816,3 +816,163 @@ def test_Lee16():
     assert_equal(route.routeLists["1"][0][6][].coord[0], 4, "Falsche CHANX Kanal Koordinaten bei (4, 2)")
     assert_equal(route.routeLists["1"][0][6][].coord[1], 2, "Falsche CHANX Kanal Koordinaten bei (4, 2)")
     assert_equal(route.routeLists["1"][0][7][].name, "B", "Falscher Sink Block")
+
+def test_Lee17():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = ListMatrix[List[Block.SharedBlock]](102, 3, List[Block.SharedBlock]())
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(100, 1)
+    nets["1"].append(Tuple(clb.name, 0))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.chanMap[0][3, 4] = route.BLOCKED
+    route.chanMap[0][4, 1] = route.BLOCKED
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.getCriticalPath(outpads), 103, "Lee Kritischerpfad ist nicht 103")
+
+def test_Lee18():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = ListMatrix[List[Block.SharedBlock]](102, 102, List[Block.SharedBlock]())
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(100, 100)
+    nets["1"].append(Tuple(clb.name, 3))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.chanMap[0][3, 4] = route.BLOCKED
+    route.chanMap[0][4, 1] = route.BLOCKED
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.getCriticalPath(outpads), 203, "Lee Kritischerpfad ist nicht 203")
+
+def test_Lee19():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = ListMatrix[List[Block.SharedBlock]](1002, 5, List[Block.SharedBlock]())
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1000, 1)
+    nets["1"].append(Tuple(clb.name, 0))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.chanMap[0][3, 4] = route.BLOCKED
+    route.chanMap[0][4, 1] = route.BLOCKED
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.getCriticalPath(outpads), 1003, "Lee Kritischerpfad ist nicht 1003")
+
+def test_Lee20():
+    alias id = 0
+    var chanWidth = 1
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = ListMatrix[List[Block.SharedBlock]](1000002, 5, List[Block.SharedBlock]())
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+    var clb = Block("A", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 1)
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["1"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1000000, 1)
+    nets["1"].append(Tuple(clb.name, 0))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    route.chanMap[0][3, 4] = route.BLOCKED
+    route.chanMap[0][4, 1] = route.BLOCKED
+    route.run()
+
+
+    var outpads = Set[String]()
+    outpads.add("B")
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_equal(route.getCriticalPath(outpads), 1000003, "Lee Kritischerpfad ist nicht 1000003")
