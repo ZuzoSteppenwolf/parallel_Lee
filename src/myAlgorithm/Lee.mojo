@@ -302,8 +302,13 @@ struct Lee:
             initMap(refMapClbs)
             initMap(maze, EMPTY)
             var sourceCoord: Tuple[Int, Int]
+            var sourceCLB: Optional[Block.SharedBlock] = None
             try:
                 sourceCoord = self.archiv[self.nets[net][0][0]]
+                for clb in self.clbMap[sourceCoord[0], sourceCoord[1]]:
+                    if clb[][].name == self.nets[net][0][0]:
+                        sourceCLB = clb[]
+                        break
             except e:
                 if self.log:
                     self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
@@ -524,6 +529,8 @@ struct Lee:
                                     var chan: Block.SharedBlock
                                     # Wenn kein bestehender Kanal vorhanden, dann Source
                                     if preChan is None:
+                                        preChan = sourceCLB.value()
+                                        """
                                         for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
                                             var col = 0
                                             var row = 0
@@ -533,6 +540,7 @@ struct Lee:
                                                     if clb[][].name == self.nets[net][0][0]:
                                                         preChan = clb[]
                                                         break
+                                        """
                                     # Kanal erstellen
                                     var col = coord[0]
                                     var row = coord[1]
@@ -566,14 +574,17 @@ struct Lee:
                                     
                                     chan[].coord = ((col+1)//2, (row+1)//2)
                                     chan[].subblk = currentTrack
-                                    chan[].addPreconnection(preChan.value())
+                                    var preDelay = 0.0
+                                    if preChan.value()[].type == Blocktype.CHANX or preChan.value()[].type == Blocktype.CHANY:
+                                        preDelay = preChan.value()[].preDelays[0] + preChan.value()[].delay
+                                    chan[].addPreconnection(preChan.value(), preDelay)
                                     chanArchiv[chan[].name] = (col, row)
                                     routeList[currentTrack].append(chan[])
                                     # Füge die CLBs hinzu, die mit dem Kanal verbunden sind
                                     if len(pathCoords) == 1:
                                         for clb in refMapClbs[col, row]:
                                             if clb[][].name != self.nets[net][0][0] and (clb[][].type == Blocktype.CLB or clb[][].type == Blocktype.OUTPAD):
-                                                clb[][].addPreconnection(chan)
+                                                clb[][].addPreconnection(sourceCLB.value(), chan[].preDelays[0] + chan[].delay)
                                                 routedClbs.add(clb[][].name)
                                                 routeList[currentTrack].append(clb[])
                                     refMapClbs[col, row].append(chan[])

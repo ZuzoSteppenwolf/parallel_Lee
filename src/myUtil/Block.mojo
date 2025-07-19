@@ -1,5 +1,6 @@
 from myUtil.Enum import Blocktype
 from memory import UnsafePointer, Pointer, ArcPointer
+from collections import List, Deque
 """
 @file Block.mojo
 Repräsentiert einen Block in der Architektur.
@@ -22,6 +23,7 @@ struct Block:
     var type: Blocktype
     var delay: Float64
     var preconnections: List[Self.SharedBlock]
+    var preDelays: List[Float64]
     var coord: Tuple[Int, Int]
 
     # Konstruktor
@@ -35,6 +37,7 @@ struct Block:
         self.type = type
         self.delay = delay
         self.preconnections = List[Self.SharedBlock]()
+        self.preDelays = List[Float64]()
         self.coord = (0, 0)
 
 
@@ -50,8 +53,10 @@ struct Block:
     # Fügt eine Verbindung zu einem anderen Block hinzu
     #
     # @arg block Der Blockzeiger, zu dem die Verbindung hinzugefügt werden soll
-    fn addPreconnection(mut self, block: Self.SharedBlock):
+    # @arg delay Die Verzögerung der Verbindung (Standard: 0.0)
+    fn addPreconnection(mut self, block: Self.SharedBlock, delay: Float64 = 0.0):
         self.preconnections.append(block)
+        self.preDelays.append(delay)
 
     # Gibt die Verzögerung des Blocks zurück
     #
@@ -62,12 +67,45 @@ struct Block:
             delays.append(self.delay)
         else:
             
-            for preconnection in self.preconnections:
-                var preDelays: List[Float64] = preconnection[][].getDelay()
+            try:
+                var preDelays: Deque[Float64] = Deque[Float64]()
+                var idxs: Deque[Int] = Deque[Int]()
+                var blockFront: Deque[Self.SharedBlock] = Deque[Self.SharedBlock]()
+                for idx in range(len(self.preconnections)):                    
+                    blockFront.append(self.preconnections[idx])
+                    while blockFront:
+                        var preDelay: Float64 = 0.0
+                        if len(blockFront) < len(idxs):
+                            _ = idxs.pop()
+                        elif len(blockFront) > len(idxs):
+                            idxs.append(0)
+                        if len(blockFront) < len(preDelays):
+                            preDelay = preDelays.pop() + blockFront[-1][].delay + blockFront[-1][].preDelays[idxs[-1]]
+                        elif len(blockFront) > len(preDelays):
+                            preDelays.append(blockFront[-1][].delay)
+
+                        if preDelays[-1] < preDelay:
+                            preDelays[-1] = preDelay
+                        if idxs[-1] < len(blockFront[-1][].preconnections):
+                            blockFront.append(blockFront[-1][].preconnections[idxs[-1]])
+                            idxs[-1] += 1
+                        else:
+                            _ = blockFront.pop()     
+                    delays.append(preDelays[-1] + self.delay + self.preDelays[idx])
+                    preDelays = Deque[Float64]()      
+                    idxs = Deque[Int]()
+                    blockFront = Deque[Self.SharedBlock]()
+
+            except e:
+                print("Error calculating delays: ", e)
+            """
+            for idx in range(len(self.preconnections)):
+                var preDelays: List[Float64] = self.preconnections[idx][].getDelay()
                 var maxDelay: Float64 = 0.0
                 for d in preDelays:
-                    if d[] > maxDelay:
-                        maxDelay = d[]
+                    if (d[] + self.preDelays[idx]) > maxDelay:
+                        maxDelay = d[] + self.preDelays[idx]
                 
                 delays.append(maxDelay + self.delay)
+            """
         return delays
