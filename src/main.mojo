@@ -265,6 +265,7 @@ def main():
         print("Channel width: ", channelWidth)
         print()
         var netPins: Dict[String, Dict[String, Int]] = Dict[String, Dict[String, Int]]()
+        
         for net in netlist.nets:
             netPins[net[]] = Dict[String, Int]()
             for pin in netlist.nets[net[]]:

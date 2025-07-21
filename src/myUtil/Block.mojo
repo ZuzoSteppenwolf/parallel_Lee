@@ -28,6 +28,7 @@ struct Block:
     var preconnections: List[Self.SharedBlock]
     var preDelays: List[Float64]
     var coord: Tuple[Int, Int]
+    var hasCritPath: Bool
 
     # Konstruktor
     # @arg name: Name des Blocks
@@ -42,6 +43,7 @@ struct Block:
         self.preconnections = List[Self.SharedBlock]()
         self.preDelays = List[Float64]()
         self.coord = (0, 0)
+        self.hasCritPath = False
 
 
     fn __eq__(self, other: Block) -> Bool:
@@ -64,7 +66,7 @@ struct Block:
     # Gibt die Verzögerung des Blocks zurück
     #
     # @return Die Verzögerung(en) des Blocks
-    fn getDelay(self) -> List[Float64]:
+    fn getDelay(mut self) -> List[Float64]:
         var delays: List[Float64] = List[Float64]()
         if len(self.preconnections) == 0:
             delays.append(self.delay)
@@ -119,16 +121,18 @@ struct Block:
                                 elif len(blockFront) > preDelays:
                                     preDelays += 1
                                     setPreDelays(blockFront[-1][].delay)
-
+                                    
                                 var bufferDelay = getPreDelays()
                                 if bufferDelay < preDelay:
                                     setPreDelays(preDelay)
                                 
                                 var bufferIdx = getIdxs()
-                                if bufferIdx < len(blockFront[-1][].preconnections):
+                                if bufferIdx < len(blockFront[-1][].preconnections) and not blockFront[-1][].hasCritPath:
                                     blockFront.append(blockFront[-1][].preconnections[bufferIdx])
                                     setIdxs(bufferIdx + 1)
                                 else:
+                                    blockFront[-1][].hasCritPath = True
+                                    blockFront[-1][].delay = getPreDelays()
                                     _ = blockFront.pop()  
                             preDelays = 1   
                             var bufferDelay = getPreDelays()
