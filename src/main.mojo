@@ -189,7 +189,7 @@ def main():
             except e:
                 print("Error: ", e)
                 return Lee()
-        return Lee(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins)
+        return Lee(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins, placement.clbNums)
         
     
     var critPath: Float64 = 0.0

@@ -25,6 +25,7 @@ def test_Lee1():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -37,16 +38,20 @@ def test_Lee1():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
 
@@ -82,6 +87,7 @@ def test_Lee2():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -97,12 +103,14 @@ def test_Lee2():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 2)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
@@ -110,10 +118,11 @@ def test_Lee2():
     nets["2"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
     route.run()
 
     var outpads = Set[String]()
@@ -153,6 +162,7 @@ def test_Lee3():
     var clbMap = ListMatrix[List[Block.SharedBlock]](42, 42, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -167,15 +177,17 @@ def test_Lee3():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 40)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
-    route.run()    
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
 
@@ -186,6 +198,7 @@ def test_Lee4():
     var clbMap = ListMatrix[List[Block.SharedBlock]](42, 42, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -201,12 +214,14 @@ def test_Lee4():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 20)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(10, 40)
@@ -214,8 +229,9 @@ def test_Lee4():
     nets["2"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -227,6 +243,7 @@ def test_Lee5():
     var clbMap = ListMatrix[List[Block.SharedBlock]](42, 42, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -242,12 +259,14 @@ def test_Lee5():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 20)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(10, 40)
@@ -255,8 +274,9 @@ def test_Lee5():
     nets["2"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run(False)
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -268,6 +288,7 @@ def test_Lee6():
     var clbMap = ListMatrix[List[Block.SharedBlock]](42, 42, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -283,12 +304,14 @@ def test_Lee6():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 20)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(10, 40)
@@ -296,8 +319,9 @@ def test_Lee6():
     nets["2"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -309,6 +333,7 @@ def test_Lee7():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -325,18 +350,21 @@ def test_Lee7():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 2)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("D", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(2, 1)   
     nets["3"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
@@ -345,10 +373,11 @@ def test_Lee7():
     nets["3"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 3
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -360,6 +389,7 @@ def test_Lee8():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -372,22 +402,25 @@ def test_Lee8():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("C", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -399,6 +432,7 @@ def test_Lee9():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -411,28 +445,32 @@ def test_Lee9():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("C", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     clb = Block("D", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 1)
     nets["1"].append(Tuple(clb.name, 3))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 3
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -450,6 +488,7 @@ def test_Lee10():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -462,22 +501,25 @@ def test_Lee10():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("D", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 1)
     nets["1"].append(Tuple(clb.name, 3))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -515,6 +557,7 @@ def test_Lee11():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -527,22 +570,25 @@ def test_Lee11():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 1))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("D", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 1)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -572,6 +618,7 @@ def test_Lee12():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -587,12 +634,14 @@ def test_Lee12():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 2)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
@@ -600,16 +649,18 @@ def test_Lee12():
     nets["2"].append(Tuple(clb.name, 1))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     clb = Block("D", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 1)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 3
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
 
@@ -625,6 +676,7 @@ def test_Lee13():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -637,16 +689,18 @@ def test_Lee13():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1, 1)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     var outpads = Set[String]()
@@ -662,6 +716,7 @@ def test_Lee14():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -674,16 +729,18 @@ def test_Lee14():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1, 2)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
     var outpads = Set[String]()
@@ -699,6 +756,7 @@ def test_Lee15():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -711,16 +769,18 @@ def test_Lee15():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
     nets["1"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.run()
 
 
@@ -757,6 +817,7 @@ def test_Lee16():
     var clbMap = ListMatrix[List[Block.SharedBlock]](7, 6, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -769,16 +830,18 @@ def test_Lee16():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(4, 3)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -824,6 +887,7 @@ def test_Lee17():
     var clbMap = ListMatrix[List[Block.SharedBlock]](102, 3, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -836,16 +900,18 @@ def test_Lee17():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(100, 1)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -864,6 +930,7 @@ def test_Lee18():
     var clbMap = ListMatrix[List[Block.SharedBlock]](102, 102, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -876,16 +943,18 @@ def test_Lee18():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(100, 100)
     nets["1"].append(Tuple(clb.name, 3))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -904,6 +973,7 @@ def test_Lee19():
     var clbMap = ListMatrix[List[Block.SharedBlock]](1002, 5, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -916,16 +986,18 @@ def test_Lee19():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1000, 1)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -944,6 +1016,7 @@ def test_Lee20():
     var clbMap = ListMatrix[List[Block.SharedBlock]](1000002, 5, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -956,16 +1029,18 @@ def test_Lee20():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1000000, 1)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -984,6 +1059,7 @@ def test_Lee21():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -1000,12 +1076,14 @@ def test_Lee21():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 4, 1)
     clb.coord = Tuple(1, 2)   
     nets["2"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
@@ -1014,16 +1092,18 @@ def test_Lee21():
     nets["3"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     clb = Block("D", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 1)
     nets["3"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 3
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
     route.run()
 
     var outpads = Set[String]()
@@ -1039,6 +1119,7 @@ def test_Lee22():
     var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
     pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
     pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
@@ -1055,6 +1136,7 @@ def test_Lee22():
     nets["1"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
 
     clb = Block("C", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(1, 2)   
@@ -1062,6 +1144,7 @@ def test_Lee22():
     nets["1"].append(Tuple(clb.name, 1))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
 
     clb = Block("B", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 2)
@@ -1070,16 +1153,18 @@ def test_Lee22():
     nets["3"].append(Tuple(clb.name, 4))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
 
     clb = Block("D", Blocktype.CLB, 1, 1)
     clb.coord = Tuple(2, 1)
     nets["3"].append(Tuple(clb.name, 2))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 3
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
     route.run()
 
     var outpads = Set[String]()

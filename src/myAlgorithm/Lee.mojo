@@ -186,7 +186,9 @@ struct Lee:
     var pins: List[Pin]
     var archiv: Dict[String, Tuple[Int, Int]]
     var log: Optional[async_Log[True]]
-    
+    var CLB2Num: Dict[String, Int]
+    var Num2CLB: Dict[Int, String]
+
     # Konstruktor
     fn __init__(out self):
         self.isValid = False
@@ -200,19 +202,22 @@ struct Lee:
         self.chanDelay = 0.0
         self.pins = List[Pin]()
         self.archiv = Dict[String, Tuple[Int, Int]]()
+        self.CLB2Num = Dict[String, Int]()
+        self.Num2CLB = Dict[Int, String]()
         try:
             self.log = async_Log[True](self.LOG_PATH)
         except:
             self.log = None
 
     # Konstruktor
-    # @param nets: Netze
-    # @param clbMap: CLB-Map
-    # @param archiv: Archiv
-    # @param chanWidth: Kanalbreite
-    # @param chanDelay: Kanalverzögerung
-    # @param pins: Pins
-    fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin]):
+    # @arg nets: Netze
+    # @arg clbMap: CLB-Map
+    # @arg archiv: Archiv
+    # @arg chanWidth: Kanalbreite
+    # @arg chanDelay: Kanalverzögerung
+    # @arg pins: Pins
+    # @arg CLB2Num: Mapping von CLB-Namen zu Nummern
+    fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin], CLB2Num: Dict[String, Int]):
         try:
             self.log = async_Log[True](self.LOG_PATH)
         except:
@@ -254,13 +259,22 @@ struct Lee:
         for net in nets:
             self.netKeys.append(net[])
 
-        
+        self.CLB2Num = CLB2Num
+        self.Num2CLB = Dict[Int, String]()
+        try:
+            for key in self.CLB2Num.keys():
+                self.Num2CLB[self.CLB2Num[key[]]] = key[]
+        except e:
+            if self.log:
+                self.log.value().writeln(-1, "Error: ", e)
+            self.isValid = False
+
     # Führe den Lee-Algorithmus aus
-    # @param runParallel: True, wenn der Algorithmus parallel ausgeführt werden soll, sonst False
+    # @arg runParallel: True, wenn der Algorithmus parallel ausgeführt werden soll, sonst False
     fn run(mut self, runParallel: Bool = True):
         
         # Der Lee-Algorithmus für ein Netz
-        # @param id: ID des Netzes
+        # @arg id: ID des Netzes
         @parameter
         fn algo(id: Int):
             alias SINK = Lee.SINK
@@ -318,11 +332,11 @@ struct Lee:
             var wavefront = Deque[Tuple[Int, Int]]()
 
             # Gibt die Kanalkoordinate des I/O-Pins des Blocks
-            # param coord: Koordinate des Blocks
-            # param idx: Index des Blocks in der Netzliste
-            # param pinIdx: Index des Pins
-            # param col: Ergebnis Spalte des Blocks
-            # param row: Ergebnis Zeile des Blocks
+            # @arg coord: Koordinate des Blocks
+            # @arg idx: Index des Blocks in der Netzliste
+            # @arg pinIdx: Index des Pins
+            # @arg col: Ergebnis Spalte des Blocks
+            # @arg row: Ergebnis Zeile des Blocks
             @parameter
             fn getChanCoord(coord: Tuple[Int, Int], idx: Int, pinIdx: Int, mut col: Int, mut row: Int) raises:
                 # Wenn Block am Rand, dann Pad
@@ -672,24 +686,122 @@ struct Lee:
             self.log.value().writeln(-1, "End Lee-Algorithm")
 
     # Gibt den Kritischenpfad zurück
-    # @param outpads: Ausgänge
+    # @arg outpads: Ausgänge
     # @returns den Kritischenpfad
     fn getCriticalPath(mut self, outpads: Set[String]) -> Float64:
         var criticalPath: Float64 = 0.0
+        var delays: List[Float64] = List[Float64]()
         try:
-            for padname in outpads:
-                var coord = self.archiv[padname[]]
-                var clb = self.clbMap[coord[0], coord[1]][0]
-                for block in self.clbMap[coord[0], coord[1]]:
-                    if block[][].name == padname[]:
+            for name in outpads:
+                var clb: Block.SharedBlock = self.clbMap[self.archiv[name[]][0], self.archiv[name[]][1]][0]
+                for block in self.clbMap[self.archiv[name[]][0], self.archiv[name[]][1]]:
+                    if block[][].name == name[]:
                         clb = block[]
                         break
-                var delays = clb[].getDelay()
+                if len(clb[].preconnections) == 0:
+                    delays.append(clb[].delay)
+                else:   
+                
+                    with NamedTemporaryFile("rw") as fPreDelays, 
+                    NamedTemporaryFile("rw") as fIdxs, 
+                    NamedTemporaryFile("rw") as fBlockFront:
+                        var preDelays: Int = 0
+                        var idxs: Int = 0
+                        var blockFront: Int = 0
+                        @parameter
+                        fn setPreDelays(value: Float64) raises:
+                            _ = fPreDelays.seek((preDelays - 1) * sizeof[Float64](), os.SEEK_SET)
+                            fPreDelays.write_bytes(value.as_bytes())
+
+                        @parameter
+                        fn setIdxs(value: Int64) raises:
+                            _ = fIdxs.seek((idxs - 1) * sizeof[Int64](), os.SEEK_SET)
+                            fIdxs.write_bytes(value.as_bytes())
+
+                        @parameter
+                        fn setBlockFront(block: Block.SharedBlock) raises:
+                            _ = fBlockFront.seek((blockFront - 1) * sizeof[Int](), os.SEEK_SET)
+                            var value: Int64 = self.CLB2Num[block[].name]
+                            fBlockFront.write_bytes(value.as_bytes())
+
+                        @parameter
+                        fn getPreDelays() raises -> Float64:
+                            _ = fPreDelays.seek((preDelays - 1) * sizeof[Float64](), os.SEEK_SET)
+                            var list = fPreDelays.read_bytes(sizeof[Float64]())
+                            var ptr2UInt8 = list.steal_data() 
+                            var ptr2Float64 = ptr2UInt8.bitcast[Float64]()
+                            return ptr2Float64[]
+
+                        @parameter
+                        fn getIdxs() raises -> Int64:
+                            _ = fIdxs.seek((idxs - 1) * sizeof[Int64](), os.SEEK_SET)
+                            var list = fIdxs.read_bytes(sizeof[Int64]())
+                            var ptr2UInt8 = list.steal_data() 
+                            var ptr2Int64 = ptr2UInt8.bitcast[Int64]()
+                            return ptr2Int64[]
+
+                        @parameter
+                        fn getBlockFront() raises -> Block.SharedBlock:
+                            _ = fBlockFront.seek((blockFront - 1) * sizeof[Int](), os.SEEK_SET)
+                            var list = fBlockFront.read_bytes(sizeof[Int]())
+                            var ptr2UInt8 = list.steal_data() 
+                            var ptr2Int = ptr2UInt8.bitcast[Int]()
+                            var name = self.Num2CLB[ptr2Int[]]
+                            var result: Block.SharedBlock = self.clbMap[self.archiv[name][0], self.archiv[name][1]][0]
+                            for block in self.clbMap[self.archiv[name][0], self.archiv[name][1]]:
+                                if block[][].name == name:
+                                    result = block[]
+                                    break
+                            return result
+
+                        for idx in range(len(clb[].preconnections)):                    
+                            blockFront += 1
+                            setBlockFront(clb[].preconnections[idx])
+                            while blockFront:
+                                var preDelay: Float64 = 0.0
+                                if blockFront < idxs:
+                                    idxs -= 1
+                                elif blockFront > idxs:
+                                    idxs += 1
+                                    setIdxs(0)
+                                if blockFront < preDelays:
+                                    var bufferDelay = getPreDelays()
+                                    var bufferIdx = getIdxs()
+                                    var bufferBlock = getBlockFront()
+                                    preDelay = bufferDelay + bufferBlock[].delay + bufferBlock[].preDelays[bufferIdx - 1]
+                                    preDelays -= 1
+                                elif blockFront > preDelays:
+                                    preDelays += 1
+                                    var bufferBlock = getBlockFront()
+                                    setPreDelays(bufferBlock[].delay)
+
+                                var bufferDelay = getPreDelays()
+                                if bufferDelay < preDelay:
+                                    setPreDelays(preDelay)
+                                
+                                var bufferBlock = getBlockFront()
+                                var bufferIdx = getIdxs()
+                                if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath:
+                                    blockFront += 1
+                                    setBlockFront(bufferBlock[].preconnections[bufferIdx])
+                                    setIdxs(bufferIdx + 1)
+                                else:
+                                    bufferBlock[].hasCritPath = True
+                                    bufferBlock[].delay = getPreDelays()
+                                    blockFront -= 1
+                            preDelays = 1   
+                            var bufferDelay = getPreDelays()
+                            delays.append(bufferDelay + clb[].delay + clb[].preDelays[idx])
+                            preDelays = 0
+                            idxs = 0
+                            blockFront = 0
                 for delay in delays:
                     if delay[] > criticalPath:
                         criticalPath = delay[]
+                delays = List[Float64]()
         except e:
             criticalPath = 0.0
             if self.log:
                 self.log.value().writeln(-1, "Error: Critical Path could not be calculated")
+            
         return criticalPath

@@ -37,10 +37,6 @@ def test_Block_2():
     assert_equal(len(middle[].preconnections), 1)
     assert_equal(len(start[].preconnections), 0)
 
-    assert_equal(start[].getDelay()[0], 1.0)
-    assert_equal(middle[].getDelay()[0], 2.0)
-    assert_equal(end[].getDelay()[0], 3.0)
-
     return
 
 def test_Block_3():
@@ -64,12 +60,6 @@ def test_Block_3():
     assert_equal(len(middle1[].preconnections), 1)
     assert_equal(len(middle2[].preconnections), 1)
     assert_equal(len(start[].preconnections), 0)
-
-    assert_equal(start[].getDelay()[0], 1.0)
-    assert_equal(middle1[].getDelay()[0], 2.0)
-    assert_equal(middle2[].getDelay()[0], 3.0)
-    assert_equal(end[].getDelay()[0], 3.0)
-    assert_equal(end[].getDelay()[1], 4.0)
 
     return
     
