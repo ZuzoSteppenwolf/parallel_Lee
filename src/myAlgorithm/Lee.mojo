@@ -9,6 +9,9 @@ from myFormats.Arch import *
 from collections import Dict, List, Set, Deque, InlineArray
 from time import sleep
 from algorithm import parallelize
+from os import os
+from tempfile import NamedTemporaryFile
+from sys.info import sizeof
 
 """
 @file Lee.mojo
