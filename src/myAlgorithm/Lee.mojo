@@ -708,9 +708,11 @@ struct Lee:
                     with NamedTemporaryFile("rw") as fPreDelays, 
                     NamedTemporaryFile("rw") as fIdxs, 
                     NamedTemporaryFile("rw") as fBlockFront:
+                        alias MAX_VISIT_COUNT = 2
                         var preDelays: Int = 0
                         var idxs: Int = 0
                         var blockFront: Int = 0
+
                         @parameter
                         fn setPreDelays(value: Float64) raises:
                             _ = fPreDelays.seek((preDelays - 1) * sizeof[Float64](), os.SEEK_SET)
@@ -760,7 +762,7 @@ struct Lee:
                         for idx in range(len(clb[].preconnections)):                    
                             blockFront += 1
                             setBlockFront(clb[].preconnections[idx])
-                            while blockFront:
+                            while blockFront > 0:
                                 var preDelay: Float64 = 0.0
                                 if blockFront < idxs:
                                     idxs -= 1
@@ -777,6 +779,7 @@ struct Lee:
                                     preDelays += 1
                                     var bufferBlock = getBlockFront()
                                     setPreDelays(bufferBlock[].delay)
+                                    bufferBlock[].visitCount += 1
 
                                 var bufferDelay = getPreDelays()
                                 if bufferDelay < preDelay:
@@ -784,14 +787,16 @@ struct Lee:
                                 
                                 var bufferBlock = getBlockFront()
                                 var bufferIdx = getIdxs()
-                                if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath:
+                                if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath and bufferBlock[].visitCount < MAX_VISIT_COUNT:
                                     blockFront += 1
                                     setBlockFront(bufferBlock[].preconnections[bufferIdx])
                                     setIdxs(bufferIdx + 1)
                                 else:
-                                    bufferBlock[].hasCritPath = True
-                                    bufferBlock[].delay = getPreDelays()
+                                    if bufferBlock[].visitCount < MAX_VISIT_COUNT:
+                                        bufferBlock[].hasCritPath = True
+                                        bufferBlock[].delay = getPreDelays()
                                     blockFront -= 1
+                                    bufferBlock[].visitCount -= 1
                             preDelays = 1   
                             var bufferDelay = getPreDelays()
                             delays.append(bufferDelay + clb[].delay + clb[].preDelays[idx])

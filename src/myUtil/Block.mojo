@@ -26,6 +26,7 @@ struct Block:
     var preDelays: List[Float64]
     var coord: Tuple[Int, Int]
     var hasCritPath: Bool
+    var visitCount: UInt8
 
     # Konstruktor
     # @arg name: Name des Blocks
@@ -41,6 +42,7 @@ struct Block:
         self.preDelays = List[Float64]()
         self.coord = (0, 0)
         self.hasCritPath = False
+        self.visitCount = 0
 
 
     fn __eq__(self, other: Block) -> Bool:
