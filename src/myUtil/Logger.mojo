@@ -11,8 +11,8 @@ Implementierung eines Loggers
 @author: Marvin Wollbrück
 """
 
-alias MAX_LINES = 1000
-alias MAX_FILES = 10
+alias MAX_LINES = 100000
+alias MAX_FILES = 100
 
 """
 Erzeugt eine Logdatei und schreibt in diese.

@@ -304,7 +304,8 @@ struct Lee:
                     return
             var net = self.netKeys[id]
             var routedClbs = Set[String]()
-            var currentTrack = 0
+            var trackCount = 0
+            var currentTrack = (id + trackCount) % self.chanWidth
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
             try:
@@ -448,6 +449,10 @@ struct Lee:
             # Start des Algorithmus
             if self.log:
                 self.log.value().writeln(id, "ID: ", id, "; Start Lee-Algorithm for net: ", net)
+                try:
+                    self.log.value().writeln(id, "ID: ", id, "; Number of Blocks in net: ", len(self.nets[net]))
+                except:
+                    pass
             initMaze()
             if self.log:
                 self.log.value().writeln(id, "ID: ", id, "; Init local maze")
@@ -486,7 +491,7 @@ struct Lee:
                                         sinkCoord = (col, row)
                                         maze[col, row] = pathfinder
                                         if self.log:
-                                            self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", col, ";", row, " Value ", maze[col, row], " on track: ", currentTrack)
+                                            self.log.value().writeln(id, "ID: ", id, "; Found sink at: ", col, ";", row, " on track: ", currentTrack)
                                         break
                                     if maze[col, row] == EMPTY:
                                         maze[col, row] = pathfinder
@@ -517,6 +522,11 @@ struct Lee:
 
                         if isFree:
                             pathCoords = tree.getPath()
+                            if self.log:
+                                self.log.value().writeln(id, "ID: ", id, "; Found path is valid")
+                        else:
+                            if self.log:
+                                self.log.value().writeln(id, "ID: ", id, "; Found path is invalid")
 
                         # Füge den Pfad zur Verdrahtungsliste hinzu  
                         if isFree:
@@ -547,17 +557,6 @@ struct Lee:
                                     # Wenn kein bestehender Kanal vorhanden, dann Source
                                     if preChan is None:
                                         preChan = sourceCLB.value()
-                                        """
-                                        for pinIdx in range(len(self.pins[self.nets[net][0][1]].sides)):
-                                            var col = 0
-                                            var row = 0
-                                            getChanCoord(sourceCoord, 0, pinIdx, col, row)
-                                            if col == coord[0] and row == coord[1]:
-                                                for clb in refMapClbs[col, row]:
-                                                    if clb[][].name == self.nets[net][0][0]:
-                                                        preChan = clb[]
-                                                        break
-                                        """
                                     # Kanal erstellen
                                     var col = coord[0]
                                     var row = coord[1]
@@ -604,6 +603,8 @@ struct Lee:
                                                 clb[][].addPreconnection(sourceCLB.value(), chan[].preDelays[0] + chan[].delay)
                                                 routedClbs.add(clb[][].name)
                                                 routeList[currentTrack].append(clb[])
+                                                if self.log:
+                                                    self.log.value().writeln(id, "ID: ", id, "; Added ", clb[][].name, " to routeList on track: ", currentTrack)
                                     refMapClbs[col, row].append(chan[])
                                     self.chanMap[currentTrack][coord[0], coord[1]] = id      
                                     preChan = chan  
@@ -633,9 +634,10 @@ struct Lee:
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; No sink found")
 
-                            currentTrack += 1
+                            trackCount += 1
+                            currentTrack = (id + trackCount) % self.chanWidth
                             # Wenn alle Kanäle abgearbeitet sind, dann abbrechen
-                            if currentTrack == self.chanWidth:
+                            if trackCount == self.chanWidth:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
                                 isFinished = True
