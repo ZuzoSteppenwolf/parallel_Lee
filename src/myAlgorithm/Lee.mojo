@@ -604,7 +604,7 @@ struct Lee:
                                                 routedClbs.add(clb[][].name)
                                                 routeList[currentTrack].append(clb[])
                                                 if self.log:
-                                                    self.log.value().writeln(id, "ID: ", id, "; Added ", clb[][].name, " to routeList on track: ", currentTrack)
+                                                    self.log.value().writeln(id, "ID: ", id, "; Added block ", clb[][].name, " to routeList on track: ", currentTrack)
                                     refMapClbs[col, row].append(chan[])
                                     self.chanMap[currentTrack][coord[0], coord[1]] = id      
                                     preChan = chan  
