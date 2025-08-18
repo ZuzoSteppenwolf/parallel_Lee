@@ -29,7 +29,7 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     var file: ArcPointer[FileHandle]
     var timestamp: UInt
     var lines: Int
-    var files: UInt
+    var files: Int8
 
     # Konstruktor
     # @arg path: Pfad zur Logdatei
@@ -37,7 +37,7 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
         self.path = String(path.rstrip(".log"))      
         self.timestamp = 0
         self.lines = 0
-        self.files = 0
+        self.files = -1
         if testDebug:
             self.file = open(self.path + ".log", "w")
         else:

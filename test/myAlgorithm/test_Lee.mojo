@@ -1013,7 +1013,7 @@ def test_Lee20():
     alias id = 0
     var chanWidth = 1
     var nets = Dict[String, List[Tuple[String, Int]]]()
-    var clbMap = ListMatrix[List[Block.SharedBlock]](1000002, 5, List[Block.SharedBlock]())
+    var clbMap = ListMatrix[List[Block.SharedBlock]](1002, 5, List[Block.SharedBlock]())
     var archiv = Dict[String, Tuple[Int, Int]]()
     var pins = List[Pin]()
     var CLB2Num = Dict[String, Int]()
@@ -1032,7 +1032,7 @@ def test_Lee20():
     CLB2Num[clb.name] = 0
 
     clb = Block("B", Blocktype.CLB, 1, 1)
-    clb.coord = Tuple(1000000, 1)
+    clb.coord = Tuple(1000, 1)
     nets["1"].append(Tuple(clb.name, 0))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
@@ -1050,7 +1050,7 @@ def test_Lee20():
     outpads.add("B")
 
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 1000003, "Lee Kritischerpfad ist nicht 1000003")
+    assert_equal(route.getCriticalPath(outpads), 1003, "Lee Kritischerpfad ist nicht 1003")
 
 def test_Lee21():
     alias id = 0
