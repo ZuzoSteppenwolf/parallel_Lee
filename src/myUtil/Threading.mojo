@@ -21,7 +21,7 @@ Besucher sind die Threads, die den Mutex besuchen wollen,
 aber nicht gesperrt haben. Dabei darf der Mutex nicht gesperrt sein,
 damit der Besucher den Mutex besuchen kann.
 """
-struct Mutex:
+struct Mutex(Copyable, Movable):
     var owner: UnsafePointer[BlockingSpinLock]
     var visitor: UnsafePointer[Atomic[DType.int64]]
 

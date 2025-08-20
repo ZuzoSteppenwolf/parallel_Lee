@@ -1,6 +1,7 @@
 from myUtil.Enum import Blocktype
 from memory import UnsafePointer, Pointer, ArcPointer
 from collections import List, Deque
+from hashlib.hasher import Hasher
 """
 @file Block.mojo
 Repräsentiert einen Block in der Architektur.
@@ -13,8 +14,8 @@ Repräsentiert einen Block in der Architektur.
 Der Block enthält Informationen über seinen Namen, Typ, Verzögerung,
 Subblock-Index, Verbindungen zu anderen Blöcken und Koordinaten.
 """
-@value
-struct Block:
+@fieldwise_init
+struct Block(Copyable, Movable, EqualityComparable, Stringable):
 
     alias SharedBlock = ArcPointer[Block]
 
@@ -62,3 +63,20 @@ struct Block:
         self.preconnections.append(block)
         self.preDelays.append(delay)
 
+"""
+Paart einen Block mit einem Wert.
+"""
+@fieldwise_init
+struct BlockPair[type: Copyable & Movable & Hashable & EqualityComparable & Stringable](Copyable, Movable, Hashable, EqualityComparable):
+    var block: Block.SharedBlock
+    var value: type
+
+    fn __eq__(self, other: Self) -> Bool:
+        return self.block[] == other.block[] and self.value == other.value
+
+    fn __ne__(self, other: Self) -> Bool:
+        return not self.__eq__(other)
+
+    fn __hash__[H: Hasher](self, mut hasher: H):
+        var hash: String = (self.block[].name + String(self.value))
+        hasher.update(hash.as_string_slice())

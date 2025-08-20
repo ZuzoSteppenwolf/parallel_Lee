@@ -24,7 +24,7 @@ Die Logdatei erneurt sich, wenn die maximale Anzahl an Zeilen erreicht ist.
                 bei 0 wird die Logdatei nicht erneuert
 @param maxFiles: Maximale Anzahl an Logdateien, die erstellt werden sollen
 """
-struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:   
+struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES](Copyable, Movable):   
     var path: String
     var file: ArcPointer[FileHandle]
     var timestamp: UInt
@@ -58,7 +58,7 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     # Move-Konstruktor
     fn __moveinit__(out self, owned other: Log[hasTimestamp, testDebug, maxLines, maxFiles]):
         self.path = other.path
-        self.file = other.file
+        self.file = other.file^
         self.lines = other.lines
         self.files = other.files
         self.timestamp = other.timestamp
@@ -76,7 +76,12 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     # Schreibt in die Logdatei
     # @arg text: Writeable Objekte, die in die Logdatei geschrieben werden soll
     fn write[*Ts: Writable](mut self, *text: *Ts):
-        write_args(self.file[], text)
+        #write_args(self.file[], text)
+        var s = String()
+        @parameter
+        for i in range(text.__len__()):
+            s += String(text[i])
+        self.file[].write(s)
 
     # Prüft, ob die maximale Anzahl an Zeilen erreicht ist
     # und erstellt eine neue Logdatei, wenn dies der Fall ist
@@ -119,7 +124,12 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     fn writeln[*Ts: Writable](mut self, *text: *Ts):
         self.newFile()
         self.writeStamp()
-        write_args(self.file[], text)
+        #write_args(self.file[], text)
+        var s = String()
+        @parameter
+        for i in range(text.__len__()):
+            s += String(text[i])
+        self.file[].write(s)
         self.file[].write("\n")
 
     # Löscht die Logdatei
@@ -140,7 +150,7 @@ Die Logdatei erneurt sich, wenn die maximale Anzahl an Zeilen erreicht ist.
                 bei 0 wird die Logdatei nicht erneuert
 @param maxFiles: Maximale Anzahl an Logdateien, die erstellt werden sollen
 """
-struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES]:
+struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINES, maxFiles: Int = MAX_FILES](Copyable, Movable):
     var log: ArcPointer[Log[hasTimestamp, testDebug, maxLines, maxFiles]]
     var mutex: Mutex
 
@@ -157,8 +167,8 @@ struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MA
 
     # Move-Konstruktor
     fn __moveinit__(out self, owned other: async_Log[hasTimestamp, testDebug, maxLines, maxFiles]):
-        self.log = other.log
-        self.mutex = other.mutex
+        self.log = other.log^
+        self.mutex = other.mutex^
 
     # Schreibt in die Logdatei eine Zeile
     # @arg id: ID des Threads
@@ -167,6 +177,11 @@ struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MA
         self.mutex.lock(id)
         self.log[].newFile()
         self.log[].writeStamp()
-        write_args(self.log[].file[], text)
+        #write_args(self.log[].file[], text)
+        var s = String()
+        @parameter
+        for i in range(text.__len__()):
+            s += String(text[i])
+        self.log[].file[].write(s)
         self.log[].write("\n")
         self.mutex.unlock(id)

@@ -12,8 +12,8 @@ Matrix-Datenstruktur
 Standard Matrix, welche auf einen Speicherbereich zugreift
 und diese direkt verwaltet.
 """
-@value
-struct Matrix[type: CollectionElement]:
+@fieldwise_init
+struct Matrix[type: Copyable & Movable](Copyable, Movable):
     var data: UnsafePointer[type]
     var cols: Int
     var rows: Int
@@ -60,8 +60,8 @@ struct Matrix[type: CollectionElement]:
 """
 List-basierte Matrix, welche auf eine Liste zugreift.
 """
-@value
-struct ListMatrix[type: CollectionElement]:
+@fieldwise_init
+struct ListMatrix[type: Copyable & Movable](Copyable, Movable):
     var data: List[type]
     var cols: Int
     var rows: Int

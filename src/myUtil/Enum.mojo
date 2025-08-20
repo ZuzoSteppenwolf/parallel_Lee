@@ -17,7 +17,7 @@ Typen:
 - CHANY: Kanal in Y-Richtung
 """
 @register_passable("trivial")
-struct Blocktype:
+struct Blocktype(EqualityComparable, Stringable):
     var value: Int8
 
     alias NONE = Blocktype(0)
@@ -74,7 +74,7 @@ Typen:
 - DELTA: Delta-Kanal
 """
 @register_passable("trivial")
-struct ChanType:
+struct ChanType(EqualityComparable, Stringable):
     var value: Int8
 
     alias NONE = ChanType(0)
@@ -140,7 +140,7 @@ Typen:
 - RIGHT: Rechte Seite
 """
 @register_passable("trivial")
-struct Faceside:
+struct Faceside(EqualityComparable, Stringable):
     var value: Int8
 
     alias NONE = Faceside(0)
@@ -205,7 +205,7 @@ Typen:
 - UNIVERSAL: Universal-Switch
 """
 @register_passable("trivial")
-struct SwitchType:
+struct SwitchType(EqualityComparable, Stringable):
     var value: Int8
 
     alias NONE = SwitchType(0)
@@ -264,7 +264,7 @@ Typen:
 - FRACTIONAL: Fraktionaler Wert
 """
 @register_passable("trivial")
-struct FcType:
+struct FcType(EqualityComparable, Stringable):
     var value: Int8
 
     alias NONE = FcType(0)

@@ -1,7 +1,7 @@
-from myUtil.Block import Block
+from myUtil.Block import Block, BlockPair
 from myUtil.Enum import Blocktype
-from testing import assert_equal
-from collections import List
+from testing import assert_equal, assert_true, assert_false
+from collections import List, Set
 
 """
 Testet die Block Klasse
@@ -14,7 +14,7 @@ def test_Block_1():
     var block = Block("test")
     assert_equal(block.name, "test")
     assert_equal(block.subblk, 0)
-    assert_equal(block.type, Blocktype.NONE)
+    assert_true(block.type == Blocktype.NONE)
     assert_equal(block.delay, 0.0)
     assert_equal(len(block.preconnections), 0)
 
@@ -63,3 +63,15 @@ def test_Block_3():
 
     return
     
+def test_Block_4():
+    var block = Block.SharedBlock(Block("block"))
+    var bp = BlockPair(block, 1)
+    var bp2 = BlockPair(block, 2)
+    var bp3 = BlockPair(block, 1)
+
+    var set = Set[BlockPair[Int]]()
+    set.add(bp)
+
+    assert_true(bp in set)
+    assert_false(bp2 in set)
+    assert_true(bp3 in set)
