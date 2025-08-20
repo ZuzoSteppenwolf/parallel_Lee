@@ -142,12 +142,12 @@ struct PathTree:
                 # nach den wenigsten Knicken suchen
                 self.turns = self.children[0].turns
                 for child in self.children:
-                    if child[].turns < self.turns:
-                        self.turns = child[].turns
+                    if child.turns < self.turns:
+                        self.turns = child.turns
                 var childs = List[PathTree]()
                 for child in self.children:
-                    if child[].turns == self.turns:
-                        childs.append(child[])
+                    if child.turns == self.turns:
+                        childs.append(child)
                         break
                 self.children = childs
 
@@ -160,8 +160,8 @@ struct PathTree:
             path.append(self.coord)
         elif not self.isDeadEnd:
             for child in self.children:
-                if child[].turns == self.turns:                  
-                    path.extend(child[].getPath())
+                if child.turns == self.turns:
+                    path.extend(child.getPath())
                     path.append(self.coord)
                     break
         return path
@@ -227,10 +227,10 @@ struct Lee:
             self.log = None
         self.routeLists = Dict[String, Dict[Int, List[Block.SharedBlock]]]()
         for key in nets.keys():
-            self.routeLists[key[]] = Dict[Int, List[Block.SharedBlock]]()
+            self.routeLists[key] = Dict[Int, List[Block.SharedBlock]]()
             try:
                 for i in range(chanWidth):
-                    self.routeLists[key[]][i] = List[Block.SharedBlock]()
+                    self.routeLists[key][i] = List[Block.SharedBlock]()
             except e:
                 if self.log:
                     self.log.value().writeln(-1, "Error: ", e)
@@ -260,13 +260,13 @@ struct Lee:
         self.isValid = True       
 
         for net in nets:
-            self.netKeys.append(net[])
+            self.netKeys.append(net)
 
         self.CLB2Num = CLB2Num
         self.Num2CLB = Dict[Int, String]()
         try:
             for key in self.CLB2Num.keys():
-                self.Num2CLB[self.CLB2Num[key[]]] = key[]
+                self.Num2CLB[self.CLB2Num[key]] = key
         except e:
             if self.log:
                 self.log.value().writeln(-1, "Error: ", e)
@@ -294,8 +294,8 @@ struct Lee:
                 try:
                     var coord = self.archiv[self.nets[self.netKeys[id]][0][0]]
                     for clb in self.clbMap[coord[0], coord[1]]:
-                        if clb[][].name == self.nets[self.netKeys[id]][0][0]:
-                            routeList[i].append(clb[])
+                        if clb[].name == self.nets[self.netKeys[id]][0][0]:
+                            routeList[i].append(clb)
                             break
                 except e:
                     if self.log:
@@ -324,8 +324,8 @@ struct Lee:
             try:
                 sourceCoord = self.archiv[self.nets[net][0][0]]
                 for clb in self.clbMap[sourceCoord[0], sourceCoord[1]]:
-                    if clb[][].name == self.nets[net][0][0]:
-                        sourceCLB = clb[]
+                    if clb[].name == self.nets[net][0][0]:
+                        sourceCLB = clb
                         break
             except e:
                 if self.log:
@@ -423,18 +423,18 @@ struct Lee:
                                 if self.chanMap[currentTrack][col, row] == Lee.EMPTY and not self.nets[net][i][0] in routedClbs:
                                     maze[col, row] = SINK
                                     
-                            # Füge die CLBs zur Referenzkarte hinzu
-                            if maze[col, row] != EMPTY:
-                                var isContained = False
-                                for clb in refMapClbs[col, row]:
-                                    if clb[][].name == self.nets[net][i][0]:
-                                        isContained = True
-                                        break
-                                if not isContained:
-                                    for clb in self.clbMap[coord[0], coord[1]]:
-                                        if clb[][].name == self.nets[net][i][0]:
-                                            refMapClbs[col, row].append(clb[])
+                                # Füge die CLBs zur Referenzkarte hinzu
+                                if maze[col, row] != EMPTY:
+                                    var isContained = False
+                                    for clb in refMapClbs[col, row]:
+                                        if clb[].name == self.nets[net][i][0]:
+                                            isContained = True
                                             break
+                                    if not isContained:
+                                        for clb in self.clbMap[coord[0], coord[1]]:
+                                            if clb[].name == self.nets[net][i][0]:
+                                                refMapClbs[col, row].append(clb[])
+                                                break
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
@@ -538,17 +538,17 @@ struct Lee:
                                 # Bestehender Kanal ermitteln
                                 if self.chanMap[currentTrack][coord[0], coord[1]] == id:
                                     for clb in refMapClbs[coord[0], coord[1]]:
-                                        if clb[][].type == Blocktype.CHANX or clb[][].type == Blocktype.CHANY:
-                                            preChan = clb[]
+                                        if clb[].type == Blocktype.CHANX or clb[].type == Blocktype.CHANY:
+                                            preChan = clb
                                             break
                                     for chan in preChan.value()[].preconnections:
-                                        if chan[][].type == Blocktype.CHANX or chan[][].type == Blocktype.CHANY:
-                                            var chanCol = chanArchiv[chan[][].name][0]
-                                            var chanRow = chanArchiv[chan[][].name][1]
+                                        if chan[].type == Blocktype.CHANX or chan[].type == Blocktype.CHANY:
+                                            var chanCol = chanArchiv[chan[].name][0]
+                                            var chanRow = chanArchiv[chan[].name][1]
                                             var nextCol = pathCoords[1][0]
                                             var nextRow = pathCoords[1][1]
                                             if abs(chanCol - nextCol) < 2 and abs(chanRow - nextRow) < 2:
-                                                preChan = chan[]
+                                                preChan = chan
                                                 break
                                     routeList[currentTrack].append(preChan.value())
                                 # Anbindung erweitern bis Sink
@@ -598,13 +598,15 @@ struct Lee:
                                     routeList[currentTrack].append(chan[])
                                     # Füge die CLBs hinzu, die mit dem Kanal verbunden sind
                                     if len(pathCoords) == 1:
+                                        if self.log:
+                                            self.log.value().writeln(id, "ID: ", id, "; Blocks: ", len(refMapClbs[col, row]), " at ", col, ";", row)
                                         for clb in refMapClbs[col, row]:
-                                            if clb[][].name != self.nets[net][0][0] and (clb[][].type == Blocktype.CLB or clb[][].type == Blocktype.OUTPAD):
-                                                clb[][].addPreconnection(sourceCLB.value(), chan[].preDelays[0] + chan[].delay)
-                                                routedClbs.add(clb[][].name)
-                                                routeList[currentTrack].append(clb[])
+                                            if (clb[].type == Blocktype.CLB or clb[].type == Blocktype.OUTPAD):
+                                                clb[].addPreconnection(sourceCLB.value(), chan[].preDelays[0] + chan[].delay)
+                                                routedClbs.add(clb[].name)
+                                                routeList[currentTrack].append(clb)
                                                 if self.log:
-                                                    self.log.value().writeln(id, "ID: ", id, "; Added block ", clb[][].name, " to routeList on track: ", currentTrack)
+                                                    self.log.value().writeln(id, "ID: ", id, "; Added block ", clb[].name, " to routeList on track: ", currentTrack)
                                     refMapClbs[col, row].append(chan[])
                                     self.chanMap[currentTrack][coord[0], coord[1]] = id      
                                     preChan = chan  
@@ -662,10 +664,10 @@ struct Lee:
                 try:
                     for idx in routeList.keys():
                     
-                        if not len(routeList[idx[]]) > 1:
-                            set.add(idx[])
+                        if not len(routeList[idx]) > 1:
+                            set.add(idx)
                     for idx in set:
-                        _ = routeList.pop(idx[])
+                        _ = routeList.pop(idx)
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
@@ -698,10 +700,10 @@ struct Lee:
         var delays: List[Float64] = List[Float64]()
         try:
             for name in outpads:
-                var clb: Block.SharedBlock = self.clbMap[self.archiv[name[]][0], self.archiv[name[]][1]][0]
-                for block in self.clbMap[self.archiv[name[]][0], self.archiv[name[]][1]]:
-                    if block[][].name == name[]:
-                        clb = block[]
+                var clb: Block.SharedBlock = self.clbMap[self.archiv[name][0], self.archiv[name][1]][0]
+                for block in self.clbMap[self.archiv[name][0], self.archiv[name][1]]:
+                    if block[].name == name:
+                        clb = block
                         break
                 if len(clb[].preconnections) == 0:
                     delays.append(clb[].delay)
@@ -756,8 +758,8 @@ struct Lee:
                             var name = self.Num2CLB[ptr2Int[]]
                             var result: Block.SharedBlock = self.clbMap[self.archiv[name][0], self.archiv[name][1]][0]
                             for block in self.clbMap[self.archiv[name][0], self.archiv[name][1]]:
-                                if block[][].name == name:
-                                    result = block[]
+                                if block[].name == name:
+                                    result = block
                                     break
                             return result
 
@@ -806,8 +808,8 @@ struct Lee:
                             idxs = 0
                             blockFront = 0
                 for delay in delays:
-                    if delay[] > criticalPath:
-                        criticalPath = delay[]
+                    if delay > criticalPath:
+                        criticalPath = delay
                 delays = List[Float64]()
         except e:
             criticalPath = 0.0
