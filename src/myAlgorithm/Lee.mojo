@@ -433,7 +433,7 @@ struct Lee:
                                     if not isContained:
                                         for clb in self.clbMap[coord[0], coord[1]]:
                                             if clb[].name == self.nets[net][i][0]:
-                                                refMapClbs[col, row].append(clb[])
+                                                refMapClbs[col, row].append(clb)
                                                 break
                 except e:
                     if self.log:
