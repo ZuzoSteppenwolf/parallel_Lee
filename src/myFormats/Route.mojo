@@ -1,5 +1,5 @@
 from collections import Dict, List
-from myUtil.Block import Block
+from myUtil.Block import Block, BlockPair
 from myUtil.Enum import *
 from myUtil.Matrix import Matrix, ListMatrix
 from myFormats.Arch import *
@@ -18,14 +18,13 @@ Parser für das Route File Format vom VPR Tool
 # @param pins Liste der Pins
 # @param clbMap Matrix der CLBs
 # @param clbNums Dict der CLB-Nummern
-# @param netPins Dict der Netz-IOPins
 # @param globalNets Dict der globalen Netze
 # @param archiv Dict der Archivierung der CLBs
 # @return True, wenn die Routen geschrieben wurden, sonst False
-fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.SharedBlock]]], 
+fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[BlockPair[Int]]]], 
     netKeys: List[String], pins: List[Pin], clbMap: ListMatrix[List[Block.SharedBlock]], 
-    clbNums: Dict[String, Int], netPins: Dict[String, Dict[String, Int]],
-    globalNets: Dict[String, List[Tuple[String, Int]]], archiv: Dict[String, Tuple[Int, Int]]) -> Bool:
+    clbNums: Dict[String, Int], globalNets: Dict[String, List[Tuple[String, Int]]], 
+    archiv: Dict[String, Tuple[Int, Int]]) -> Bool:
 
     try:
         with open(path, "w") as file:
@@ -39,20 +38,20 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
             # @arg net: Name des Netzes, zu dem der Block gehört
             # @arg isFirst: True, wenn es sich um den ersten Block des Netzes handelt
             @parameter
-            fn writeClb(isSink: Bool, block: Block.SharedBlock, net: String, isFirst: Bool = False):
+            fn writeClb(isSink: Bool, block: BlockPair[Int], net: String, isFirst: Bool = False):
                 try:
                     var line: String = ""
                     if isSink:
-                        line = String("  IPIN (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Pin: " + String(netPins[net][block[].name]) + "\n"
+                        line = String("  IPIN (") + String(block.block[].coord[0])+ "," + String(block.block[].coord[1]) + ")  Pin: " + String(block.value) + "\n"
                         file.write(line)
-                        line = String("  SINK (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Class: " + String(pins[netPins[net][block[].name]].pinClass) + "\n"
+                        line = String("  SINK (") + String(block.block[].coord[0])+ "," + String(block.block[].coord[1]) + ")  Class: " + String(pins[block.value].pinClass) + "\n"
                         file.write(line)
                     else:
                         if isFirst:
-                            line = String("SOURCE (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Class: " + String(pins[netPins[net][block[].name]].pinClass) + "\n"
+                            line = String("SOURCE (") + String(block.block[].coord[0])+ "," + String(block.block[].coord[1]) + ")  Class: " + String(pins[block.value].pinClass) + "\n"
                             file.write(line)
 
-                        line = String("  OPIN (") + String(block[].coord[0])+ "," + String(block[].coord[1]) + ")  Pin: " + String(netPins[net][block[].name]) + "\n"
+                        line = String("  OPIN (") + String(block.block[].coord[0])+ "," + String(block.block[].coord[1]) + ")  Pin: " + String(block.value) + "\n"
                         file.write(line)
                 except e:
                     print("Error writing CLB: ", e)
@@ -104,29 +103,29 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[Block.Sh
                     file.write(String("Net ") + String(netIdx) + " (" + String(net) + ")\n")
                     writeNL()
                     for track in routeLists[net]:
-                        var blocks = routeLists[net][track[]]
+                        var blocks = routeLists[net][track]
                         for block in blocks:
-                            if block[][].type == Blocktype.CLB:
-                                writeClb(pins[netPins[net][block[][].name]].isInpin, block[], net, isFirst)
-                            elif block[][].type == Blocktype.INPAD:
-                                writePad(False, block[], isFirst)
-                            elif block[][].type == Blocktype.OUTPAD:
-                                writePad(True, block[], isFirst)
-                            elif block[][].type == Blocktype.CHANX or block[][].type == Blocktype.CHANY:
-                                writeChan(block[])
+                            if block.block[].type == Blocktype.CLB:
+                                writeClb(pins[block.value].isInpin, block, net, isFirst)
+                            elif block.block[].type == Blocktype.INPAD:
+                                writePad(False, block.block[], isFirst)
+                            elif block.block[].type == Blocktype.OUTPAD:
+                                writePad(True, block.block[], isFirst)
+                            elif block.block[].type == Blocktype.CHANX or block.block[].type == Blocktype.CHANY:
+                                writeChan(block.block[])
                             isFirst = False
                 # Sonst ist das Netz Global
                 else:
                     file.write(String("Net ") + String(netIdx) + " (" + String(net) + "): global net connecting:\n")
                     writeNL()
                     for clb in globalNets[net]:
-                        var clbName = clb[][0]
+                        var clbName = clb[0]
                         var line: String = String("Block ") + String(clbName) + " (#" + String(clbNums[clbName]) + ") at (" + String(archiv[clbName][0]) + ", " +
                            String(archiv[clbName][1]) + "), Pin class "
-                        if clb[][1] > -1:
-                            line += String(pins[clb[][1]].pinClass)
+                        if clb[1] > -1:
+                            line += String(pins[clb[1]].pinClass)
                         else:
-                            line += String(clb[][1])
+                            line += String(clb[1])
                         line += ".\n"
                         file.write(line)
 
