@@ -28,16 +28,18 @@ erweitert um die Laufzeit zu optimieren.
 alias LOG_PATH = "log/main.log"
 alias STANDARD_CHANEL_WIDTH = 12
 alias DEFAULT_MAX_ITERATIONS = 30
-var maxIterations = DEFAULT_MAX_ITERATIONS
-var channelWidth = STANDARD_CHANEL_WIDTH
-var hasFixedChannelWidth = False
-var runParallel = True
-var startTime: Float64 = 0.0
+
 
 """
 Main-Methode der Applikation
 """
 def main():
+    var maxIterations = DEFAULT_MAX_ITERATIONS
+    var channelWidth = STANDARD_CHANEL_WIDTH
+    var hasFixedChannelWidth = False
+    var runParallel = True
+    var startTime: Float64 = 0.0
+
     startTime = monotonic()
     args = List[String]()
     for arg in argv():
@@ -51,81 +53,81 @@ def main():
     placement = Place(args[1])
     if not placement.isValid:
         print("Invalid placement file")
-        print_duration()
+        print_duration(startTime)
         return
 
     if not(args[3].split("/")[-1] == placement.arch.split("/")[-1]):
         print("Architecture file is different from placement file: ", args[3], " != ", placement.arch.split("/")[-1])
-        print_duration()
+        print_duration(startTime)
         return
 
     if not(args[2].split("/")[-1] == placement.net.split("/")[-1]):
         print("Netlist file is different from placement file: ", args[2], " != ", placement.net.split("/")[-1])
-        print_duration()
+        print_duration(startTime)
         return
 
     print("Read file ", args[3])
     arch = Arch(args[3])
     if not arch.isValid:
         print("Invalid architecture file")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.subblocks_per_clb > 1:
         print("Multiple subblocks in architecture file not supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.chan_width_io < 1 or arch.chan_width_x.peak < 1 or arch.chan_width_y.peak < 1:
         print("Fractional channel width not supported, must be 1")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.chan_width_x.type != ChanType.UNIFORM or arch.chan_width_y.type != ChanType.UNIFORM:
         print("Non-uniform channel width not supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     if len(arch.segments) > 1:
         print("Multiple segments in architecture file not supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     if len(arch.switches) > 1:
         print("Multiple switches in architecture file not supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.segments[0].isLongline or arch.segments[0].length > 1:
         print("Longline segments or segments with length > 1 not supported")
-        print_duration()
+        print_duration(startTime)
         return
     
     if arch.segments[0].frac_cb < 1 or arch.segments[0].frac_sb < 1:
         print("Fractional switch/connection block not supported, must be 1")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.switch_block_type != SwitchType.SUBSET:
         print("Only subset switch block type supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.fc_type != FcType.FRACTIONAL:
         print("Only fractional connection between input, output, pad pins and channels supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     if arch.fc_input != 1 or arch.fc_output != 1 or arch.fc_pad != 1:
         print("Only full connection between input, output, pad pins and channels supported")
-        print_duration()
+        print_duration(startTime)
         return
 
     print("Read file ", args[2])
     netlist = Net(args[2], len(arch.subblocks), arch.pins)
     if not netlist.isValid:
         print("Invalid netlist file")
-        print_duration()
+        print_duration(startTime)
         return
     
     if "--route_chan_width" in args:
@@ -135,7 +137,7 @@ def main():
             channelWidth = atol(args[idx + 1])
         except:
             print("Invalid channel width: ", args[idx + 1])
-            print_duration()
+            print_duration(startTime)
             return
 
     if "--max_iterations" in args:
@@ -144,7 +146,7 @@ def main():
             maxIterations = atol(args[idx + 1])
         except:
             print("Invalid max iterations: ", args[idx + 1])
-            print_duration()
+            print_duration(startTime)
             return
 
     if "--single_thread" in args:
@@ -161,19 +163,19 @@ def main():
         var clbMap = ListMatrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2, List[Block.SharedBlock]())
         for clb in placement.archiv.keys():
             try:
-                if clb[] in netlist.inpads:
-                    var block = Block.SharedBlock(Block(clb[], Blocktype.INPAD, arch.t_ipad))
-                    block[].coord = (placement.archiv[clb[]][0], placement.archiv[clb[]][1])
-                    clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
-                elif clb[] in netlist.outpads:
-                    var block = Block.SharedBlock(Block(clb[], Blocktype.OUTPAD, arch.t_opad))
-                    block[].coord = (placement.archiv[clb[]][0], placement.archiv[clb[]][1])
-                    clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
+                if clb in netlist.inpads:
+                    var block = Block.SharedBlock(Block(clb, Blocktype.INPAD, arch.t_ipad))
+                    block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
+                    clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
+                elif clb in netlist.outpads:
+                    var block = Block.SharedBlock(Block(clb, Blocktype.OUTPAD, arch.t_opad))
+                    block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
+                    clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
                 else:
                     hasGlobalNet = False
                     for net in netlist.globalNets.keys():
-                        for block in netlist.globalNets[net[]]:
-                            if block[][0] == clb[]:
+                        for block in netlist.globalNets[net]:
+                            if block[0] == clb:
                                 hasGlobalNet = True
                                 break
                         if hasGlobalNet:
@@ -183,9 +185,9 @@ def main():
                         delay = arch.t_ipin_cblock + arch.subblocks[0].t_seq_in + arch.subblocks[0].t_seq_out
                     else:
                         delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
-                    var block = Block.SharedBlock(Block(clb[], Blocktype.CLB, delay, len(arch.subblocks)))
-                    block[].coord = (placement.archiv[clb[]][0], placement.archiv[clb[]][1])
-                    clbMap[placement.archiv[clb[]][0], placement.archiv[clb[]][1]].append(block)
+                    var block = Block.SharedBlock(Block(clb, Blocktype.CLB, delay, len(arch.subblocks)))
+                    block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
+                    clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
             except e:
                 print("Error: ", e)
                 return Lee()
@@ -264,14 +266,9 @@ def main():
         print("Critical path: ", critPath)
         print("Channel width: ", channelWidth)
         print()
-        var netPins: Dict[String, Dict[String, Int]] = Dict[String, Dict[String, Int]]()
-        
-        for net in netlist.nets:
-            netPins[net[]] = Dict[String, Int]()
-            for pin in netlist.nets[net[]]:
-                netPins[net[]][pin[][0]] = pin[][1]
+
         if writeRouteFile(args[4], route[].routeLists, netlist.netList, arch.pins,
-            route[].clbMap, placement.clbNums, netPins, netlist.globalNets, placement.archiv):
+            route[].clbMap, placement.clbNums, netlist.globalNets, placement.archiv):
             print("Routing result written to file")
         else:
             print("Routing result not written to file")
@@ -283,7 +280,7 @@ def main():
     print()
     print("Routing finished")
     print()
-    print_duration()
+    print_duration(startTime)
     return
 
 """
@@ -301,9 +298,8 @@ def print_help():
     print("  --route_chan_width <int>: Set the channel width for routing")
     print("    disabled binary search")
     print("  --max_iterations <int>: Set the maximum iterations for the routing")
-    print("    disabled binary search")
     print("  --single_thread: Run the algorithm in single thread mode")
 
-def print_duration():
+def print_duration(startTime: Float64):
     print("Programm Duration: ", (monotonic() - startTime)/1000000000, "s")
     return
