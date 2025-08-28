@@ -13,8 +13,7 @@ Parser für das Arch File Format vom VPR Tool
 """
 Datenstruktur für die Kanalbreite eines FPGA-Designs.
 """
-@value
-struct ChanWidth:
+struct ChanWidth(Copyable, Movable, EqualityComparable, Stringable):
     var type: ChanType
     var peak: Float64
     var width: Float64
@@ -46,8 +45,8 @@ struct ChanWidth:
 """
 Datenstruktur für die Pins eines FPGA-Designs.
 """
-@value
-struct Pin:
+@fieldwise_init
+struct Pin(Copyable, Movable, EqualityComparable, Stringable):
     var isInpin: Bool # Input-Pin, sonst Output-Pin
     var pinClass: Int8
     var isGlobal: Bool
@@ -73,15 +72,15 @@ struct Pin:
     fn __str__(self) -> String:
         var strsides = String("")
         for side in self.sides:
-            strsides += String(side[]) + String(", ")
+            strsides += String(side) + String(", ")
             strsides = strsides[:-2]
         return "IsInpin: " + String(self.isInpin) + ", PinClass: " + String(self.pinClass) + ", IsGlobal: " + String(self.isGlobal) + ", Sides: " + strsides
 
 """
 Datenstruktur für die Segmentlinie eines FPGA-Designs.
 """
-@value
-struct Segmentline:
+@fieldwise_init
+struct Segmentline(Copyable, Movable, EqualityComparable, Stringable):
     var frequency: Float64
     var length: Int8
     var isLongline: Bool
@@ -104,8 +103,8 @@ struct Segmentline:
 """
 Datenstruktur für die Switchs eines FPGA-Designs.
 """
-@value
-struct Switch:
+@fieldwise_init
+struct Switch(Copyable, Movable, EqualityComparable, Stringable):
     var switch: Int8
     var isBuffered: Bool
     var R: Float64
@@ -122,8 +121,8 @@ struct Switch:
     fn __str__(self) -> String:
         return "Switch: " + String(self.switch) + ", IsBuffered: " + String(self.isBuffered) + ", R: " + String(self.R) + ", Cin: " + String(self.Cin) + ", Cout: " + String(self.Cout) + ", Tdel: " + String(self.Tdel)
 
-@value
-struct Subblock:
+@fieldwise_init
+struct Subblock(Copyable, Movable, EqualityComparable, Stringable):
     var t_comb: Float64
     var t_seq_in: Float64
     var t_seq_out: Float64
@@ -140,8 +139,8 @@ struct Subblock:
 """
 Datenstruktur für die Architektur eines FPGA-Designs.
 """
-@value
-struct Arch:
+@fieldwise_init
+struct Arch(Copyable, Movable):
     var isValid: Bool
     # Kanalbeschreibung
     var io_rat: Int8
@@ -212,14 +211,19 @@ struct Arch:
     # @return: True, wenn die Datei erfolgreich gelesen wurde, sonst False
     fn parse(mut self, path: String) -> Bool:
         try:
-            var lines: List[String]
+            var lines: List[String] = List[String]()
             with open(path, "r") as file:
-                lines = file.read().split("\n")
+                var lineSlices = file.read().split("\n")
+                for lineSlice in lineSlices:
+                    lines.append(String(lineSlice))
             lines = clearUpLines(lines)
             if len(lines) == 0:
                 return False
             for line in lines:
-                var words = line[].split()
+                var words = List[String]()
+                var wordSlices = line.split()
+                for wordSlice in wordSlices:
+                    words.append(String(wordSlice))
                 if len(words) == 0:
                     continue
                 if words[0] == "io_rat":
