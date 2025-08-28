@@ -6,7 +6,7 @@ Utility Funktionen für Mojo
 @author Marvin Wollbrück
 """
 from collections import Dict, List
-from myUtil.Block import Block
+from myUtil.Block import Block, BlockPair
 from myUtil.Matrix import Matrix
 
 """
@@ -77,3 +77,11 @@ Initialisiert die Map mit leeren Werten
 fn initMap(mut map: Matrix[Int], value: Int):
     for idx in range(map.size):
         map.initMemSpace(idx, value)
+
+"""
+Initialisiert die Map mit leeren Werten
+@arg map: Matrix, die initialisiert werden soll
+"""
+fn initMap[T: Copyable & Movable & Hashable & EqualityComparable & Stringable](mut map: Matrix[List[BlockPair[T]]]):
+    for idx in range(map.size):
+        map.initMemSpace(idx, List[BlockPair[T]]())
