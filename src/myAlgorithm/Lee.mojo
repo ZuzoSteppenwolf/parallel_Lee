@@ -29,8 +29,8 @@ PathTree-Struktur
 
 Die Struktur wird verwendet um den optimalsten Pfad zu finden.
 """
-@value
-struct PathTree:
+@fieldwise_init
+struct PathTree(Copyable, Movable):
     var isDeadEnd: Bool
     var isLeaf: Bool
     var lastCoord: Tuple[Int, Int]
@@ -169,8 +169,8 @@ struct PathTree:
 """
 Lee-Struktur
 """     
-@value  
-struct Lee:
+@fieldwise_init
+struct Lee(Copyable, Movable):
     alias LOG_PATH = "log/lee.log"
     alias SINK = -4
     alias SWITCH = -3
@@ -304,8 +304,7 @@ struct Lee:
                     return
             var net = self.netKeys[id]
             var routedClbs = Set[BlockPair[Int]]()
-            var trackCount = 0
-            var currentTrack = (id + trackCount) % self.chanWidth
+            var currentTrack = 0
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
             var refMapClbs = Matrix[List[BlockPair[Int]]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
@@ -632,10 +631,9 @@ struct Lee:
                             if self.log:
                                 self.log.value().writeln(id, "ID: ", id, "; No sink found")
 
-                            trackCount += 1
-                            currentTrack = (id + trackCount) % self.chanWidth
+                            currentTrack += 1
                             # Wenn alle Kanäle abgearbeitet sind, dann abbrechen
-                            if trackCount == self.chanWidth:
+                            if currentTrack == self.chanWidth:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
                                 isFinished = True
