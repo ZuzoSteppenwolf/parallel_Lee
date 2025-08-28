@@ -288,42 +288,45 @@ struct Lee(Copyable, Movable):
             alias START = CONNECTED + 1
             
             # Initialisierung
-            var routeList = Dict[Int, List[BlockPair[Int]]]()
-            for i in range(self.chanWidth):
-                routeList[i] = List[BlockPair[Int]]()
-                try:
-                    var coord = self.archiv[self.nets[self.netKeys[id]][0][0]]
-                    for clb in self.clbMap[coord[0], coord[1]]:
-                        if clb[].name == self.nets[self.netKeys[id]][0][0]:
-                            routeList[i].append(BlockPair(clb, self.nets[self.netKeys[id]][0][1]))
-                            break
-                except e:
-                    if self.log:
-                        self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                    self.isValid = False
-                    return
             var net = self.netKeys[id]
             var routedClbs = Set[BlockPair[Int]]()
+            var sourceCoord: Tuple[Int, Int] = (-1, -1)
+            var sourceCLB: Optional[Block.SharedBlock] = None
+
+            var routeList = Dict[Int, List[BlockPair[Int]]]()
+
+            try:
+                for i in range(len(self.nets[net])):
+                    var coord: Tuple[Int, Int] = self.archiv[self.nets[net][i][0]]
+                    var col = 0
+                    var row = 0
+                    var block: Optional[Block.SharedBlock] = None
+                    
+                    for clb in self.clbMap[coord[0], coord[1]]:
+                        if clb[].type == Blocktype.INPAD or not self.pins[self.nets[net][i][1]].isInpin:
+                            if clb[].name == self.nets[net][i][0]:  
+                                sourceCLB = clb
+                                routedClbs.add(BlockPair(clb, self.nets[net][i][1]))
+                                sourceCoord = coord
+                                break
+                    if sourceCLB:
+                        break
+
+                for i in range(self.chanWidth):
+                    routeList[i] = List[BlockPair[Int]]()
+                    routeList[i].append(BlockPair(sourceCLB.value(), self.nets[net][i][1]))
+            except e:
+                if self.log:
+                    self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
+                self.isValid = False
+                return
+
             var currentTrack = 0
             var maze = Matrix[Int](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
 
             var refMapClbs = Matrix[List[BlockPair[Int]]](self.chanMap[currentTrack].cols, self.chanMap[currentTrack].rows)
             initMap(refMapClbs)
             initMap(maze, EMPTY)
-            var sourceCoord: Tuple[Int, Int]
-            var sourceCLB: Optional[Block.SharedBlock] = None
-            try:
-                sourceCoord = self.archiv[self.nets[net][0][0]]
-                for clb in self.clbMap[sourceCoord[0], sourceCoord[1]]:
-                    if clb[].name == self.nets[net][0][0]:
-                        sourceCLB = clb
-                        routedClbs.add(BlockPair(clb, self.nets[net][0][1]))
-                        break
-            except e:
-                if self.log:
-                    self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                self.isValid = False
-                return
 
             var wavefront = Deque[Tuple[Int, Int]]()
 
@@ -403,14 +406,13 @@ struct Lee(Copyable, Movable):
                         var col = 0
                         var row = 0
                         var block: Optional[Block.SharedBlock] = None
-                        if self.pins[self.nets[net][i][1]].isInpin:
-                            for clb in self.clbMap[coord[0], coord[1]]:
-                                if clb[].name == self.nets[net][i][0]:
-                                    block = clb
-                                    break
+                        for clb in self.clbMap[coord[0], coord[1]]:
+                            if clb[].name == self.nets[net][i][0]:
+                                block = clb
+                                break
                         for pinIdx in range(len(self.pins[self.nets[net][i][1]].sides)):
                             # Outpin ist Source
-                            if not self.pins[self.nets[net][i][1]].isInpin:
+                            if block.value()[].type == Blocktype.INPAD or not self.pins[self.nets[net][i][1]].isInpin:
                                 getChanCoord(coord, i, pinIdx, col, row)
                                 if self.chanMap[currentTrack][col, row] == Lee.EMPTY:
                                     maze[col, row] = CONNECTED
