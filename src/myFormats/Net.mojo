@@ -13,8 +13,8 @@ Parser für das Net File Format vom VPR Tool
 """
 Datenstruktur für die Netliste eines FPGA-Designs.
 """
-@value
-struct Net:
+@fieldwise_init
+struct Net(Copyable, Movable):
     var isValid: Bool
     var nets: Dict[String, List[Tuple[String, Int]]]
     var globalNets: Dict[String, List[Tuple[String, Int]]]
@@ -41,17 +41,6 @@ struct Net:
         except:
             self.log = None
         self.isValid = self.parse(path, sbblknum, pins)
-        
-    # Copy-Konstruktor
-    fn __copyinit__(out self, other: Net):
-        self.nets = other.nets
-        self.globalNets = other.globalNets
-        self.isValid = other.isValid
-        self.inpads = Set[String](other.inpads)
-        self.outpads = Set[String](other.outpads)
-        self.clbs = Set[String](other.clbs)
-        self.netList = List[String](other.netList)
-        self.log = other.log
 
     # Liest die Netliste und speichert die Informationen in der Struktur
     # @arg path: Pfad zur Netliste
@@ -60,22 +49,30 @@ struct Net:
     # @return: True, wenn die Datei erfolgreich gelesen wurde, sonst False
     fn parse(mut self, path: String, sbblknum: Int8, pins: List[Pin]) -> Bool:
         try:
-            var lines: List[String]
+            var lines: List[String] = List[String]()
             with open(path, "r") as file:
-                lines = file.read().split("\n")
+                var lineSlices = file.read().split("\n")
+                for lineSlice in lineSlices:
+                    lines.append(String(lineSlice))
             lines = clearUpLines(lines)
             if len(lines) == 0:
                 return False
             while len(lines) > 0:
                 var line = lines.pop(0)
-                var words = line.split()
+                var words = List[String]()
+                var wordSlices = line.split()
+                for wordSlice in wordSlices:
+                    words.append(String(wordSlice))
 
                 # Parser für Inpad
                 if words[0] == ".input":
                     var name = words[1]
                     self.inpads.add(name)
                     line = lines.pop(0)
-                    words = line.split()
+                    words = List[String]()
+                    wordSlices = line.split()
+                    for wordSlice in wordSlices:
+                        words.append(String(wordSlice))
                     if words[0] != "pinlist:":
                         if self.log:
                             self.log.value().writeln("Error: 'pinlist:' nicht gefunden; ", words[0])
@@ -91,7 +88,10 @@ struct Net:
                     var name = words[1]
                     self.outpads.add(name)
                     line = lines.pop(0)
-                    words = line.split()
+                    words = List[String]()
+                    wordSlices = line.split()
+                    for wordSlice in wordSlices:
+                        words.append(String(wordSlice))
                     if words[0] != "pinlist:":
                         if self.log:
                             self.log.value().writeln("Error: 'pinlist:' nicht gefunden; ", words[0])
@@ -113,7 +113,10 @@ struct Net:
                     var name = words[1]
                     self.clbs.add(name)
                     line = lines.pop(0)
-                    words = line.split()
+                    words = List[String]()
+                    wordSlices = line.split()
+                    for wordSlice in wordSlices:
+                        words.append(String(wordSlice))
                     if words[0] != "pinlist:":
                         if self.log:
                             self.log.value().writeln("Error: 'pinlist:' nicht gefunden; ", words[0])
@@ -127,7 +130,10 @@ struct Net:
                                 self.addToNets(net, name, i-1, pins[i-1].isInpin)
                     for _ in range(sbblknum):
                         line = lines.pop(0)
-                        words = line.split()
+                        words = List[String]()
+                        wordSlices = line.split()
+                        for wordSlice in wordSlices:
+                            words.append(String(wordSlice))
                         if words[0] != "subblock:":
                             if self.log:
                                 self.log.value().writeln("Error: 'subblock:' nicht gefunden; ", words[0])

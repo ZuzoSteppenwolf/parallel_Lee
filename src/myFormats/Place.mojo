@@ -15,7 +15,8 @@ Parser für das Placement File Format vom VPR Tool
 Datenstruktur für die Platzierung von Blöcken in einer Matrix.
 Enthält Informationen über die Netzliste, Architektur, Größe der Matrix,
 """
-struct Place:
+@fieldwise_init
+struct Place(Copyable, Movable):
 
     var isValid: Bool
     var net: String
