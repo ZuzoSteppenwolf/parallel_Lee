@@ -49,9 +49,11 @@ struct Place:
     # @return: True, wenn die Datei erfolgreich gelesen wurde, sonst False
     fn parse(mut self, path: String) -> Bool:
         try:
-            var lines: List[String]
+            var lines: List[String] = List[String]()
             with open(path, "r") as file:
-                lines = file.read().split("\n")
+                var lineSlices = file.read().split("\n")
+                for lineSlice in lineSlices:
+                    lines.append(String(lineSlice))
             lines = clearUpLines(lines)
             if len(lines) == 0:
                 return False
@@ -60,43 +62,46 @@ struct Place:
             var hasSize: Bool = False
             var blockNum: Int = 0
             for line in lines:
-                if line[] != "" and not line[].startswith("#") and not line[].isspace():                      
-                    var words = line[].split()
+                if line and not line.startswith("#") and not line.isspace():
+                    var words = List[String]()
+                    var wordSlices = line.split()
+                    for wordSlice in wordSlices:
+                        words.append(String(wordSlice))
                     var counter: Int = 0
                     var col: Int = 0
                     var row: Int = 0
                     var name: String = ""
                     var isComment = False
                     for word in words:
-                        if word[] != "" and not word[].isspace() and not isComment:
+                        if word and not word.isspace() and not isComment:
                             # Erste Zeile beinhaltet Netzliste- und Architektur-Pfad
                             if not hasNet:
-                                if counter == 0 and word[] != "Netlist":
+                                if counter == 0 and word != "Netlist":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'Netlist' not found; ", word[])
+                                        self.log.value().writeln("Error: 'Netlist' not found; ", word)
                                     return False
-                                elif counter == 1 and word[] != "file:":
+                                elif counter == 1 and word != "file:":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'file:' not found; ", word[])
+                                        self.log.value().writeln("Error: 'file:' not found; ", word)
                                     return False
                                 elif counter == 2:
-                                    self.net = word[]
+                                    self.net = word
                                     hasNet = True
                                     if self.log:
                                         self.log.value().writeln("Netlist: ", self.net)
                                 counter += 1
                             
                             elif not hasArch:
-                                if counter == 3 and word[] != "Architecture":
+                                if counter == 3 and word != "Architecture":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'Architecture' not found; ", word[])
+                                        self.log.value().writeln("Error: 'Architecture' not found; ", word)
                                     return False
-                                elif counter == 4 and word[] != "file:":
+                                elif counter == 4 and word != "file:":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'file:' not found; ", word[])
+                                        self.log.value().writeln("Error: 'file:' not found; ", word)
                                     return False
                                 elif counter == 5:
-                                    self.arch = word[]
+                                    self.arch = word
                                     hasArch = True
                                     if self.log:
                                         self.log.value().writeln("Architecture: ", self.arch)
@@ -104,36 +109,36 @@ struct Place:
 
                             # Zweite Zeile beinhaltet die Größe der Matrix
                             elif not hasSize:
-                                if counter == 0 and word[] != "Array":
+                                if counter == 0 and word != "Array":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'Array' not found; ", word[])
+                                        self.log.value().writeln("Error: 'Array' not found; ", word)
                                     return False
-                                elif counter == 1 and word[] != "size:":
+                                elif counter == 1 and word != "size:":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'size:' not found; ", word[])
+                                        self.log.value().writeln("Error: 'size:' not found; ", word)
                                     return False
                                 elif counter == 2:
-                                    col = atol(word[])
+                                    col = atol(word)
                                     if self.log:
                                         self.log.value().writeln("Columns: ", col)
-                                elif counter == 3 and word[] != "x":
+                                elif counter == 3 and word != "x":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'x' not found; ", word[])
+                                        self.log.value().writeln("Error: 'x' not found; ", word)
                                     return False
                                 elif counter == 4:
-                                    row = atol(word[])
+                                    row = atol(word)
                                     if self.log:
                                         self.log.value().writeln("Rows: ", row)
                                     self.cols = col
                                     self.rows = row
-                                elif counter == 5 and word[] != "logic":
+                                elif counter == 5 and word != "logic":
                                     if self.log:
-                                        self.log.value().writeln("Error: 'logic' not found; ", word[])
+                                        self.log.value().writeln("Error: 'logic' not found; ", word)
                                     return False
                                 elif counter == 6:
-                                    if word[] != "blocks":
+                                    if word != "blocks":
                                         if self.log:
-                                            self.log.value().writeln("Error: 'blocks' not found; ", word[])
+                                            self.log.value().writeln("Error: 'blocks' not found; ", word)
                                         return False
                                     else:
                                         hasSize = True
@@ -141,17 +146,17 @@ struct Place:
 
                             # Restliche Zeilen beinhalten die Platzierungen
                             else:
-                                if word[].startswith("#"):
+                                if word.startswith("#"):
                                     isComment = True
                                 elif counter == 0:
-                                    name = word[]
+                                    name = word
                                 elif counter == 1:
-                                    col = atol(word[])
+                                    col = atol(word)
                                 elif counter == 2:
-                                    row = atol(word[])
+                                    row = atol(word)
                                 elif counter == 3:
                                     block = Block(name)
-                                    block.subblk = atol(word[])
+                                    block.subblk = atol(word)
                                     self.archiv[name] = Tuple[Int, Int](col, row)
                                     self.clbNums[name] = blockNum
                                     blockNum += 1
