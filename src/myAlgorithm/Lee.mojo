@@ -12,6 +12,7 @@ from algorithm import parallelize
 from os import os
 from tempfile import NamedTemporaryFile
 from sys.info import sizeof
+from memory import UnsafePointer, ArcPointer
 
 """
 @file Lee.mojo
@@ -296,6 +297,7 @@ struct Lee(Copyable, Movable):
             var routeList = Dict[Int, List[BlockPair[Int]]]()
 
             try:
+                var bp: Optional[BlockPair[Int]] = None
                 for i in range(len(self.nets[net])):
                     var coord: Tuple[Int, Int] = self.archiv[self.nets[net][i][0]]
                     var col = 0
@@ -306,7 +308,7 @@ struct Lee(Copyable, Movable):
                         if clb[].type == Blocktype.INPAD or not self.pins[self.nets[net][i][1]].isInpin:
                             if clb[].name == self.nets[net][i][0]:  
                                 sourceCLB = clb
-                                routedClbs.add(BlockPair(clb, self.nets[net][i][1]))
+                                bp = BlockPair(clb, self.nets[net][i][1])
                                 sourceCoord = coord
                                 break
                     if sourceCLB:
@@ -314,7 +316,8 @@ struct Lee(Copyable, Movable):
 
                 for i in range(self.chanWidth):
                     routeList[i] = List[BlockPair[Int]]()
-                    routeList[i].append(BlockPair(sourceCLB.value(), self.nets[net][i][1]))
+                    routeList[i].append(bp.value())
+                routedClbs.add(bp.value())
             except e:
                 if self.log:
                     self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
@@ -592,7 +595,7 @@ struct Lee(Copyable, Movable):
                                         preDelay = preChan.value()[].preDelays[0] + preChan.value()[].delay
                                     chan[].addPreconnection(preChan.value(), preDelay)
                                     chanArchiv[chan[].name] = (col, row)
-                                    routeList[currentTrack].append(BlockPair(chan, -1))#TODO
+                                    routeList[currentTrack].append(BlockPair(chan, -1))
                                     # Füge die CLBs hinzu, die mit dem Kanal verbunden sind
                                     if len(pathCoords) == 1:
                                         if self.log:
@@ -604,7 +607,7 @@ struct Lee(Copyable, Movable):
                                                 routeList[currentTrack].append(clb)
                                                 if self.log:
                                                     self.log.value().writeln(id, "ID: ", id, "; Added block ", clb.block[].name, " to routeList on track: ", currentTrack)
-                                    refMapClbs[col, row].append(BlockPair(chan, -1))#TODO
+                                    refMapClbs[col, row].append(BlockPair(chan, -1))
                                     self.chanMap[currentTrack][coord[0], coord[1]] = id      
                                     preChan = chan  
 

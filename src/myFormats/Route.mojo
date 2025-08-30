@@ -3,6 +3,7 @@ from myUtil.Block import Block, BlockPair
 from myUtil.Enum import *
 from myUtil.Matrix import Matrix, ListMatrix
 from myFormats.Arch import *
+from memory import ArcPointer
 """
 @file Route.mojo
 
@@ -108,11 +109,11 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[BlockPai
                             if block.block[].type == Blocktype.CLB:
                                 writeClb(pins[block.value].isInpin, block, net, isFirst)
                             elif block.block[].type == Blocktype.INPAD:
-                                writePad(False, block.block[], isFirst)
+                                writePad(False, block.block, isFirst)
                             elif block.block[].type == Blocktype.OUTPAD:
-                                writePad(True, block.block[], isFirst)
+                                writePad(True, block.block, isFirst)
                             elif block.block[].type == Blocktype.CHANX or block.block[].type == Blocktype.CHANY:
-                                writeChan(block.block[])
+                                writeChan(block.block)
                             isFirst = False
                 # Sonst ist das Netz Global
                 else:
@@ -129,7 +130,8 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[BlockPai
                         line += ".\n"
                         file.write(line)
 
-    except:
+    except e:
+        print("Error: ", e)
         return False
 
     return True

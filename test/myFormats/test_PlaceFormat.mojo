@@ -19,6 +19,10 @@ def test_PlaceFormat_1():
     assert_equal(place.archiv["C"][1], 0, "Archiv C[1] nicht valide")
     assert_equal(place.archiv["D"][0], 1, "Archiv D[0] nicht valide")
     assert_equal(place.archiv["D"][1], 1, "Archiv D[1] nicht valide")
+    assert_equal(place.clbSubblk["A"], 0, "CLB Subblock A nicht valide")
+    assert_equal(place.clbSubblk["B"], 0, "CLB Subblock B nicht valide")
+    assert_equal(place.clbSubblk["C"], 0, "CLB Subblock C nicht valide")
+    assert_equal(place.clbSubblk["D"], 1, "CLB Subblock D nicht valide")
     return
 
 def test_PlaceFormat_2():

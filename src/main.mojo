@@ -1,4 +1,3 @@
-import benchmark
 from sys import argv
 from myUtil.Matrix import Matrix, ListMatrix
 from myUtil.Block import Block
@@ -165,10 +164,12 @@ def main():
                 if clb in netlist.inpads:
                     var block = Block.SharedBlock(Block(clb, Blocktype.INPAD, arch.t_ipad))
                     block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
+                    block[].subblk = placement.clbSubblk[clb]
                     clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
                 elif clb in netlist.outpads:
                     var block = Block.SharedBlock(Block(clb, Blocktype.OUTPAD, arch.t_opad))
                     block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
+                    block[].subblk = placement.clbSubblk[clb]
                     clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
                 else:
                     hasGlobalNet = False
@@ -186,6 +187,7 @@ def main():
                         delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
                     var block = Block.SharedBlock(Block(clb, Blocktype.CLB, delay, len(arch.subblocks)))
                     block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
+                    block[].subblk = placement.clbSubblk[clb]
                     clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
             except e:
                 print("Error: ", e)

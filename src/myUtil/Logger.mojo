@@ -1,6 +1,5 @@
 from os import remove
 from memory import ArcPointer
-from utils.write import write_args
 from time import monotonic
 from myUtil.Threading import Mutex
 
@@ -39,9 +38,9 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
         self.lines = 0
         self.files = -1
         if testDebug:
-            self.file = open(self.path + ".log", "w")
+            self.file = ArcPointer[FileHandle](open(self.path + ".log", "w"))
         else:
-            self.file = open(self.path + "_" + String(self.files) + ".log", "w")
+            self.file = ArcPointer[FileHandle](open(self.path + "_" + String(self.files) + ".log", "w"))
         if hasTimestamp:
             self.timestamp = monotonic()
         self.writeln("Log created")  
@@ -76,7 +75,6 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     # Schreibt in die Logdatei
     # @arg text: Writeable Objekte, die in die Logdatei geschrieben werden soll
     fn write[*Ts: Writable](mut self, *text: *Ts):
-        #write_args(self.file[], text)
         var s = String()
         @parameter
         for i in range(text.__len__()):
@@ -93,7 +91,7 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
                     self.files += 1
                     self.files %= maxFiles
                     self.file[].close()
-                    self.file = open(self.path + "_" + String(self.files) + ".log", "w")
+                    self.file = ArcPointer[FileHandle](open(self.path + "_" + String(self.files) + ".log", "w"))
                     self.writeln("Log created")
                 self.lines += 1    
         except:
@@ -124,7 +122,6 @@ struct Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MAX_LINE
     fn writeln[*Ts: Writable](mut self, *text: *Ts):
         self.newFile()
         self.writeStamp()
-        #write_args(self.file[], text)
         var s = String()
         @parameter
         for i in range(text.__len__()):
@@ -177,7 +174,6 @@ struct async_Log[hasTimestamp: Bool, testDebug: Bool = False, maxLines: Int = MA
         self.mutex.lock(id)
         self.log[].newFile()
         self.log[].writeStamp()
-        #write_args(self.log[].file[], text)
         var s = String()
         @parameter
         for i in range(text.__len__()):

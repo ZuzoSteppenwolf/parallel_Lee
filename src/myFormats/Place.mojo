@@ -26,6 +26,7 @@ struct Place(Copyable, Movable):
     var rows: Int
     var cols: Int
     var clbNums: Dict[String, Int]
+    var clbSubblk: Dict[String, Int]
     var log: Optional[Log[True]]
 
     # Konstruktor
@@ -39,6 +40,7 @@ struct Place(Copyable, Movable):
         self.rows = 0
         self.cols = 0
         self.clbNums = Dict[String, Int]()
+        self.clbSubblk = Dict[String, Int]()
         try:
             self.log = Log[True]("log/place.log")
         except:
@@ -156,13 +158,12 @@ struct Place(Copyable, Movable):
                                 elif counter == 2:
                                     row = atol(word)
                                 elif counter == 3:
-                                    block = Block(name)
-                                    block.subblk = atol(word)
+                                    self.clbSubblk[name] = atol(word)
                                     self.archiv[name] = Tuple[Int, Int](col, row)
                                     self.clbNums[name] = blockNum
                                     blockNum += 1
                                     if self.log:
-                                        self.log.value().writeln("Block: ", name, " Col: ", col, " Row: ", row, " Subblock: ", block.subblk)
+                                        self.log.value().writeln("Block: ", name, " Col: ", col, " Row: ", row, " Subblock: ", self.clbSubblk[name])
                                 counter += 1
         except:
             return False
