@@ -25,7 +25,6 @@ erweitert um die Laufzeit zu optimieren.
 
 @author Marvin Wollbrück
 """
-alias LOG_PATH = "log/main.log"
 alias STANDARD_CHANEL_WIDTH = 12
 alias DEFAULT_MAX_ITERATIONS = 30
 
