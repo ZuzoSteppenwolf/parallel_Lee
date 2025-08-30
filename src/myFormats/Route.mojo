@@ -16,13 +16,13 @@ Parser für das Route File Format vom VPR Tool
 # @param routeLists Liste der Routen
 # @param netKeys Liste der Netzkeys
 # @param pins Liste der Pins
-# @param clbMap Matrix der CLBs
+# @param arraySize Größe des Arrays[X,Y]
 # @param clbNums Dict der CLB-Nummern
 # @param globalNets Dict der globalen Netze
 # @param archiv Dict der Archivierung der CLBs
 # @return True, wenn die Routen geschrieben wurden, sonst False
 fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[BlockPair[Int]]]], 
-    netKeys: List[String], pins: List[Pin], clbMap: ListMatrix[List[Block.SharedBlock]], 
+    netKeys: List[String], pins: List[Pin], arraySize: Tuple[Int, Int], 
     clbNums: Dict[String, Int], globalNets: Dict[String, List[Tuple[String, Int]]], 
     archiv: Dict[String, Tuple[Int, Int]]) -> Bool:
 
@@ -89,7 +89,7 @@ fn writeRouteFile(path: String, routeLists: Dict[String, Dict[Int, List[BlockPai
                     file.write(line)
 
             # Schreibe die Header-Informationen
-            file.write(String("Array size: ") + String(clbMap.cols-2) + " x " + String(clbMap.rows-2) + " logic blocks.\n")
+            file.write(String("Array size: ") + String(arraySize[0]) + " x " + String(arraySize[1]) + " logic blocks.\n")
             writeNL()
             file.write("Routing:\n")
             

@@ -52,7 +52,7 @@ def test_Route_1():
 
 
     
-    assert_true(writeRouteFile(path, routeLists, netKeys, pins, clbMap, clbNums, globalNets, archiv), "Writing gas failed")
+    assert_true(writeRouteFile(path, routeLists, netKeys, pins, (clbMap.cols-2, clbMap.rows-2), clbNums, globalNets, archiv), "Writing gas failed")
     with open(path, "r") as out:
         with open("test/.route/test_Route_1.route", "r") as expected:
             assert_equal(out.read(), expected.read(), "Output does not match expected output")
@@ -131,7 +131,7 @@ def test_Route_2():
     globalNets[net2].append((clb[].name, 5))
 
     
-    assert_true(writeRouteFile(path, routeLists, netKeys, pins, clbMap, clbNums, globalNets, archiv), "Writing gas failed")
+    assert_true(writeRouteFile(path, routeLists, netKeys, pins, (clbMap.cols-2, clbMap.rows-2), clbNums, globalNets, archiv), "Writing gas failed")
     with open(path, "r") as out:
         with open("test/.route/test_Route_2.route", "r") as expected:
             assert_equal(out.read(), expected.read(), "Output does not match expected output")
@@ -254,7 +254,7 @@ def test_Route_3():
     clb2[].preconnections.append(chan2)
     routeLists[net3][track].append(BlockPair(clb2, 3))
 
-    assert_true(writeRouteFile(path, routeLists, netKeys, pins, clbMap, clbNums, globalNets, archiv), "Writing gas failed")
+    assert_true(writeRouteFile(path, routeLists, netKeys, pins, (clbMap.cols-2, clbMap.rows-2), clbNums, globalNets, archiv), "Writing gas failed")
     with open(path, "r") as out:
         with open("test/.route/test_Route_3.route", "r") as expected:
             assert_equal(out.read(), expected.read(), "Output does not match expected output")
@@ -313,7 +313,7 @@ def test_Route_4():
     clb3[].preconnections.append(chan2)
     routeLists[net1][track].append(BlockPair(clb3, 2))
 
-    assert_true(writeRouteFile(path, routeLists, netKeys, pins, clbMap, clbNums, globalNets, archiv), "Writing gas failed")
+    assert_true(writeRouteFile(path, routeLists, netKeys, pins, (clbMap.cols-2, clbMap.rows-2), clbNums, globalNets, archiv), "Writing gas failed")
     with open(path, "r") as out:
         with open("test/.route/test_Route_4.route", "r") as expected:
             assert_equal(out.read(), expected.read(), "Output does not match expected output")
@@ -382,7 +382,7 @@ def test_Route_5():
     routeLists[net1][track].append(BlockPair(clb3, 2))
 
 
-    assert_true(writeRouteFile(path, routeLists, netKeys, pins, clbMap, clbNums, globalNets, archiv), "Writing gas failed")
+    assert_true(writeRouteFile(path, routeLists, netKeys, pins, (clbMap.cols-2, clbMap.rows-2), clbNums, globalNets, archiv), "Writing gas failed")
     with open(path, "r") as out:
         with open("test/.route/test_Route_5.route", "r") as expected:
             assert_equal(out.read(), expected.read(), "Output does not match expected output")

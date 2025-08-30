@@ -39,13 +39,35 @@ def main():
     var hasFixedChannelWidth = False
     var runParallel = True
     var startTime: Float64 = 0.0
+    var validArgs: Int = 0
 
     startTime = monotonic()
     args = List[String]()
     for arg in argv():
         args.append(String(arg))
 
-    if len(args) < 5 or "-h" in args or "--help" in args:
+    if "--route_chan_width" in args:
+        idx = args.index("--route_chan_width")
+        hasFixedChannelWidth = True
+        try:
+            channelWidth = atol(args[idx + 1])
+            validArgs += 2
+        except:
+            print("Invalid channel width: ", args[idx + 1])
+
+    if "--max_iterations" in args:
+        idx = args.index("--max_iterations")
+        try:
+            maxIterations = atol(args[idx + 1])
+            validArgs += 2
+        except:
+            print("Invalid max iterations: ", args[idx + 1])
+
+    if "--single_thread" in args:
+        runParallel = False
+        validArgs += 1
+
+    if len(args) < 5 or "-h" in args or "--help" in args or len(args) > (validArgs + 5):
         print_help()
         return
 
@@ -129,28 +151,6 @@ def main():
         print("Invalid netlist file")
         print_duration(startTime)
         return
-    
-    if "--route_chan_width" in args:
-        idx = args.index("--route_chan_width")
-        hasFixedChannelWidth = True
-        try:
-            channelWidth = atol(args[idx + 1])
-        except:
-            print("Invalid channel width: ", args[idx + 1])
-            print_duration(startTime)
-            return
-
-    if "--max_iterations" in args:
-        idx = args.index("--max_iterations")
-        try:
-            maxIterations = atol(args[idx + 1])
-        except:
-            print("Invalid max iterations: ", args[idx + 1])
-            print_duration(startTime)
-            return
-
-    if "--single_thread" in args:
-        runParallel = False
 
     print()
     print("In total ", len(netlist.netList), " nets")
@@ -268,7 +268,7 @@ def main():
         print()
 
         if writeRouteFile(args[4], route[].routeLists, netlist.netList, arch.pins,
-            route[].clbMap, placement.clbNums, netlist.globalNets, placement.archiv):
+            (route[].clbMap.cols-2, route[].clbMap.rows-2), placement.clbNums, netlist.globalNets, placement.archiv):
             print("Routing result written to file")
         else:
             print("Routing result not written to file")
@@ -292,6 +292,7 @@ def print_help():
     print("placments: Path to the placments file")
     print("netlist: Path to the netlist file")
     print("architecture: Path to the architecture file")
+    print("route: Path to the output route file")
     print()
     print("Options:")
     print("  -h, --help: Print this help message")
