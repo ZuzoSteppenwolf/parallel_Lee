@@ -31,9 +31,9 @@ struct Mutex(Copyable, Movable):
     # Konstruktor
     fn __init__(out self):
         self.owner = UnsafePointer[BlockingSpinLock].alloc(1)
-        self.owner[0] = BlockingSpinLock()
+        self.owner[] = BlockingSpinLock()
         self.visitor = UnsafePointer[Atomic[DType.int64]].alloc(1)
-        self.visitor[0] = Atomic[DType.int64](0)
+        self.visitor[] = Atomic[DType.int64](0)
 
     # Copy-Konstruktor
     fn __copyinit__(out self, other: Mutex):
@@ -49,19 +49,19 @@ struct Mutex(Copyable, Movable):
     # und wartet bis keine Besucher mehr da sind
     # @arg id: ID des Workers
     fn lock(mut self, id: Int):
-        self.owner[0].lock(id)
+        self.owner[].lock(id)
         while self.visitor[].load() != 0:
             sleep(self.sleep_sec)
     
     # Entsperrt den Mutex
     # @arg id: ID des Workers
     fn unlock(mut self, id: Int):
-        _ = self.owner[0].unlock(id)
+        _ = self.owner[].unlock(id)
 
     # Besucht den Mutex
     # wartet bis der Mutex frei ist
     fn visit(mut self):
-        while self.owner[0].counter.load() != self.FREE:
+        while self.owner[].counter.load() != self.FREE:
             sleep(self.sleep_sec)
         _ = self.visitor[].fetch_add(1)
 
@@ -73,3 +73,39 @@ struct Mutex(Copyable, Movable):
     fn __del__(owned self):
         self.owner.free()
         self.visitor.free()
+
+struct AtomicBool(Copyable, Movable, Boolable):
+    var value: UnsafePointer[Atomic[DType.uint8]]
+
+    # Konstruktor
+    fn __init__(out self):
+        self.value = UnsafePointer[Atomic[DType.uint8]].alloc(1)
+        self.value[] = Atomic[DType.uint8](0)
+
+    # Copy-Konstruktor
+    fn __copyinit__(out self, other: AtomicBool):
+        self.value = other.value
+
+    # Move-Konstruktor
+    fn __moveinit__(out self, owned other: AtomicBool):
+        self.value = other.value
+
+    # Setzt den Wert
+    fn __setitem__(mut self, owned val: Bool):
+        var current = self.value[].load()
+        if val:
+            _ = self.value[].compare_exchange_weak(current, 1)
+        else:
+            _ = self.value[].compare_exchange_weak(current, 0)
+
+    # Konvertiert in Bool
+    # @return: Bool-Wert
+    fn __bool__(self) -> Bool:
+        if self.value[].load() != 0:
+            return True
+        else:
+            return False
+
+    # Destructor
+    fn __del__(owned self):
+        self.value.free()

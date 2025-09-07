@@ -3,7 +3,7 @@ from myUtil.Matrix import *
 from myUtil.Enum import *
 from myUtil.Util import *
 from myUtil.Block import *
-from myUtil.Threading import Mutex
+from myUtil.Threading import Mutex, AtomicBool
 from myUtil.Logger import async_Log
 from myFormats.Arch import *
 from collections import Dict, List, Set, Deque, InlineArray
@@ -172,19 +172,19 @@ Lee-Struktur
 """     
 @fieldwise_init
 struct Lee(Copyable, Movable):
-    alias LOG_PATH = "log/lee.log"
+    alias LOG_PATH = "lee.log"
     alias SINK = -4
     alias SWITCH = -3
     alias BLOCKED = -2
     alias EMPTY = -1
     alias CONNECTED = 0
-    var isValid: Bool
+    var isValid: AtomicBool
     var routeLists: Dict[String, Dict[Int, List[BlockPair[Int]]]]
     var chanMap: List[Matrix[Int]]
     var clbMap: ListMatrix[List[Block.SharedBlock]]
     var netKeys: List[String]
     var nets: Dict[String, List[Tuple[String, Int]]]
-    var mutex: List[Mutex]
+    var mutex: Mutex
     var chanWidth: Int
     var chanDelay: Float64
     var pins: List[Pin]
@@ -195,13 +195,14 @@ struct Lee(Copyable, Movable):
 
     # Konstruktor
     fn __init__(out self):
-        self.isValid = False
+        self.isValid = AtomicBool()
+        self.isValid[] = False
         self.routeLists = Dict[String, Dict[Int, List[BlockPair[Int]]]]()
         self.chanMap = List[Matrix[Int]]()
         self.clbMap = ListMatrix[List[Block.SharedBlock]](0, 0, List[Block.SharedBlock]())
         self.netKeys = List[String]()
         self.nets = Dict[String, List[Tuple[String, Int]]]()
-        self.mutex = List[Mutex]()
+        self.mutex = Mutex()
         self.chanWidth = 0
         self.chanDelay = 0.0
         self.pins = List[Pin]()
@@ -225,8 +226,9 @@ struct Lee(Copyable, Movable):
     fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], 
         archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, 
         pins: List[Pin], CLB2Num: Dict[String, Int], logDir: String = ""):
+        self.isValid = AtomicBool()
         try:
-            self.log = async_Log[True](logDir + "lee.log")
+            self.log = async_Log[True](logDir + self.LOG_PATH)
         except:
             self.log = None
         self.routeLists = Dict[String, Dict[Int, List[BlockPair[Int]]]]()
@@ -238,7 +240,7 @@ struct Lee(Copyable, Movable):
             except e:
                 if self.log:
                     self.log.value().writeln(-1, "Error: ", e)
-                self.isValid = False
+                self.isValid[] = False
         self.chanMap = List[Matrix[Int]]()
         for i in range(chanWidth):
             self.chanMap.append(Matrix[Int]((clbMap.cols-2)*2+1, (clbMap.rows-2)*2+1))
@@ -253,15 +255,12 @@ struct Lee(Copyable, Movable):
         self.netKeys = List[String]()
         self.nets = nets
         self.archiv = archiv
-        self.mutex = List[Mutex]()
-
-        for _ in range(chanWidth):
-            self.mutex.append(Mutex())
+        self.mutex = Mutex()
 
         self.chanWidth = chanWidth
         self.chanDelay = chanDelay
         self.pins = pins
-        self.isValid = True       
+        self.isValid[] = True
 
         for net in nets:
             self.netKeys.append(net)
@@ -274,7 +273,7 @@ struct Lee(Copyable, Movable):
         except e:
             if self.log:
                 self.log.value().writeln(-1, "Error: ", e)
-            self.isValid = False
+            self.isValid[] = False
 
     # Führe den Lee-Algorithmus aus
     # @arg runParallel: True, wenn der Algorithmus parallel ausgeführt werden soll, sonst False
@@ -324,7 +323,7 @@ struct Lee(Copyable, Movable):
             except e:
                 if self.log:
                     self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                self.isValid = False
+                self.isValid[] = False
                 return
 
             var currentTrack = 0
@@ -386,7 +385,7 @@ struct Lee(Copyable, Movable):
             fn initMaze():
                 try:
                     wavefront.clear()
-                    self.mutex[currentTrack].visit()
+                    self.mutex.visit()
 
                     # Verdrahtungskarte Uebertragen
                     for col in range(maze.cols):
@@ -441,10 +440,10 @@ struct Lee(Copyable, Movable):
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                    self.isValid = False
+                    self.isValid[] = False
                     return
                 finally:
-                    self.mutex[currentTrack].unvisit()
+                    self.mutex.unvisit()
                     
                         
                 # end initMaze
@@ -503,13 +502,13 @@ struct Lee(Copyable, Movable):
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                    self.isValid = False
+                    self.isValid[] = False
                     return
                
                 if foundSink:
                     
                     # Wenn Ziel gefunden, dann Pfad berechnen
-                    self.mutex[currentTrack].lock(id)
+                    self.mutex.lock(id)
 
                     try:
                         
@@ -579,14 +578,14 @@ struct Lee(Copyable, Movable):
                                         var name = String(id) + "CHANX" + String(col) + ":" + String(row) + "T" + String(currentTrack)
                                         chan = Block.SharedBlock(Block(name, Blocktype.CHANX, delay))
                                     else:
-                                        self.isValid = False
+                                        self.isValid[] = False
                                         if self.log:
                                             self.log.value().writeln(id, "ID: ", id, "; Error: Coordinate corresponds to no channel block")
                                         return
                                     if preChan is None:
                                         if self.log:
                                             self.log.value().writeln(id, "ID: ", id, "; Error: PreChan is None")
-                                        self.isValid = False
+                                        self.isValid[] = False
                                         return
                                     
                                     chan[].coord = ((col+1)//2, (row+1)//2)
@@ -619,10 +618,10 @@ struct Lee(Copyable, Movable):
                     except e:
                         if self.log:
                             self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                        self.isValid = False
+                        self.isValid[] = False
                         return
                     finally:
-                        self.mutex[currentTrack].unlock(id)
+                        self.mutex.unlock(id)
                     initMaze()
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Init local maze")
@@ -643,7 +642,7 @@ struct Lee(Copyable, Movable):
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found")
                                 isFinished = True
-                                self.isValid = False
+                                self.isValid[] = False
                             else:
                                 if self.log:
                                     self.log.value().writeln(id, "ID: ", id, "; No path found, try next track")
@@ -657,7 +656,7 @@ struct Lee(Copyable, Movable):
                     except e:
                         if self.log:
                             self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
-                        self.isValid = False
+                        self.isValid[] = False
                         return
             if routeList:
                 var set: Set[Int] = Set[Int]()
@@ -783,7 +782,7 @@ struct Lee(Copyable, Movable):
                             while blockFront > 0:
                                 var preDelay: Float64 = 0.0
                                 var preHasGlobal: Bool = False
-                                
+
                                 if  idxs > blockFront:
                                     idxs -= 1
                                 elif idxs < blockFront:
