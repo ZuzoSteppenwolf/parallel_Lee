@@ -182,12 +182,14 @@ def main():
                             break
                     delay = 0.0
                     if hasGlobalNet:
-                        delay = arch.t_ipin_cblock + arch.subblocks[0].t_seq_in + arch.subblocks[0].t_seq_out
+                        delay = arch.t_ipin_cblock
                     else:
                         delay = arch.t_ipin_cblock + arch.subblocks[0].t_comb
                     var block = Block.SharedBlock(Block(clb, Blocktype.CLB, delay, len(arch.subblocks)))
                     block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
                     block[].subblk = placement.clbSubblk[clb]
+                    if hasGlobalNet:
+                        block[].hasGlobal = True
                     clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
             except e:
                 print("Error: ", e)
@@ -206,7 +208,7 @@ def main():
             var endAlgo = monotonic()
             if route[].isValid:
                 print("Success", i, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
-                critPath = route[].getCriticalPath(netlist.outpads)
+                critPath = route[].getCriticalPath(netlist.outpads, arch.subblocks[0].t_seq_in, arch.subblocks[0].t_seq_out)
                 break
             else:
                 print("Failure", i, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")

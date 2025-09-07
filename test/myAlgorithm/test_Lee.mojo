@@ -1,4 +1,4 @@
-from testing import assert_equal, assert_true, assert_false
+from testing import assert_equal, assert_true, assert_false, assert_almost_equal
 from collections import Dict, List, Set
 from myFormats.Arch import Pin
 from myFormats.Net import *
@@ -58,9 +58,12 @@ def test_Lee1():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
-    assert_equal(route.getCriticalPath(outpads), 7, "Lee Kritischerpfad ist nicht 7")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 6, "Lee Kritischerpfad ist nicht 6")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][2, 1], id, "kein Kanal bei (2, 1)")
     assert_equal(route.chanMap[0][2, 3], id, "kein Kanal bei (2, 3)")
@@ -128,8 +131,11 @@ def test_Lee2():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 5.3, "Lee Kritischerpfad ist nicht 5,3")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 5.2, "Lee Kritischerpfad ist nicht 5,2")
     assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
     assert_equal(route.routeLists["1"][0][0].block[].name, "A", "Falscher Source Block")
     assert_equal(route.routeLists["1"][0][1].block[].type, Blocktype.CHANX, "Kein CHANX Kanal bei (1, 0)")
@@ -706,8 +712,11 @@ def test_Lee13():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 4, "Lee Kritischerpfad ist nicht 4")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 3, "Lee Kritischerpfad ist nicht 3")
 
 def test_Lee14():
     alias id = 0
@@ -746,8 +755,11 @@ def test_Lee14():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 4, "Lee Kritischerpfad ist nicht 4")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 3, "Lee Kritischerpfad ist nicht 3")
 
 def test_Lee15():
     alias id = 0
@@ -787,10 +799,13 @@ def test_Lee15():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(len(route.routeLists["1"]), 1, "Zwei Tracks für Netz 1")
     assert_equal(len(route.routeLists["1"][0]), 6, "Route Liste für Netz 1 ist nicht 6 lang")
-    assert_equal(route.getCriticalPath(outpads), 7, "Lee Kritischerpfad ist nicht 7")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 6, "Lee Kritischerpfad ist nicht 6")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][2, 1], id, "kein Kanal bei (2, 1)")
     assert_equal(route.chanMap[0][2, 3], id, "kein Kanal bei (2, 3)")
@@ -850,9 +865,12 @@ def test_Lee16():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(len(route.routeLists["1"][0]), 8, "Route Liste für Netz 1 ist nicht 6 lang")
-    assert_equal(route.getCriticalPath(outpads), 9, "Lee Kritischerpfad ist nicht 9")
+    assert_equal(len(route.routeLists["1"][0]), 8, "Route Liste für Netz 1 ist nicht 8 lang")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 8, "Lee Kritischerpfad ist nicht 8")
     assert_equal(route.chanMap[0][1, 0], id, "kein Kanal bei (1, 0)")
     assert_equal(route.chanMap[0][3, 0], id, "kein Kanal bei (3, 0)")
     assert_equal(route.chanMap[0][5, 0], id, "kein Kanal bei (5, 0)")
@@ -920,8 +938,11 @@ def test_Lee17():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 103, "Lee Kritischerpfad ist nicht 103")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 102, "Lee Kritischerpfad ist nicht 102")
 
 def test_Lee18():
     alias id = 0
@@ -963,8 +984,11 @@ def test_Lee18():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 203, "Lee Kritischerpfad ist nicht 203")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 202, "Lee Kritischerpfad ist nicht 202")
 
 def test_Lee19():
     alias id = 0
@@ -1006,8 +1030,11 @@ def test_Lee19():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 100000
+    var T_seq_out: Float64 = 10000
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 1003, "Lee Kritischerpfad ist nicht 1003")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 1002, "Lee Kritischerpfad ist nicht 1002")
 
 def test_Lee20():
     alias id = 0
@@ -1031,9 +1058,9 @@ def test_Lee20():
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
     CLB2Num[clb.name] = 0
 
-    clb = Block("B", Blocktype.CLB, 1, 1)
-    clb.coord = Tuple(1000, 1)
-    nets["1"].append(Tuple(clb.name, 0))
+    clb = Block("B", Blocktype.OUTPAD, 1, 1)
+    clb.coord = Tuple(1000, 0)
+    nets["1"].append(Tuple(clb.name, -1))
     archiv[clb.name] = clb.coord
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
     CLB2Num[clb.name] = 1
@@ -1049,8 +1076,11 @@ def test_Lee20():
     var outpads = Set[String]()
     outpads.add("B")
 
+    var T_seq_in: Float64 = 100000
+    var T_seq_out: Float64 = 10000
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 1003, "Lee Kritischerpfad ist nicht 1003")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 1002, "Lee Kritischerpfad ist nicht 1002")
 
 def test_Lee21():
     alias id = 0
@@ -1109,8 +1139,11 @@ def test_Lee21():
     var outpads = Set[String]()
     outpads.add("D")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 6.5, "Lee Kritischerpfad ist nicht 6,5")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 6.3, "Lee Kritischerpfad ist nicht 6,3")
 
 def test_Lee22():
     alias id = 0
@@ -1170,8 +1203,11 @@ def test_Lee22():
     var outpads = Set[String]()
     outpads.add("D")
 
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
     assert_true(route.isValid, "Lee ist nicht valide")
-    assert_equal(route.getCriticalPath(outpads), 4.9, "Lee Kritischerpfad ist nicht 4,9")
+    assert_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 4.6, "Lee Kritischerpfad ist nicht 4,6")
 
 def test_Lee23():
     alias id = 0
@@ -1205,3 +1241,69 @@ def test_Lee23():
 
     assert_true(route.isValid, "Lee ist nicht valide")
     assert_equal(len(route.routeLists["1"][0]), 4, "Route Liste für Netz 1 ist nicht 4 lang")
+
+def test_Lee24():
+    alias id = 0
+    var chanWidth = 2
+    var nets = Dict[String, List[Tuple[String, Int]]]()
+    var clbMap = ListMatrix[List[Block.SharedBlock]](4, 4, List[Block.SharedBlock]())
+    var archiv = Dict[String, Tuple[Int, Int]]()
+    var pins = List[Pin]()
+    var CLB2Num = Dict[String, Int]()
+    pins.append(Pin(True, 0, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.LEFT)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.TOP)))
+    pins.append(Pin(True, 0, List[Faceside](Faceside.RIGHT)))
+    pins.append(Pin(False, 1, List[Faceside](Faceside.BOTTOM)))
+    pins.append(Pin(True, 2, List[Faceside](Faceside.TOP), True))
+
+    nets["1"] = List[Tuple[String, Int]]()
+    nets["2"] = List[Tuple[String, Int]]()
+    nets["3"] = List[Tuple[String, Int]]()
+
+    var clb = Block("A", Blocktype.INPAD, 1, 1)
+    clb.coord = Tuple(0, 1)
+    nets["1"].append(Tuple(clb.name, -1))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 0
+
+    clb = Block("C", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(1, 2)  
+    clb.hasGlobal = True 
+    nets["2"].append(Tuple(clb.name, 4))
+    nets["1"].append(Tuple(clb.name, 1))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 1
+
+    clb = Block("B", Blocktype.CLB, 1, 1)
+    clb.coord = Tuple(2, 2)
+    clb.hasGlobal = True
+    nets["1"].append(Tuple(clb.name, 2))
+    nets["2"].append(Tuple(clb.name, 0))
+    nets["3"].append(Tuple(clb.name, 4))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 2
+
+    clb = Block("D", Blocktype.OUTPAD, 1, 1)
+    clb.coord = Tuple(3, 1)
+    nets["3"].append(Tuple(clb.name, -1))
+    archiv[clb.name] = clb.coord
+    clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
+    CLB2Num[clb.name] = 3
+
+    var lastClb = clbMap[clb.coord[0], clb.coord[1]]
+
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
+    route.run()
+
+    var outpads = Set[String]()
+    outpads.add("D")
+
+    var T_seq_in: Float64 = 1000
+    var T_seq_out: Float64 = 100
+
+    assert_true(route.isValid, "Lee ist nicht valide")
+    assert_almost_equal(route.getCriticalPath(outpads, T_seq_in, T_seq_out), 1104.6, "Lee Kritischerpfad ist nicht 1104,6", atol=0.01)

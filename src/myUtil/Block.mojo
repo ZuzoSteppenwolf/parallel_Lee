@@ -28,6 +28,7 @@ struct Block(Copyable, Movable, EqualityComparable, Stringable):
     var coord: Tuple[Int, Int]
     var hasCritPath: Bool
     var visitCount: UInt8
+    var hasGlobal: Bool
 
     # Konstruktor
     # @arg name: Name des Blocks
@@ -44,6 +45,7 @@ struct Block(Copyable, Movable, EqualityComparable, Stringable):
         self.coord = (0, 0)
         self.hasCritPath = False
         self.visitCount = 0
+        self.hasGlobal = False
 
 
     fn __eq__(self, other: Block) -> Bool:

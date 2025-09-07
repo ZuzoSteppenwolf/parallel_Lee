@@ -569,8 +569,6 @@ struct Lee(Copyable, Movable):
                                             isSourceChan = True
                                             break
                                     var delay = self.chanDelay
-                                    if isSourceChan:
-                                        delay = self.chanDelay * 2
                                     if col % 2 == 0 and row % 2 == 1:
                                         var name = String(id) + "CHANY" + String(col) + ":" + String(row) + "T" + String(currentTrack)
                                         chan = Block.SharedBlock(Block(name, Blocktype.CHANY, delay))
@@ -693,8 +691,10 @@ struct Lee(Copyable, Movable):
 
     # Gibt den Kritischenpfad zurück
     # @arg outpads: Ausgänge
+    # @arg T_seq_in: Flipflop Eingangsverzögerung
+    # @arg T_seq_out: Clock-to-Q Verzögerung
     # @returns den Kritischenpfad
-    fn getCriticalPath(mut self, outpads: Set[String]) -> Float64:
+    fn getCriticalPath(mut self, outpads: Set[String], T_seq_in: Float64, T_seq_out: Float64) -> Float64:
         var criticalPath: Float64 = 0.0
         var delays: List[Float64] = List[Float64]()
         try:
@@ -715,6 +715,7 @@ struct Lee(Copyable, Movable):
                         var preDelays: Int = 0
                         var idxs: Int = 0
                         var blockFront: Int = 0
+                        var hasGlobals: Deque[Bool] = Deque[Bool]()
 
                         @parameter
                         fn setPreDelays(value: Float64) raises:
@@ -767,28 +768,35 @@ struct Lee(Copyable, Movable):
                             setBlockFront(clb[].preconnections[idx])
                             while blockFront > 0:
                                 var preDelay: Float64 = 0.0
-                                if blockFront < idxs:
+                                var preHasGlobal: Bool = False
+                                if  idxs > blockFront:
                                     idxs -= 1
-                                elif blockFront > idxs:
+                                elif idxs < blockFront:
                                     idxs += 1
                                     setIdxs(0)
-                                if blockFront < preDelays:
+                                if  preDelays > blockFront:
                                     var bufferDelay = getPreDelays()
                                     var bufferIdx = getIdxs()
                                     var bufferBlock = getBlockFront()
                                     preDelay = bufferDelay + bufferBlock[].delay + bufferBlock[].preDelays[bufferIdx - 1]
                                     preDelays -= 1
-                                elif blockFront > preDelays:
+                                elif preDelays < blockFront:
                                     preDelays += 1
                                     var bufferBlock = getBlockFront()
                                     setPreDelays(bufferBlock[].delay)
                                     bufferBlock[].visitCount += 1
+                                if len(hasGlobals) < blockFront:
+                                    var bufferBlock = getBlockFront()
+                                    hasGlobals.append(bufferBlock[].hasGlobal)
+                                elif len(hasGlobals) > blockFront:
+                                    preHasGlobal = hasGlobals.pop()
 
-                                var bufferDelay = getPreDelays()
-                                if bufferDelay < preDelay:
-                                    setPreDelays(preDelay)
-                                
                                 var bufferBlock = getBlockFront()
+                                var bufferDelay = getPreDelays()
+                                if preDelay > bufferDelay:
+                                    setPreDelays(preDelay)
+                                    hasGlobals[-1] = preHasGlobal or bufferBlock[].hasGlobal
+                                
                                 var bufferIdx = getIdxs()
                                 if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath and bufferBlock[].visitCount < MAX_VISIT_COUNT:
                                     blockFront += 1
@@ -802,10 +810,13 @@ struct Lee(Copyable, Movable):
                                     bufferBlock[].visitCount -= 1
                             preDelays = 1   
                             var bufferDelay = getPreDelays()
+                            if hasGlobals[-1]:
+                                bufferDelay += T_seq_out + T_seq_in
                             delays.append(bufferDelay + clb[].delay + clb[].preDelays[idx])
                             preDelays = 0
                             idxs = 0
                             blockFront = 0
+                            hasGlobals.clear()
                 for delay in delays:
                     if delay > criticalPath:
                         criticalPath = delay
