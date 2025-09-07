@@ -31,7 +31,8 @@ struct Place(Copyable, Movable):
 
     # Konstruktor
     # @arg path: Pfad zur Platzierungsdatei
-    fn __init__(out self, path: String):
+    # @arg logDir: Verzeichnis, in dem die Logdatei gespeichert werden soll, standardmäßig im aktuellen Verzeichnis
+    fn __init__(out self, path: String, logDir: String = ""):
         self.net = ""
         self.arch = ""
         self.isValid = False
@@ -42,7 +43,7 @@ struct Place(Copyable, Movable):
         self.clbNums = Dict[String, Int]()
         self.clbSubblk = Dict[String, Int]()
         try:
-            self.log = Log[True]("log/place.log")
+            self.log = Log[True](logDir + "place.log")
         except:
             self.log = None
         self.isValid = self.parse(path)

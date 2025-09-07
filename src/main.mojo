@@ -10,7 +10,6 @@ from myFormats.Arch import Arch
 from collections import Dict, List, Set
 from myAlgorithm.Lee import Lee
 from memory import ArcPointer
-from time import monotonic
 from myFormats.Route import *
 
 """
@@ -26,6 +25,8 @@ erweitert um die Laufzeit zu optimieren.
 """
 alias STANDARD_CHANEL_WIDTH = 12
 alias DEFAULT_MAX_ITERATIONS = 30
+alias LOG_DIRECTORY = "log/"
+alias MAX_OPTIONAL_ARGS = 5
 
 
 """
@@ -36,14 +37,13 @@ def main():
     var channelWidth = STANDARD_CHANEL_WIDTH
     var hasFixedChannelWidth = False
     var runParallel = True
-    var startTime: Float64 = 0.0
     var validArgs: Int = 0
 
-    startTime = monotonic()
     args = List[String]()
     for arg in argv():
         args.append(String(arg))
 
+    # auf gültige Optionen prüfen
     if "--route_chan_width" in args:
         idx = args.index("--route_chan_width")
         hasFixedChannelWidth = True
@@ -65,89 +65,79 @@ def main():
         runParallel = False
         validArgs += 1
 
-    if len(args) < 5 or "-h" in args or "--help" in args or len(args) > (validArgs + 5):
+    if len(args) < MAX_OPTIONAL_ARGS or "-h" in args or "--help" in args or len(args) > (validArgs + MAX_OPTIONAL_ARGS):
         print_help()
         return
 
+    # .place Datei auslesen
     print("Read file ", args[1])
-    placement = Place(args[1])
+    placement = Place(args[1], logDir=LOG_DIRECTORY)
     if not placement.isValid:
         print("Invalid placement file")
-        print_duration(startTime)
         return
 
+    # auf Gültigkeit prüfen
     if not(args[3].split("/")[-1] == placement.arch.split("/")[-1]):
         print("Architecture file is different from placement file: ", args[3], " != ", placement.arch.split("/")[-1])
-        print_duration(startTime)
         return
 
     if not(args[2].split("/")[-1] == placement.net.split("/")[-1]):
         print("Netlist file is different from placement file: ", args[2], " != ", placement.net.split("/")[-1])
-        print_duration(startTime)
         return
 
+    # .arch Datei auslesen
     print("Read file ", args[3])
-    arch = Arch(args[3])
+    arch = Arch(args[3], logDir=LOG_DIRECTORY)
     if not arch.isValid:
         print("Invalid architecture file")
-        print_duration(startTime)
         return
 
+    # auf Ausführbarkeit prüfen
     if arch.subblocks_per_clb > 1:
         print("Multiple subblocks in architecture file not supported")
-        print_duration(startTime)
         return
 
     if arch.chan_width_io < 1 or arch.chan_width_x.peak < 1 or arch.chan_width_y.peak < 1:
         print("Fractional channel width not supported, must be 1")
-        print_duration(startTime)
         return
 
     if arch.chan_width_x.type != ChanType.UNIFORM or arch.chan_width_y.type != ChanType.UNIFORM:
         print("Non-uniform channel width not supported")
-        print_duration(startTime)
         return
 
     if len(arch.segments) > 1:
         print("Multiple segments in architecture file not supported")
-        print_duration(startTime)
         return
 
     if len(arch.switches) > 1:
         print("Multiple switches in architecture file not supported")
-        print_duration(startTime)
         return
 
     if arch.segments[0].isLongline or arch.segments[0].length > 1:
         print("Longline segments or segments with length > 1 not supported")
-        print_duration(startTime)
         return
     
     if arch.segments[0].frac_cb < 1 or arch.segments[0].frac_sb < 1:
         print("Fractional switch/connection block not supported, must be 1")
-        print_duration(startTime)
         return
 
     if arch.switch_block_type != SwitchType.SUBSET:
         print("Only subset switch block type supported")
-        print_duration(startTime)
         return
 
     if arch.fc_type != FcType.FRACTIONAL:
         print("Only fractional connection between input, output, pad pins and channels supported")
-        print_duration(startTime)
         return
 
     if arch.fc_input != 1 or arch.fc_output != 1 or arch.fc_pad != 1:
         print("Only full connection between input, output, pad pins and channels supported")
-        print_duration(startTime)
         return
 
+    # .net Datei auslesen
     print("Read file ", args[2])
-    netlist = Net(args[2], len(arch.subblocks), arch.pins)
+    netlist = Net(args[2], len(arch.subblocks), arch.pins, logDir=LOG_DIRECTORY)
     if not netlist.isValid:
         print("Invalid netlist file")
-        print_duration(startTime)
         return
 
     print()
@@ -155,10 +145,13 @@ def main():
     print(len(netlist.globalNets), " are global nets")
     print(len(netlist.nets), " to be routed")
 
-
+    # Algorithmus Initialisieren
+    # @arg chanWidth: Kanal-Breite
+    # @return: Lee-Objekt
     @parameter
     fn compute(chanWidth: Int) -> Lee:
         var clbMap = ListMatrix[List[Block.SharedBlock]](placement.cols+2, placement.rows+2, List[Block.SharedBlock]())
+        # Pads und CLBs in Array übertragen(erzeugen)
         for clb in placement.archiv.keys():
             try:
                 if clb in netlist.inpads:
@@ -166,11 +159,13 @@ def main():
                     block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
                     block[].subblk = placement.clbSubblk[clb]
                     clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
+
                 elif clb in netlist.outpads:
                     var block = Block.SharedBlock(Block(clb, Blocktype.OUTPAD, arch.t_opad))
                     block[].coord = (placement.archiv[clb][0], placement.archiv[clb][1])
                     block[].subblk = placement.clbSubblk[clb]
                     clbMap[placement.archiv[clb][0], placement.archiv[clb][1]].append(block)
+                
                 else:
                     hasGlobalNet = False
                     for net in netlist.globalNets.keys():
@@ -181,6 +176,7 @@ def main():
                         if hasGlobalNet:
                             break
                     delay = 0.0
+
                     if hasGlobalNet:
                         delay = arch.t_ipin_cblock
                     else:
@@ -194,24 +190,24 @@ def main():
             except e:
                 print("Error: ", e)
                 return Lee()
-        return Lee(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins, placement.clbNums)
+        return Lee(netlist.nets, clbMap, placement.archiv, chanWidth, arch.switches[0].Tdel, arch.pins, placement.clbNums, logDir=LOG_DIRECTORY)
         
     
     var critPath: Float64 = 0.0
     var route: ArcPointer[Lee] = ArcPointer[Lee](Lee())
+
+    # Algorithmus ausführen für maxIterations
     @parameter
     fn calc():          
         for i in range(maxIterations):
             route = ArcPointer[Lee](compute(channelWidth))
-            var startAlgo = monotonic()
             route[].run(runParallel)
-            var endAlgo = monotonic()
             if route[].isValid:
-                print("Success", i, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
+                print("Success", i)
                 critPath = route[].getCriticalPath(netlist.outpads, arch.subblocks[0].t_seq_in, arch.subblocks[0].t_seq_out)
                 break
             else:
-                print("Failure", i, " (D: ", (endAlgo - startAlgo)/1000000000, "s)")
+                print("Failure", i)
 
                 
     if hasFixedChannelWidth:
@@ -221,7 +217,7 @@ def main():
         print("----------------")
         calc()
         print("----------------")
-        print("Critical path: ", critPath)
+        print("t_crit: ", critPath)
         print()
         
     else:
@@ -240,14 +236,17 @@ def main():
             print("----------------")           
             calc()
             print("----------------")
-            print("Critical path: ", critPath)
+            print("t_crit: ", critPath)
             print()
+            # Kanalbreite nach unten anpassen
             if route[].isValid:
                 highWidth = channelWidth
                 bestWidth = channelWidth
                 bestRoute = route
                 bestCritPath = critPath
                 channelWidth = (lowWidth + highWidth) // 2
+
+            # Kanalbreite nach oben anpassen, aber unterhalb einer erfolgreichen Breite
             else:
                 lowWidth = channelWidth                
                 if lowWidth == highWidth:
@@ -266,8 +265,8 @@ def main():
     print()
     if route[].isValid:
         print("Routing successful")
+        print("Lowest Channel width: ", channelWidth)
         print("Critical path: ", critPath)
-        print("Channel width: ", channelWidth)
         print()
 
         if writeRouteFile(args[4], route[].routeLists, netlist.netList, arch.pins,
@@ -283,7 +282,6 @@ def main():
     print()
     print("Routing finished")
     print()
-    print_duration(startTime)
     return
 
 """
@@ -303,7 +301,3 @@ def print_help():
     print("    disabled binary search")
     print("  --max_iterations <int>: Set the maximum iterations for the routing")
     print("  --single_thread: Run the algorithm in single thread mode")
-
-def print_duration(startTime: Float64):
-    print("Programm Duration: ", (monotonic() - startTime)/1000000000, "s")
-    return

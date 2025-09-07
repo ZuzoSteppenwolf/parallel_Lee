@@ -28,7 +28,8 @@ struct Net(Copyable, Movable):
     # @arg path: Pfad zur Netliste
     # @arg sbblknum: Anzahl der Subblöcke
     # @arg pins: Liste der Pins, die in der Netliste verwendet werden
-    fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin]):
+    # @arg logDir: Verzeichnis, in dem die Logdatei gespeichert werden soll, standardmäßig im aktuellen Verzeichnis
+    fn __init__(out self, path: String, sbblknum: Int8, pins: List[Pin], logDir: String = ""):
         self.nets = Dict[String, List[Tuple[String, Int]]]()
         self.globalNets = Dict[String, List[Tuple[String, Int]]]()
         self.isValid = False
@@ -37,7 +38,7 @@ struct Net(Copyable, Movable):
         self.clbs = Set[String]()
         self.netList = List[String]()
         try:
-            self.log = Log[True]("log/net.log")
+            self.log = Log[True](logDir + "net.log")
         except:
             self.log = None
         self.isValid = self.parse(path, sbblknum, pins)

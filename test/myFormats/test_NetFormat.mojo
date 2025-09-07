@@ -6,6 +6,8 @@ from myUtil.Enum import *
 @author Marvin Wollbrück
 """
 
+alias LOG_DIRECTORY = "test/log/"
+
 alias sbblknum = 1
 def initPins() -> List[Pin]:
     var pins = List[Pin]()
@@ -20,7 +22,7 @@ def initPins() -> List[Pin]:
 def test_NetFormat_1():
     var pins = initPins()
 
-    var net = Net("test/.net/test_twoNet.net", sbblknum, pins)
+    var net = Net("test/.net/test_twoNet.net", sbblknum, pins, logDir=LOG_DIRECTORY)
     assert_true(net.isValid, "Net ist nicht valide")
     assert_equal(len(net.nets), 2, "Netzwerk ist nicht valide")
     assert_equal(len(net.nets["i_0_"]), 2, "Netzwerk i_0_ ist nicht valide")
@@ -34,7 +36,7 @@ def test_NetFormat_1():
 def test_NetFormat_2():
     var pins = initPins()
 
-    var net = Net("test/.net/test_globalNet.net", sbblknum, pins)
+    var net = Net("test/.net/test_globalNet.net", sbblknum, pins, logDir=LOG_DIRECTORY)
     assert_true(net.isValid, "Net ist nicht valide")
     assert_equal(len(net.nets), 2, "Netzwerk ist nicht valide")
     assert_equal(len(net.nets["i_0_"]), 2, "Netzwerk i_0_ ist nicht valide")

@@ -3,7 +3,7 @@
 # Führt die Tests aus
 # @author Marvin Wollbrück
 
-#pixi run mojo test -I src test
+pixi run mojo test -I src test
 
 #pixi run mojo test -I src test/myUtil
 #pixi run mojo test -I src test/myUtil/test_Logger.mojo 
@@ -18,4 +18,4 @@
 #pixi run mojo test -I src test/myFormats/test_RouteFormat.mojo
 
 #pixi run mojo test -I src test/myAlgorithm
-pixi run mojo test -I src test/myAlgorithm/test_Lee.mojo
+#pixi run mojo test -I src test/myAlgorithm/test_Lee.mojo

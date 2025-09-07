@@ -174,7 +174,9 @@ struct Arch(Copyable, Movable):
     var log: Optional[Log[True]]
 
     # Konstruktor
-    fn __init__(out self, path: String):
+    # @arg path: Pfad zur Architekturdatei
+    # @arg logDir: Verzeichnis, in dem die Logdatei gespeichert werden soll, standardmäßig im aktuellen Verzeichnis
+    fn __init__(out self, path: String, logDir: String = ""):
         self.io_rat = -1
         self.chan_width_io = -1
         self.chan_width_x = ChanWidth(ChanType.NONE, 0)
@@ -201,7 +203,7 @@ struct Arch(Copyable, Movable):
         self.subblocks = List[Subblock]()
         self.isValid = False
         try:
-            self.log = Log[True]("log/arch.log")
+            self.log = Log[True](logDir + "arch.log")
         except:
             self.log = None
         self.isValid = self.parse(path)

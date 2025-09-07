@@ -221,9 +221,12 @@ struct Lee(Copyable, Movable):
     # @arg chanDelay: Kanalverzögerung
     # @arg pins: Pins
     # @arg CLB2Num: Mapping von CLB-Namen zu Nummern
-    fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, pins: List[Pin], CLB2Num: Dict[String, Int]):
+    # @arg logDir: Verzeichnis, in dem die Logdatei gespeichert werden soll, standardmäßig im aktuellen Verzeichnis
+    fn __init__(out self, nets: Dict[String, List[Tuple[String, Int]]], clbMap: ListMatrix[List[Block.SharedBlock]], 
+        archiv: Dict[String, Tuple[Int, Int]], chanWidth: Int, chanDelay: Float64, 
+        pins: List[Pin], CLB2Num: Dict[String, Int], logDir: String = ""):
         try:
-            self.log = async_Log[True](self.LOG_PATH)
+            self.log = async_Log[True](logDir + "lee.log")
         except:
             self.log = None
         self.routeLists = Dict[String, Dict[Int, List[BlockPair[Int]]]]()
@@ -698,6 +701,7 @@ struct Lee(Copyable, Movable):
         var criticalPath: Float64 = 0.0
         var delays: List[Float64] = List[Float64]()
         try:
+            # Berechne die Verzögerungen der Ausgänge
             for name in outpads:
                 var clb: Block.SharedBlock = self.clbMap[self.archiv[name][0], self.archiv[name][1]][0]
                 for block in self.clbMap[self.archiv[name][0], self.archiv[name][1]]:
@@ -707,7 +711,7 @@ struct Lee(Copyable, Movable):
                 if len(clb[].preconnections) == 0:
                     delays.append(clb[].delay)
                 else:   
-                
+                    # Temporäre Dateien erstellen
                     with NamedTemporaryFile("rw") as fPreDelays, 
                     NamedTemporaryFile("rw") as fIdxs, 
                     NamedTemporaryFile("rw") as fBlockFront:
@@ -717,22 +721,29 @@ struct Lee(Copyable, Movable):
                         var blockFront: Int = 0
                         var hasGlobals: Deque[Bool] = Deque[Bool]()
 
+                        # Setzt den Wert in PreDelays an der Stelle preDelay
+                        # @arg value: der Wert
                         @parameter
                         fn setPreDelays(value: Float64) raises:
                             _ = fPreDelays.seek((preDelays - 1) * sizeof[Float64](), os.SEEK_SET)
                             fPreDelays.write_bytes(value.as_bytes())
 
+                        # Setzt den Wert in Idxs an der Stelle idxs
+                        # @arg value: der Wert
                         @parameter
                         fn setIdxs(value: Int64) raises:
                             _ = fIdxs.seek((idxs - 1) * sizeof[Int64](), os.SEEK_SET)
                             fIdxs.write_bytes(value.as_bytes())
 
+                        # Setzt den Block in BlockFront an der Stelle blockFront
+                        # @arg block: der Block
                         @parameter
                         fn setBlockFront(block: Block.SharedBlock) raises:
                             _ = fBlockFront.seek((blockFront - 1) * sizeof[Int](), os.SEEK_SET)
                             var value: Int64 = self.CLB2Num[block[].name]
                             fBlockFront.write_bytes(value.as_bytes())
 
+                        # Gibt den Wert in PreDelays an der Stelle preDelays zurück
                         @parameter
                         fn getPreDelays() raises -> Float64:
                             _ = fPreDelays.seek((preDelays - 1) * sizeof[Float64](), os.SEEK_SET)
@@ -741,6 +752,7 @@ struct Lee(Copyable, Movable):
                             var ptr2Float64 = ptr2UInt8.bitcast[Float64]()
                             return ptr2Float64[]
 
+                        # Gibt den Wert in Idxs an der Stelle idxs zurück
                         @parameter
                         fn getIdxs() raises -> Int64:
                             _ = fIdxs.seek((idxs - 1) * sizeof[Int64](), os.SEEK_SET)
@@ -749,6 +761,7 @@ struct Lee(Copyable, Movable):
                             var ptr2Int64 = ptr2UInt8.bitcast[Int64]()
                             return ptr2Int64[]
 
+                        # Gibt den Block in BlockFront an der Stelle blockFront zurück
                         @parameter
                         fn getBlockFront() raises -> Block.SharedBlock:
                             _ = fBlockFront.seek((blockFront - 1) * sizeof[Int](), os.SEEK_SET)
@@ -763,17 +776,20 @@ struct Lee(Copyable, Movable):
                                     break
                             return result
 
+                        # Berechne die Verzögerungen der Pfade zum Ausgang
                         for idx in range(len(clb[].preconnections)):                    
                             blockFront += 1
                             setBlockFront(clb[].preconnections[idx])
                             while blockFront > 0:
                                 var preDelay: Float64 = 0.0
                                 var preHasGlobal: Bool = False
+                                
                                 if  idxs > blockFront:
                                     idxs -= 1
                                 elif idxs < blockFront:
                                     idxs += 1
                                     setIdxs(0)
+
                                 if  preDelays > blockFront:
                                     var bufferDelay = getPreDelays()
                                     var bufferIdx = getIdxs()
@@ -785,29 +801,36 @@ struct Lee(Copyable, Movable):
                                     var bufferBlock = getBlockFront()
                                     setPreDelays(bufferBlock[].delay)
                                     bufferBlock[].visitCount += 1
+
                                 if len(hasGlobals) < blockFront:
                                     var bufferBlock = getBlockFront()
                                     hasGlobals.append(bufferBlock[].hasGlobal)
                                 elif len(hasGlobals) > blockFront:
                                     preHasGlobal = hasGlobals.pop()
 
+                                # Nach größter Verzögerung suchen
                                 var bufferBlock = getBlockFront()
                                 var bufferDelay = getPreDelays()
                                 if preDelay > bufferDelay:
                                     setPreDelays(preDelay)
                                     hasGlobals[-1] = preHasGlobal or bufferBlock[].hasGlobal
                                 
+                                # Nächsten Pfad-Verzögerung initieren
                                 var bufferIdx = getIdxs()
                                 if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath and bufferBlock[].visitCount < MAX_VISIT_COUNT:
                                     blockFront += 1
                                     setBlockFront(bufferBlock[].preconnections[bufferIdx])
                                     setIdxs(bufferIdx + 1)
+
+                                # Pfad fertig
                                 else:
                                     if bufferBlock[].visitCount < MAX_VISIT_COUNT:
                                         bufferBlock[].hasCritPath = True
                                         bufferBlock[].delay = getPreDelays()
                                     blockFront -= 1
                                     bufferBlock[].visitCount -= 1
+
+                            # Verzögerung speicherrn
                             preDelays = 1   
                             var bufferDelay = getPreDelays()
                             if hasGlobals[-1]:
@@ -817,6 +840,8 @@ struct Lee(Copyable, Movable):
                             idxs = 0
                             blockFront = 0
                             hasGlobals.clear()
+
+                # Suche die größte Verzögerung
                 for delay in delays:
                     if delay > criticalPath:
                         criticalPath = delay

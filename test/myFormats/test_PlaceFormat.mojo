@@ -5,9 +5,11 @@ from myUtil.Enum import Blocktype
 @author Marvin Wollbrück
 """
 
+alias LOG_DIRECTORY = "test/log/"
+
 def test_PlaceFormat_1():
 
-    var place = Place("test/.place/test_PlaceFormat.place")
+    var place = Place("test/.place/test_PlaceFormat.place", logDir=LOG_DIRECTORY)
     assert_equal(place.isValid, True, "Place ist nicht valide")
     assert_equal(place.net, "test/test.net", "Net ist nicht valide")
     assert_equal(place.arch, "test/test.arch", "Arch ist nicht valide")
@@ -26,21 +28,21 @@ def test_PlaceFormat_1():
     return
 
 def test_PlaceFormat_2():
-    var place = Place("test/.place/test_invalidMatrix.place")
+    var place = Place("test/.place/test_invalidMatrix.place", logDir=LOG_DIRECTORY)
     assert_equal(place.isValid, False)
     return
 
 def test_PlaceFormat_3():
-    var place = Place("test/.place/test_invalidFirstLine.place")
+    var place = Place("test/.place/test_invalidFirstLine.place", logDir=LOG_DIRECTORY)
     assert_equal(place.isValid, False)
     return
 
 def test_PlaceFormat_4():
-    var place = Place("test/.place/test_invalidSecLine.place")
+    var place = Place("test/.place/test_invalidSecLine.place", logDir=LOG_DIRECTORY)
     assert_equal(place.isValid, False)
     return
 
 def test_PlaceFormat_5():
-    var place = Place("test/.place/test_invalidPlacement.place")
+    var place = Place("test/.place/test_invalidPlacement.place", logDir=LOG_DIRECTORY)
     assert_equal(place.isValid, False)
     return

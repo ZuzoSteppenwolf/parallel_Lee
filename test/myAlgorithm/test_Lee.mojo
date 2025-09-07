@@ -18,6 +18,8 @@ Test für den Lee Algorithmus
 @author: Marvin Wollbrück
 """
 
+alias LOG_DIRECTORY = "test/log/"
+
 def test_Lee1():
     alias id = 0
     var chanWidth = 1
@@ -51,7 +53,7 @@ def test_Lee1():
 
     
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
 
@@ -125,7 +127,7 @@ def test_Lee2():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     var outpads = Set[String]()
@@ -192,7 +194,7 @@ def test_Lee3():
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
     CLB2Num[clb.name] = 1
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -237,7 +239,7 @@ def test_Lee4():
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
     CLB2Num[clb.name] = 2
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -282,7 +284,7 @@ def test_Lee5():
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
     CLB2Num[clb.name] = 2
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run(False)
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -327,7 +329,7 @@ def test_Lee6():
     clbMap[clb.coord[0], clb.coord[1]].append(Block.SharedBlock(clb))
     CLB2Num[clb.name] = 2
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -383,7 +385,7 @@ def test_Lee7():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -426,7 +428,7 @@ def test_Lee8():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -476,7 +478,7 @@ def test_Lee9():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -525,7 +527,7 @@ def test_Lee10():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -594,7 +596,7 @@ def test_Lee11():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -666,7 +668,7 @@ def test_Lee12():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
 
@@ -706,7 +708,7 @@ def test_Lee13():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     var outpads = Set[String]()
@@ -749,7 +751,7 @@ def test_Lee14():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     var outpads = Set[String]()
@@ -792,7 +794,7 @@ def test_Lee15():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
 
@@ -856,7 +858,7 @@ def test_Lee16():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -929,7 +931,7 @@ def test_Lee17():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -975,7 +977,7 @@ def test_Lee18():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -1021,7 +1023,7 @@ def test_Lee19():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -1067,7 +1069,7 @@ def test_Lee20():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.chanMap[0][3, 4] = route.BLOCKED
     route.chanMap[0][4, 1] = route.BLOCKED
     route.run()
@@ -1133,7 +1135,7 @@ def test_Lee21():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     var outpads = Set[String]()
@@ -1197,7 +1199,7 @@ def test_Lee22():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     var outpads = Set[String]()
@@ -1236,7 +1238,7 @@ def test_Lee23():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     assert_true(route.isValid, "Lee ist nicht valide")
@@ -1296,7 +1298,7 @@ def test_Lee24():
 
     var lastClb = clbMap[clb.coord[0], clb.coord[1]]
 
-    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num)
+    var route = Lee(nets, clbMap, archiv, chanWidth, 0.1, pins, CLB2Num, logDir=LOG_DIRECTORY)
     route.run()
 
     var outpads = Set[String]()

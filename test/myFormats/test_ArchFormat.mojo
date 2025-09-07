@@ -5,10 +5,12 @@ from myUtil.Enum import *
 @author Marvin Wollbrück
 """
 
+alias LOG_DIRECTORY = "test/log/"
+
 def test_ArchFormat_1():
     
     var path = "test/.arch/4lut_sanitized.arch"
-    var arch = Arch(path)
+    var arch = Arch(path, logDir=LOG_DIRECTORY)
     assert_equal(arch.isValid, True)
     assert_equal(arch.io_rat, 2)
     assert_equal(arch.chan_width_io, 1)
