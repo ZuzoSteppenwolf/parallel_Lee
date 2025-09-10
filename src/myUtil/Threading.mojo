@@ -74,6 +74,12 @@ struct Mutex(Copyable, Movable):
         self.owner.free()
         self.visitor.free()
 
+"""
+Atomarer Bool-Wert
+Zum Setzen und Abfragen eines Bool-Wertes in einem Multithreaded-Umfeld
+Das Setzen benötigt eine Dereferenzierung
+Das Abfragen des Wertes benötigt keine Dereferenzierung
+"""
 struct AtomicBool(Copyable, Movable, Boolable):
     var value: UnsafePointer[Atomic[DType.uint8]]
 

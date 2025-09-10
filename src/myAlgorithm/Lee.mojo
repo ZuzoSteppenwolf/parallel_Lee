@@ -661,6 +661,7 @@ struct Lee(Copyable, Movable):
             if routeList:
                 var set: Set[Int] = Set[Int]()
                 try:
+                    # Leere Listen entfernen
                     for idx in routeList.keys():
                     
                         if not len(routeList[idx]) > 1:
@@ -670,7 +671,9 @@ struct Lee(Copyable, Movable):
                 except e:
                     if self.log:
                         self.log.value().writeln(id, "ID: ", id, "; Error: ", e)
+                self.mutex.lock(id)
                 self.routeLists[net] = routeList
+                self.mutex.unlock(id)
             if self.log:
                 self.log.value().writeln(id, "ID: ", id, "; End Lee-Algorithm for net: ", net)
             return
