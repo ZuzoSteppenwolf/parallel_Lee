@@ -288,7 +288,7 @@ def main():
 Hilfsmethode um die Hilfe auszugeben
 """
 def print_help():
-    print("Usage: ./PLee <placments> <netlist> <architecture> <route> [OPTIONS]")
+    print("Usage: ./lee <placments> <netlist> <architecture> <route> [OPTIONS]")
     print()    
     print("placments: Path to the placments file")
     print("netlist: Path to the netlist file")
