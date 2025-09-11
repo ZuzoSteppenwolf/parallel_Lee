@@ -209,10 +209,7 @@ struct Lee(Copyable, Movable):
         self.archiv = Dict[String, Tuple[Int, Int]]()
         self.CLB2Num = Dict[String, Int]()
         self.Num2CLB = Dict[Int, String]()
-        try:
-            self.log = async_Log[True](self.LOG_PATH)
-        except:
-            self.log = None
+        self.log = None
 
     # Konstruktor
     # @arg nets: Netze
