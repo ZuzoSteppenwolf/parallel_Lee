@@ -49,7 +49,10 @@ def main():
         hasFixedChannelWidth = True
         try:
             channelWidth = atol(args[idx + 1])
-            validArgs += 2
+            if channelWidth < 1:
+                print("Invalid channel width: ", args[idx + 1])
+            else:
+                validArgs += 2
         except:
             print("Invalid channel width: ", args[idx + 1])
 
@@ -57,7 +60,10 @@ def main():
         idx = args.index("--max_iterations")
         try:
             maxIterations = atol(args[idx + 1])
-            validArgs += 2
+            if maxIterations < 1:
+                print("Invalid max iterations: ", args[idx + 1])
+            else:
+                validArgs += 2
         except:
             print("Invalid max iterations: ", args[idx + 1])
 
@@ -94,7 +100,7 @@ def main():
 
     # auf Ausführbarkeit prüfen
     if arch.subblocks_per_clb > 1:
-        print("Multiple subblocks in architecture file not supported")
+        print("Multiple subblocks in architecture file are not supported")
         return
 
     if arch.chan_width_io < 1 or arch.chan_width_x.peak < 1 or arch.chan_width_y.peak < 1:
@@ -102,35 +108,35 @@ def main():
         return
 
     if arch.chan_width_x.type != ChanType.UNIFORM or arch.chan_width_y.type != ChanType.UNIFORM:
-        print("Non-uniform channel width not supported")
+        print("Non-uniform channel width are not supported")
         return
 
     if len(arch.segments) > 1:
-        print("Multiple segments in architecture file not supported")
+        print("Multiple segments in architecture file are not supported")
         return
 
     if len(arch.switches) > 1:
-        print("Multiple switches in architecture file not supported")
+        print("Multiple switches in architecture file are not supported")
         return
 
     if arch.segments[0].isLongline or arch.segments[0].length > 1:
-        print("Longline segments or segments with length > 1 not supported")
+        print("Longline segments or segments with length > 1 are not supported")
         return
     
     if arch.segments[0].frac_cb < 1 or arch.segments[0].frac_sb < 1:
-        print("Fractional switch/connection block not supported, must be 1")
+        print("Fractional switch/connection block are not supported, must be 1")
         return
 
     if arch.switch_block_type != SwitchType.SUBSET:
-        print("Only subset switch block type supported")
+        print("Only subset switch block type are supported")
         return
 
     if arch.fc_type != FcType.FRACTIONAL:
-        print("Only fractional connection between input, output, pad pins and channels supported")
+        print("Only fractional connection between input, output, pad pins and channels are supported")
         return
 
     if arch.fc_input != 1 or arch.fc_output != 1 or arch.fc_pad != 1:
-        print("Only full connection between input, output, pad pins and channels supported")
+        print("Only full connection between input, output, pad pins and channels are supported")
         return
 
     # .net Datei auslesen
