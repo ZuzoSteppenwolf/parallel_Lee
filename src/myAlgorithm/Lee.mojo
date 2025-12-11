@@ -826,6 +826,8 @@ struct Lee(Copyable, Movable):
                                     if bufferBlock[].visitCount < MAX_VISIT_COUNT:
                                         bufferBlock[].hasCritPath = True
                                         bufferBlock[].delay = getPreDelays()
+                                    else:
+                                        setPreDelays(0.0)
                                     blockFront -= 1
                                     bufferBlock[].visitCount -= 1
 
