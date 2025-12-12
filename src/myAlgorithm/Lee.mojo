@@ -798,45 +798,58 @@ struct Lee(Copyable, Movable):
                                 elif preDelays < blockFront:
                                     preDelays += 1
                                     var bufferBlock = getBlockFront()
-                                    setPreDelays(bufferBlock[].delay)
+                                    if bufferBlock[].hasGlobal:
+                                        setPreDelays(T_seq_out + T_seq_in)
+                                    else:
+                                        setPreDelays(bufferBlock[].delay)
                                     bufferBlock[].visitCount += 1
 
                                 if len(hasGlobals) < blockFront:
                                     var bufferBlock = getBlockFront()
-                                    hasGlobals.append(bufferBlock[].hasGlobal)
+                                    hasGlobals.append(bufferBlock[].hasGlobal or bufferBlock[].hasPreGlobal)
                                 elif len(hasGlobals) > blockFront:
                                     preHasGlobal = hasGlobals.pop()
 
                                 # Nach größter Verzögerung suchen
                                 var bufferBlock = getBlockFront()
                                 var bufferDelay = getPreDelays()
-                                if preDelay > bufferDelay:
+                                if preDelay >= bufferDelay:
                                     setPreDelays(preDelay)
-                                    hasGlobals[-1] = preHasGlobal or bufferBlock[].hasGlobal
+                                    hasGlobals[-1] = preHasGlobal or bufferBlock[].hasPreGlobal
+                                    # Debug
+                                    #if self.log:
+                                    #    self.log.value().writeln(-1, "Block: ", bufferBlock[].name, "; t_crit: ", preDelay, " >= ", bufferDelay, "; preGlobal: ", preHasGlobal)
                                 
                                 # Nächsten Pfad-Verzögerung initieren
                                 var bufferIdx = getIdxs()
-                                if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath and bufferBlock[].visitCount < MAX_VISIT_COUNT:
+                                if bufferIdx < len(bufferBlock[].preconnections) and not bufferBlock[].hasCritPath and bufferBlock[].visitCount < MAX_VISIT_COUNT and not bufferBlock[].hasGlobal:
                                     blockFront += 1
                                     setBlockFront(bufferBlock[].preconnections[bufferIdx])
                                     setIdxs(bufferIdx + 1)
 
                                 # Pfad fertig
                                 else:
-                                    if bufferBlock[].visitCount < MAX_VISIT_COUNT:
+                                    if bufferBlock[].visitCount < MAX_VISIT_COUNT and not bufferBlock[].hasGlobal:
                                         bufferBlock[].hasCritPath = True
                                         bufferBlock[].delay = getPreDelays()
-                                    else:
+                                        bufferBlock[].hasPreGlobal = hasGlobals[-1]
+                                    elif not bufferBlock[].hasGlobal:
                                         setPreDelays(0.0)
                                     blockFront -= 1
                                     bufferBlock[].visitCount -= 1
 
-                            # Verzögerung speicherrn
+                                    # Debug
+                                    #if self.log:
+                                    #    self.log.value().writeln(-1, "Block: ", bufferBlock[].name, "; find \"Source\" with t_crit: ", getPreDelays(), "; isGlobal: ", hasGlobals[-1])
+
+                            # Verzögerung speichern
                             preDelays = 1   
                             var bufferDelay = getPreDelays()
-                            if hasGlobals[-1]:
+                            if not hasGlobals[-1] and clb[].hasGlobal:
                                 bufferDelay += T_seq_out + T_seq_in
                             delays.append(bufferDelay + clb[].delay + clb[].preDelays[idx])
+                            if self.log:
+                                self.log.value().writeln(-1, "Sink: ", clb[].name, "; t_crit: ", delays[-1], "; isGlobal: ", hasGlobals[-1] or clb[].hasGlobal)
                             preDelays = 0
                             idxs = 0
                             blockFront = 0
@@ -850,6 +863,6 @@ struct Lee(Copyable, Movable):
         except e:
             criticalPath = 0.0
             if self.log:
-                self.log.value().writeln(-1, "Error: Critical Path could not be calculated")
+                self.log.value().writeln(-1, "Error: Critical Path could not be calculated: ", e)
             
         return criticalPath

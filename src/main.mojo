@@ -201,6 +201,12 @@ def main():
     
     var critPath: Float64 = 0.0
     var route: ArcPointer[Lee] = ArcPointer[Lee](Lee())
+    var sinks: Set[String] = Set[String]()
+    sinks = sinks.union(netlist.outpads)
+    for net in netlist.globalNets.keys():
+        for block in netlist.globalNets[net]:
+            if block[0] in netlist.outpads:
+                sinks.add(block[0])
 
     # Algorithmus ausführen für maxIterations
     @parameter
@@ -210,7 +216,7 @@ def main():
             route[].run(runParallel)
             if route[].isValid:
                 print("Success", i)
-                critPath = route[].getCriticalPath(netlist.outpads, arch.subblocks[0].t_seq_in, arch.subblocks[0].t_seq_out)
+                critPath = route[].getCriticalPath(sinks, arch.subblocks[0].t_seq_in, arch.subblocks[0].t_seq_out)
                 break
             else:
                 print("Failure", i)

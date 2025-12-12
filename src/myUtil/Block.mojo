@@ -29,6 +29,7 @@ struct Block(Copyable, Movable, EqualityComparable, Stringable):
     var hasCritPath: Bool
     var visitCount: UInt8
     var hasGlobal: Bool
+    var hasPreGlobal: Bool
 
     # Konstruktor
     # @arg name: Name des Blocks
@@ -46,6 +47,8 @@ struct Block(Copyable, Movable, EqualityComparable, Stringable):
         self.hasCritPath = False
         self.visitCount = 0
         self.hasGlobal = False
+        self.hasPreGlobal = False
+        
 
 
     fn __eq__(self, other: Block) -> Bool:
