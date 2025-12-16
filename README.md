@@ -6,6 +6,8 @@ Das fertige Programm wird mit vorgefertigten Benchmarks getestet, analysiert und
 
 Das Programm implementiert den Lee-Algorithmus bzw. Maze-Algorithmus. Als kreative Komponente werden mehrere Netze in Echtzeit parallel verdrahtet. Zudem wurde dies in der noch jungen Programmiersprache Mojo von Modular implementiert.
 
+Ein tieferen Einblick bietet die Dokumentation [parallel_Lee.pdf](parallel_Lee.pdf).
+
 # Kompilieren
 
 Zur Kompilierung wird eine Umgebung benötigt die [Mojo](https://docs.modular.com/stable/mojo/manual/get-started "Mojo get started") installiert hat.
